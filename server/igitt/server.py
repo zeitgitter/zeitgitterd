@@ -28,6 +28,7 @@ import socket
 import socketserver
 import urllib
 import logging
+import fcntl
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import igitt.commit
@@ -45,7 +46,14 @@ class SocketActivationMixin:
     if os.environ.get('LISTEN_PID', None) == str(os.getpid()):
       nfds = int(os.environ.get('LISTEN_FDS', 0))
       if nfds == 1:
+        logging.debug("Existing socket=%s" % self.socket)
         self.socket = socket.fromfd(3, self.address_family, self.socket_type)
+        os.close(3)
+#        self.socket = socket.socket(fileno=3)
+#        flags = fcntl.fcntl(3, fcntl.F_GETFD)
+#        flags |= fcntl.FD_CLOEXEC
+#        fcntl.fcntl(3, fcntl.F_SETFD, flags)
+        logging.debug("New socket=%s" % self.socket)
       else:
         logging.error("Socket activation must provide exactly one socket (for now)\n")
         exit(1)
@@ -156,6 +164,7 @@ class StamperRequestHandler(FlatFileRequestHandler):
       return 406
 
   def handle_request(self, params):
+    logging.debug(str(params))
     sig = self.handle_signature(params)
     if sig == 406:
       self.send_bodyerr(406, "Unsupported timestamping request",
