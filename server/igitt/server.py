@@ -47,13 +47,8 @@ class SocketActivationMixin:
       nfds = int(os.environ.get('LISTEN_FDS', 0))
       if nfds == 1:
         logging.debug("Existing socket=%s" % self.socket)
-        self.socket = socket.fromfd(3, self.address_family, self.socket_type)
-        os.close(3)
-#        self.socket = socket.socket(fileno=3)
-#        flags = fcntl.fcntl(3, fcntl.F_GETFD)
-#        flags |= fcntl.FD_CLOEXEC
-#        fcntl.fcntl(3, fcntl.F_SETFD, flags)
-        logging.debug("New socket=%s" % self.socket)
+        self.socket.close()
+        self.socket = socket.socket(fileno=3)
       else:
         logging.error("Socket activation must provide exactly one socket (for now)\n")
         exit(1)
@@ -220,6 +215,13 @@ class StamperRequestHandler(FlatFileRequestHandler):
 def run():
   igitt.config.get_args()
   igitt.commit.run()
+  # Hack
+  s = socket.socket()
+  s.bind(('127.0.0.1', 1555))
+  s.listen()
+  logging.debug("Fileno=%s" % s.fileno())
+  os.environ['LISTEN_PID'] = str(os.getpid())
+  os.environ['LISTEN_FDS'] = '1'
   httpd = SocketActivationHTTPServer(
     (igitt.config.arg.listen_address, igitt.config.arg.listen_port),
     StamperRequestHandler)
