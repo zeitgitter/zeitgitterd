@@ -119,28 +119,24 @@ To obtain the PGP Timestamp from the
 an ASCII-only email with the following contents is emailed to
 `clear@stamper.itconsult.co.uk`:
 
-- The contents of `hashes.log`
-- An empty line.
-- An additional line `Parent: <commit ID>` indicating the current
-  `HEAD` of the `git` repository. This is to ensure cryptographic
-  linking of the `git` repository commit ID to the contents of the
-  file.
+- The just-created commit ID, indicating the current
+  `HEAD` of the `git` repository.
 
-The returned answer is stored as `hashes.asc`, from
+The returned answer is stored as `stamper.asc`, from
 `-----BEGIN PGP SIGNED MESSAGE-----` to `-----END PGP SIGNATURE-----`,
 inclusively.
 
 Before committing the PGP Timestamp, the following checks should be
 applied:
 
-- The answer arrives within 15 minutes
-- All the contents sent to timestamper are included in the reply.
-- At most 20 additional lines, either empty or starting with `#`,
-  are present; each not longer than 100 bytes; each can be either before
-  or after the original message.
+- The answer arrives before the next commit has been created on
+  that branch.
+- Besides the commit ID, at most 20 additional lines, either empty or
+  starting with `#`, are present; each not longer than 100 bytes; each
+  can be either before or after the original message.
 - The message contains only carriage, newline, and printable
   ASCII characters (` `…`~`).
-- The signature matches.
+- The signature matches and is recent.
 - It is recommended that carriage returns are stripped from the message.
   This will not modify the validity of the signature but will increase
   the delta compression ability of `git`, as the list of hashes in both

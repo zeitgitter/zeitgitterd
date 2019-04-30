@@ -13,75 +13,67 @@ in the repository.
 
 ## 1. Rotate log file
 
-At the start of the minute determined by `commit-at`, the following
-operations are performed:
+At the time determined by `commit-interval` and `commit-offset`,
+the following operations are performed (while a lock is held):
 
 - If a file `hashes.log` exists, the previous commit cycle did not
   complete (e.g., because receiving email from the PGP Timestamper timed
-  out): Then create a intermediate (self-signed) commit, so that no
-  commit hash is lost (see sections 4ff.) and then continue here.
+  out): Then create a intermediate (self-signed, non-cross-signed) commit,
+  so that no commit hash is lost (see Section 2 below) and then continue
+  here.
 - If a file `hashes.work` exists in the repository, it is renamed to
   `hashes.log` such that any upcoming requests will start a new
   `hashes.work` for the next cycle.
-- A short wait (0.1 s) is introduced to ensure that the file contents have
-  settled (i.e., parallel log operations have completed)
 
-## 2. Try to send mail to the PGP Timestamper, if enabled
+## 2. Commit to `git`
 
-If a file `hashes.work` exists, the `email-address` configuration 
-variable exists (i.e., mail should be sent to the PGP Timestamper) and 
-*no* file `hashes.mail` exists, the following operations are performed:
+(The lock is still held here.)
 
-- Delete `hashes.asc`.
-- Copy `hashes.log` to `hashes.mail`.
-- Append a blank line to `hashes.mail`.
-- Also append a line `Parent: <commit id>` (with the current commit ID
-  of the master branch, i.e., parent of the commit we are just creating)
-- Send email to the PGP Timestamper.
+- Add `hashes.log` to the repository (`git add`).
+- Create a new signed commit.
 
-## 3. Receive email
+## 3. Obtain upstream `igitt` timestamps
 
-If a file `hashes.mail` exists, try to receive a new stamped mail message
-for up to 15 minutes.
+(The lock can have been released now.)
 
-- If a new message is here, verify that it actually is the message
-  stamping `hashes.mail`. (See [ServerOperation.md](./ServerOperation.md).)
-- Write that mail down as `hashes.asc`.
-- Add it to the repository (`git add`).
-- Delete `hashes.mail`.
+- Obtain the upstream `igitt` cross-timestamps.
 
-## 4. Commit to `git`
-
-If `hashes.log` exists and
-- `email-address` is not defined (no PGP Timestamping should occur),
-- `hashes.asc` exists (PGP Timestamping was successful),
-- `hashes.mail` does not exist at all, or
-- 15 minutes have passed since `hashes.mail` was created,
-then perform the following operations:
-
-- Add `hashes.log` to the repository (`git add`), potentially joining
-  `hashes.asc` there.
-- Create a new signed commit
-
-## 5. Obtain upstream `igitt` timestamps
-
-After completion of section 4 above, perform the following operations:
-
-- Obtain the upstream `igitt` timestamps.
-
-## 6. Publish the repository contents
-
-After completion of section 5 above, perform the following operations:
+## 4. Publish the repository contents
 
 - Push the repository to a public repository. You will likely want to
   include the `master` and all timestamping branches in this push.
 
+## 5. Try to send mail to the PGP Timestamper, if enabled
+
+When a new commit has been created above, the `email-address` configuration 
+variable exists (i.e., mail should be sent to the PGP Timestamper),
+the following operations are performed:
+
+- Remove `stamper.asc`.
+- Send email to the PGP Timestamper with the full hex ID of the current
+  `HEAD`.
+
+## 6. Receive email
+
+If a mail has been sent, wait for the answer.
+
+- If a new message is here, verify that it actually is the message
+  stamping the current commit and contains a valid, recent signature
+  (See [ServerOperation.md](./ServerOperation.md).)
+- Write that mail down as `stamper.asc` after normalization
+  (removal of carriage returns).
+- Add it to the repository (`git add`).
+- It will be committed in the next cycle only. This is not as bad as
+  it sounds, as `stamper.asc` contains a timestamp on the current
+  (then: previous) commit, so amending that commit is impossible.
+
+
 ## Notes
 
-If for some reason steps 2, 3, 5 or 6 fail, they will be included in 
-the next cycle. Step 6 will push the previous entries while steps 2/3 
-and 5 will confirm the previous operations thanks to the `git` hash 
-chain.
+If for some reason steps 3, 4, 5, or 6 fail, they will be included in 
+the next cycle. Step 4 will also push the previous entries while the other
+steps will directly confirm the current commit (and therefore the previous
+operations thanks to the `git` hash chain).
 
 The security implications of not having *any* independent 
 certifications in a given cycle will be that a cheating `igitt` server 
@@ -91,3 +83,8 @@ However, we assume that the timestampers are *in principle* trustworthy
 and the mutual certifications are only needed to allow public audit of 
 that trustworthiness. Therefore, the larger window is not an issue for
 most applications.
+
+In general, at leat one of the methods (publication, cross-timestamping
+with IGITT, cross-timestamping with the PGP Digital Timestamping Service)
+will have been successful and therefore the timestamper cannot assume
+it can cheat for that period anyway.
