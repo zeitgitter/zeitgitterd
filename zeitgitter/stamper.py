@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# igittd — Independent GIT Timestamping, HTTPS server
+# zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
 # Copyright (C) 2019 Marcel Waldvogel
 #
@@ -27,19 +27,19 @@ import time
 from pathlib import Path
 
 import gnupg
-import igitt.commit
-import igitt.config
+import zeitgitter.commit
+import zeitgitter.config
 
 
 class Stamper:
     def __init__(self):
         self.sem = threading.BoundedSemaphore(
-            igitt.config.arg.max_parallel_signatures)
+            zeitgitter.config.arg.max_parallel_signatures)
         self.gpg_serialize = threading.Lock()
-        self.timeout = igitt.config.arg.max_parallel_timeout
-        self.url = igitt.config.arg.own_url
-        self.keyid = igitt.config.arg.keyid
-        self.gpgs = [gnupg.GPG(gnupghome=igitt.config.arg.gnupg_home)]
+        self.timeout = zeitgitter.config.arg.max_parallel_timeout
+        self.url = zeitgitter.config.arg.own_url
+        self.keyid = zeitgitter.config.arg.keyid
+        self.gpgs = [gnupg.GPG(gnupghome=zeitgitter.config.arg.gnupg_home)]
         self.keyinfo = self.gpg().list_keys(keys=self.keyid)
         if len(self.keyinfo) == 0:
             raise ValueError("No keys found")
@@ -51,14 +51,14 @@ class Stamper:
         """Return the next GnuPG object, in round robin order.
         Create one, if less than `number-of-gpg-agents` are available."""
         with self.gpg_serialize:
-            if (len(self.gpgs) < igitt.config.arg.number_of_gpg_agents):
-                home = Path('%s-%d' % (igitt.config.arg.gnupg_home, len(self.gpgs)))
+            if (len(self.gpgs) < zeitgitter.config.arg.number_of_gpg_agents):
+                home = Path('%s-%d' % (zeitgitter.config.arg.gnupg_home, len(self.gpgs)))
                 # Create symlink if needed; to trick an additional gpg-agent
                 # being started for the same directory
                 try:
                     s = home.lstat()
                 except FileNotFoundError:
-                    home.symlink_to(igitt.config.arg.gnupg_home)
+                    home.symlink_to(zeitgitter.config.arg.gnupg_home)
                 nextgpg = gnupg.GPG(gnupghome=home.as_posix())
                 self.gpgs.append(nextgpg)
                 print(nextgpg)
@@ -116,14 +116,14 @@ class Stamper:
             return None
 
     def log_commit(self, commit):
-        with Path(igitt.config.arg.repository,
+        with Path(zeitgitter.config.arg.repository,
                   'hashes.work').open(mode='ab', buffering=0) as f:
             f.write(bytes(commit + '\n', 'ASCII'))
             os.fsync(f.fileno())
 
     def stamp_tag(self, commit, tagname):
         if self.valid_commit(commit) and self.valid_tag(tagname):
-            with igitt.commit.serialize:
+            with zeitgitter.commit.serialize:
                 now = int(self.sig_time())
                 self.log_commit(commit)
             isonow = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime(now))
@@ -147,7 +147,7 @@ tagger %s %d +0000
     def stamp_branch(self, commit, parent, tree):
         if (self.valid_commit(commit) and self.valid_commit(tree)
                 and (parent == None or self.valid_commit(parent))):
-            with igitt.commit.serialize:
+            with zeitgitter.commit.serialize:
                 now = int(self.sig_time())
                 self.log_commit(commit)
             isonow = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime(now))

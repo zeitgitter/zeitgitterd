@@ -1,0 +1,12 @@
+[Unit]
+Description=Independent GIT Timestamper (zeitgitter)
+Documentation=https://zeitgitter.ch
+After=network.target
+
+[Service]
+ExecStart=/usr/local/sbin/zeitgitterd.py
+User=zeitgitter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

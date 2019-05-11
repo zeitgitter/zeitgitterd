@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# igitt — Independent GIT Timestamping, HTTPS server
+# zeitgitter — Independent GIT Timestamping, HTTPS server
 #
 # Copyright (C) 2019 Marcel Waldvogel
 #
@@ -25,16 +25,16 @@ import logging
 import random
 
 import configargparse
-import igitt.deltat
-import igitt.version
+import zeitgitter.deltat
+import zeitgitter.version
 
 
 def get_args(args=None, config_file_contents=None):
     global arg
     # Config file in /etc or the program directory
     parser = configargparse.ArgumentParser(
-        description="igittd.py — The Independent git Timestamper server.",
-        default_config_files=['/etc/igittd.conf', './igittd.conf'])
+        description="zeitgitterd.py — The Independent git Timestamper server.",
+        default_config_files=['/etc/zeitgitterd.conf', './zeitgitterd.conf'])
 
     parser.add_argument('--config-file', '-c',
                         is_config_file=True,
@@ -127,11 +127,11 @@ def get_args(args=None, config_file_contents=None):
                         default='',
                         help="Space-separated list of branches to push")
     parser.add_argument('--version',
-                        action='version', version=igitt.version.VERSION)
+                        action='version', version=zeitgitter.version.VERSION)
 
     arg = parser.parse_args(args=args, config_file_contents=config_file_contents)
 
-    arg.commit_interval = igitt.deltat.parse_time(arg.commit_interval)
+    arg.commit_interval = zeitgitter.deltat.parse_time(arg.commit_interval)
     if arg.email_address is None:
         if arg.commit_interval < datetime.timedelta(minutes=1):
             sys.exit("--commit-interval may not be shorter than 1m")
@@ -146,7 +146,7 @@ def get_args(args=None, config_file_contents=None):
         arg.commit_offset = arg.commit_interval * random.uniform(0.05, 0.95)
         logging.info("Chose --commit-offset %s" % arg.commit_offset)
     else:
-        arg.commit_offset = igitt.deltat.parse_time(arg.commit_offset)
+        arg.commit_offset = zeitgitter.deltat.parse_time(arg.commit_offset)
     if arg.commit_offset < datetime.timedelta(seconds=0):
         sys.exit("--commit-offset must be positive")
     if arg.commit_offset >= arg.commit_interval:

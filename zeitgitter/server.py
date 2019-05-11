@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# igittd — Independent GIT Timestamping, HTTPS server
+# zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
 # Copyright (C) 2019 Marcel Waldvogel
 #
@@ -31,10 +31,10 @@ import urllib
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-import igitt.commit
-import igitt.config
-import igitt.stamper
-import igitt.version
+import zeitgitter.commit
+import zeitgitter.config
+import zeitgitter.stamper
+import zeitgitter.version
 
 
 class SocketActivationMixin:
@@ -66,7 +66,7 @@ class SocketActivationHTTPServer(SocketActivationMixin, ThreadingHTTPServer):
 class FlatFileRequestHandler(BaseHTTPRequestHandler):
     def send_file(self, content_type, filename, replace={}):
         try:
-            f = Path(igitt.config.arg.webroot, filename).open(mode='rb')
+            f = Path(zeitgitter.config.arg.webroot, filename).open(mode='rb')
             contents = f.read()
             f.close()
             for k, v in replace.items():
@@ -93,10 +93,10 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(explain)
 
     def do_GET(self):
-        subst = {b'IGITT_DOMAIN': bytes(igitt.config.arg.domain, 'UTF-8'),
-                 b'IGITT_OWNER': bytes(igitt.config.arg.owner, 'UTF-8'),
-                 b'IGITT_CONTACT': bytes(igitt.config.arg.contact, 'UTF-8'),
-                 b'IGITT_COUNTRY': bytes(igitt.config.arg.country, 'UTF-8')}
+        subst = {b'ZEITGITTER_DOMAIN': bytes(zeitgitter.config.arg.domain, 'UTF-8'),
+                 b'ZEITGITTER_OWNER': bytes(zeitgitter.config.arg.owner, 'UTF-8'),
+                 b'ZEITGITTER_CONTACT': bytes(zeitgitter.config.arg.contact, 'UTF-8'),
+                 b'ZEITGITTER_COUNTRY': bytes(zeitgitter.config.arg.country, 'UTF-8')}
 
         if self.path == '/':
             self.send_file('text/html', 'index.html', replace=subst)
@@ -128,12 +128,12 @@ class StamperRequestHandler(FlatFileRequestHandler):
     def __init__(self, *args, **kwargs):
         global stamper
         if stamper is None:
-            stamper = igitt.stamper.Stamper()
+            stamper = zeitgitter.stamper.Stamper()
         self.protocol_version = 'HTTP/1.1'
         super().__init__(*args, **kwargs)
 
     def version_string(self):
-        return "IGITT/" + igitt.version.VERSION
+        return "zeitgitter/" + zeitgitter.version.VERSION
 
     def send_public_key(self):
         global stamper, public_key
@@ -222,10 +222,10 @@ class StamperRequestHandler(FlatFileRequestHandler):
 
 
 def run():
-    igitt.config.get_args()
-    igitt.commit.run()
+    zeitgitter.config.get_args()
+    zeitgitter.commit.run()
     httpd = SocketActivationHTTPServer(
-        (igitt.config.arg.listen_address, igitt.config.arg.listen_port),
+        (zeitgitter.config.arg.listen_address, zeitgitter.config.arg.listen_port),
         StamperRequestHandler)
     # ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     # httpd.socket = ssl.wrap_socket(httpd.socket,

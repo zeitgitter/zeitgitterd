@@ -4,7 +4,7 @@ This documents the state machine operation triggered at the
 selected commit time. This is the low-level documentation. For a
 higher-level overview, see [ServerOperation.md](./ServerOperation.md).
 
-This is implemented in [commit.py](../server/igitt/commit.py).
+This is implemented in [commit.py](../server/zeitgitter/commit.py).
 
 ## 0. At process start
 
@@ -63,11 +63,11 @@ then perform the following operations:
   `hashes.asc` there.
 - Create a new signed commit
 
-## 5. Obtain upstream `igitt` timestamps
+## 5. Obtain upstream `zeitgitter` timestamps
 
 After completion of section 4 above, perform the following operations:
 
-- Obtain the upstream `igitt` timestamps.
+- Obtain the upstream `zeitgitter` timestamps.
 
 ## 6. Publish the repository contents
 
@@ -84,7 +84,7 @@ and 5 will confirm the previous operations thanks to the `git` hash
 chain.
 
 The security implications of not having *any* independent 
-certifications in a given cycle will be that a cheating `igitt` server 
+certifications in a given cycle will be that a cheating `zeitgitter` server 
 will have two periods to backdate timestamps.
 
 However, we assume that the timestampers are *in principle* trustworthy 

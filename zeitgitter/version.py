@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# igittd — Independent GIT Timestamping, HTTPS server
+# zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
 # Copyright (C) 2019 Marcel Waldvogel
 #

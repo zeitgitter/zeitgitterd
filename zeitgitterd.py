@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# igitt — Independent GIT Timestamping, HTTPS server
+# zeitgitter — Independent GIT Timestamping, HTTPS server
 #
 # Copyright (C) 2019 Marcel Waldvogel
 #
@@ -22,6 +22,6 @@
 
 import sys
 sys.path.append('/usr/local/lib/python')
-from igitt import server
+from zeitgitter import server
 
 server.run()

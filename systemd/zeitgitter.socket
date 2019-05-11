@@ -1,5 +1,5 @@
 [Unit]
-Description=IGITT server socket
+Description=Zeitgitter server socket
 
 [Socket]
 # Only one ListenStream is supported right now
@@ -7,7 +7,7 @@ Description=IGITT server socket
 #ListenStream=[::1]:15177
 ListenStream=127.0.0.1:15177
 Accept=false
-Service=igitt.service
+Service=zeitgitter.service
 
 [Install]
-WantedBy=igitt.service
+WantedBy=zeitgitter.service

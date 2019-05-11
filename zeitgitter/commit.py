@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# igittd — Independent GIT Timestamping, HTTPS server
+# zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
 # Copyright (C) 2019 Marcel Waldvogel
 #
@@ -31,7 +31,7 @@ import threading
 import time
 from pathlib import Path
 
-import igitt.config
+import zeitgitter.config
 
 # To serialize all commit-related operations
 # - writing commit entries in order (that includes obtaining the timestamp)
@@ -44,7 +44,7 @@ def commit_to_git(repo, log, msg="Newly timestamped commits"):
     subprocess.run(['git', 'add', log.as_posix()],
                    cwd=repo).check_returncode()
     subprocess.run(['git', 'commit', '-m', msg, '--allow-empty',
-                    '--gpg-sign=' + igitt.config.arg.keyid],
+                    '--gpg-sign=' + zeitgitter.config.arg.keyid],
                    cwd=repo).check_returncode()
     # Mark as processed; use only while locked!
     os.remove(log)
@@ -92,7 +92,7 @@ def do_commit():
     2. Commit to git
     3. (Optionally) cross-timestamp
     4. (Optionally) push"""
-    repo = igitt.config.arg.repository
+    repo = zeitgitter.config.arg.repository
     tmp = Path(repo, 'hashes.work')
     log = Path(repo, 'hashes.log')
     with serialize:
@@ -105,9 +105,9 @@ def do_commit():
                 pass  # Recreate hashes.work
         except FileNotFoundError:
             logging.info("Nothing to rotate")
-    repositories = igitt.config.arg.push_repository
-    branches = igitt.config.arg.push_branch
-    for r in igitt.config.arg.upstream_timestamp:
+    repositories = zeitgitter.config.arg.push_repository
+    branches = zeitgitter.config.arg.push_branch
+    for r in zeitgitter.config.arg.upstream_timestamp:
         logging.info("Cross-timestamping %s" % r);
         (branch, server) = r.split('=', 1)
         cross_timestamp(repo, branch, server)
@@ -119,8 +119,8 @@ def do_commit():
 
 def wait_until():
     """Run at given interval and offset"""
-    interval = igitt.config.arg.commit_interval.total_seconds()
-    offset = igitt.config.arg.commit_offset.total_seconds()
+    interval = zeitgitter.config.arg.commit_interval.total_seconds()
+    offset = zeitgitter.config.arg.commit_offset.total_seconds()
     while True:
         now = time.time()
         until = now - (now % interval) + offset

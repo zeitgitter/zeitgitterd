@@ -1,4 +1,4 @@
-# The `igitt` Timestamping Server: Operations and Repository Format
+# The `zeitgitter` Timestamping Server: Operations and Repository Format
 
 To ensure transparency and to prevent later backdating of timestamps,
 the timestamping server keeps a public log of its activities. They
@@ -43,11 +43,11 @@ Not all of these measures need to be taken.
    These cryptographic digital signatures can then be used to
    prove this misbehavior and incriminate the perpetrator.
 
-2. Third-party `igitt` timestamping.
+2. Third-party `zeitgitter` timestamping.
    * This `git` repository can be timestamped like any other `git`
      repository.
 
-   Assuming the independence of the other `igitt` timestamping servers,
+   Assuming the independence of the other `zeitgitter` timestamping servers,
    this provides further third-party assurances. Assuming the
    unidirectional timestamping edges form a graph where each timestamper
    can reach every other timestamper, the existence of only a single
@@ -57,7 +57,7 @@ Not all of these measures need to be taken.
 3. Third-party timestamping through the
    [PGP Digital Timestamping Service](http://www.itconsult.co.uk/stamper.htm).
    * Getting a timestamp from the oldest-running public timestamping
-     service binds the `igitt` timestamper.
+     service binds the `zeitgitter` timestamper.
 
 4. Third-party timestamping through other means.
    * Any other timestamping service can be used as well.
@@ -70,7 +70,7 @@ outlined above. It SHOULD always self-timestamp, independent of the
 publishing intent. It also SHOULD obtain at least one third-party
 timestamp, preferably at least two.
 
-Each `igitt` service should document and publish its policy.
+Each `zeitgitter` service should document and publish its policy.
 
 # Repository structure
 
@@ -108,8 +108,8 @@ Each `igitt` service should document and publish its policy.
 3. The public key, the log, and optional file-based external timestamps
    are committed to the `git` repository, signed with the timestamper's
    key.
-4. `igitt`-based timestamps are obtained and included in the repository
-   (see "Obtaining `igitt` Timestamps below).
+4. `zeitgitter`-based timestamps are obtained and included in the repository
+   (see "Obtaining `zeitgitter` Timestamps below).
 5. The changes are published, if desired.
 
 ## Obtaining PGP Timestamps
@@ -151,12 +151,12 @@ signature verification needs to be done by PGP 2.x or
 [GnuPG 1.4](https://www.gnupg.org/download/) needs to be used with the
 `---pgp2` option.
 
-## Obtaining `igitt` Timestamps
+## Obtaining `zeitgitter` Timestamps
 
 In theory, both tag or branch timestamps might be applicable. However,
 branch timestamps are recommended as follows:
 
-- For each `igitt` timestamping server nicknamed NICK, a branch called
+- For each `zeitgitter` timestamping server nicknamed NICK, a branch called
   `NICK-timestamps` is created and used.
 - A branch timestamp is obtained in that branch.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# igittd — Independent GIT Timestamping, HTTPS server
+# zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
 # Copyright (C) 2019 Marcel Waldvogel
 #
@@ -29,7 +29,7 @@ from pathlib import Path
 from smtplib import SMTP
 from time import gmtime, strftime
 
-import igitt.config
+import zeitgitter.config
 
 
 def split_host_port(host, default_port):
@@ -44,14 +44,14 @@ def send(body, subject='Stamping request', to=None):
     # Does not work in unittests if assigned in function header
     # (are bound too early? At load time instead of at call time?)
     if to is None:
-        to = igitt.config.arg.external_pgp_timestamper_to
-    (host, port) = split_host_port(igitt.config.arg.smtp_server, 587)
+        to = zeitgitter.config.arg.external_pgp_timestamper_to
+    (host, port) = split_host_port(zeitgitter.config.arg.smtp_server, 587)
     with SMTP(host, port=port,
-              local_hostname=igitt.config.arg.domain) as smtp:
+              local_hostname=zeitgitter.config.arg.domain) as smtp:
         smtp.starttls()
-        smtp.login(igitt.config.arg.mail_username,
-                   igitt.config.arg.mail_password)
-        frm = igitt.config.arg.email_address
+        smtp.login(zeitgitter.config.arg.mail_username,
+                   zeitgitter.config.arg.mail_password)
+        frm = zeitgitter.config.arg.email_address
         date = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
         msg = """From: %s
 To: %s
@@ -88,7 +88,7 @@ def extract_pgp_body(body):
 
 
 def save_signature(bodylines):
-    with Path(igitt.config.arg.repository, 'hashes.asc').open(mode='x') as f:
+    with Path(zeitgitter.config.arg.repository, 'hashes.asc').open(mode='x') as f:
         f.write('\n'.join(bodylines))
 
 
@@ -114,7 +114,7 @@ def body_signature_correct(bodylines, stat):
     if not res.stderr.startswith('gpg: Signature made '):
         logging.warn("Signature not made (%r)" % res.stderr)
         return False
-    if not ((' key ID %s\n' % igitt.config.arg.external_pgp_timestamper_keyid)
+    if not ((' key ID %s\n' % zeitgitter.config.arg.external_pgp_timestamper_keyid)
             in res.stderr):
         logging.warn("Wrong KeyID (%r)" % res.stderr)
         return False
@@ -167,7 +167,7 @@ def body_contains_file(bodylines):
     if bodylines is None:
         return None
     linesbefore = 0
-    with Path(igitt.config.arg.repository, 'hashes.log').open(mode='r') as f:
+    with Path(zeitgitter.config.arg.repository, 'hashes.log').open(mode='r') as f:
         # A few empty/comment lines at the beginning
         firstline = f.readline().rstrip()
         for i in range(len(bodylines)):
@@ -223,7 +223,7 @@ def check_for_stamper_mail(imap, stat):
     logging.debug("IMAP SEARCH…")
     (typ, msgs) = imap.search(
         None,
-        'FROM', '"%s"' % igitt.config.arg.external_pgp_timestamper_reply,
+        'FROM', '"%s"' % zeitgitter.config.arg.external_pgp_timestamper_reply,
         'UNSEEN',
         'LARGER', str(stat.st_size),
         'SMALLER', str(stat.st_size + 8192))
@@ -244,16 +244,16 @@ def check_for_stamper_mail(imap, stat):
 
 def receive_async():
     try:
-        stat = Path(igitt.config.arg.repository, "hashes.log").stat()
+        stat = Path(zeitgitter.config.arg.repository, "hashes.log").stat()
         logging.debug("File is from %d" % stat.st_mtime)
     except FileNotFoundError:
         return False
     try:
-        (host, port) = split_host_port(igitt.config.arg.imap_server, 143)
+        (host, port) = split_host_port(zeitgitter.config.arg.imap_server, 143)
         with IMAP4(host=host, port=port) as imap:
             imap.starttls()
-            imap.login(igitt.config.arg.mail_username,
-                       igitt.config.arg.mail_password)
+            imap.login(zeitgitter.config.arg.mail_username,
+                       zeitgitter.config.arg.mail_password)
             imap.select('INBOX')
             if check_for_stamper_mail(imap, stat) is False:
                 # No existing message found, wait for more incoming messages
