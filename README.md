@@ -1,4 +1,4 @@
-# `igitt` — Independent `git` Timestamper
+# `zeitgitter` — Independent `git` Timestamper
 
 ## Timestamping: Why?
 
@@ -15,9 +15,9 @@ Timestamping does not assure *authorship* of the idea, code, or document. It
 only provides evidence to the *existence* at a given point in time. Depending
 on the context, authorship might be implied, at least weakly.
 
-## `igitt` for Timestamping
+## `zeitgitter` for Timestamping
 
-`igitt` consists of two components:
+`zeitgitter` consists of two components:
 
 1. A timestamping client, which can add a timestamp as a digital signature to
    an existing `git` repository. Existing `git` mechanisms can then be used
@@ -77,12 +77,10 @@ timestamping, and **--branch** for reqular timestamping.
 Defaults can be stored (per-repository or globally) with `git config`; see each
 argument's description.
 
-## General and Client Documentation
+## General Documentation
 
 - [Timestamping: Why and how?](doc/Timestamping.md)
-- [Client installation](doc/Install.md)
 - [Protocol description](doc/Protocol.md)
-- [List of public `igitt` servers](doc/ServerList.md)
 - [Discussion of the use of (weak) cryptography](doc/Cryptography.md)
 
 ## Server Documentation
