@@ -160,6 +160,10 @@ def get_args(args=None, config_file_contents=None):
     arg.push_repository = arg.push_repository.split()
     arg.push_branch = arg.push_branch.split()
 
+    if arg.number_of_gpg_agents > 1 and arg.gnupg_home is None:
+        sys.exit("--gnupg-home needs to be set before --number-of-gpg-agents"
+                " can be raised above 1")
+
     for i in arg.upstream_timestamp:
         if not '=' in i:
             sys.exit("--upstream-timestamp requires (space-separated list of) <branch>=<url> arguments")
