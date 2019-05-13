@@ -22,6 +22,7 @@
 
 import datetime
 import logging
+import os
 import random
 
 import configargparse
@@ -89,12 +90,15 @@ def get_args(args=None, config_file_contents=None):
     parser.add_argument('--max-parallel-timeout',
                         type=float,
                         help="""number of seconds to wait for a timestamping thread
-                      before failing (default: wait forever)""")
+                          before failing (default: wait forever)""")
     parser.add_argument('--number-of-gpg-agents',
                         default=1, type=int,
                         help="number of gpg-agents to run")
     parser.add_argument('--gnupg-home',
-                        help="GnuPG Home Dir to use, default: ~/.gnupg/")
+                        default=os.getenv('GNUPGHOME',
+                            os.getenv('HOME', '/var/lib/igitt') + '/.gnupg'),
+                        help="GnuPG Home Dir to use (default from "
+                            "$GNUPGHOME or $HOME/.gnupg)")
     parser.add_argument('--external-pgp-timestamper-keyid',
                         default="70B61F81",
                         help="PGP key ID to obtain email cross-timestamps from")
@@ -159,10 +163,6 @@ def get_args(args=None, config_file_contents=None):
     arg.upstream_timestamp = arg.upstream_timestamp.split()
     arg.push_repository = arg.push_repository.split()
     arg.push_branch = arg.push_branch.split()
-
-    if arg.number_of_gpg_agents > 1 and arg.gnupg_home is None:
-        sys.exit("--gnupg-home needs to be set before --number-of-gpg-agents"
-                " can be raised above 1")
 
     for i in arg.upstream_timestamp:
         if not '=' in i:
