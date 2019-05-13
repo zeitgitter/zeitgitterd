@@ -4,6 +4,7 @@ Documentation=https://zeitgitter.ch
 After=network.target
 
 [Service]
+Environment="TZ=UTC"
 ExecStart=/usr/local/sbin/zeitgitterd.py
 User=zeitgitter
 Restart=always
