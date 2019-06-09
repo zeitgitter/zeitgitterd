@@ -59,6 +59,7 @@ install:
 	else \
 		echo "${INFO}* Not updating ${ETCDIR}/zeitgitterd.conf${NORM}"; \
 	fi
+	${BINDIR}/zeitgitterd.py &
 	if [ ! -d ${REPODIR}/.git ]; then \
 		sudo -Hu zeitgitter git init ${REPODIR}; \
 		echo "${INFO}* Initialized repo${NORM}"; \
