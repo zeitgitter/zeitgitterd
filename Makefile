@@ -59,18 +59,7 @@ install:
 	else \
 		echo "${INFO}* Not updating ${ETCDIR}/zeitgitterd.conf${NORM}"; \
 	fi
-	if [ ! -f ${SYSTEMDDIR}/zeitgitter.socket ]; then \
-		install -m 644 -t ${SYSTEMDDIR} systemd/*; \
-		systemctl daemon-reload; \
-	else \
-		echo "${INFO}* Not updating ${SYSTEMDDIR}/zeitgitter.*${NORM}"; \
-	fi
-	if [ ! -d ${ZEITGITTERHOME}/.gnupg ]; then \
-		systemctl enable zeitgitter.service zeitgitter.socket; \
-		echo "${ACT}* Please create an OpenPGP key, see ../doc/Cryptography.md${NORM}"; \
-	else \
-		systemctl restart zeitgitter.service; \
-	fi
+	${SBINDIR}/zeitgitterd.py &
 	if [ ! -d ${REPODIR}/.git ]; then \
 		sudo -Hu zeitgitter git init ${REPODIR}; \
 		echo "${INFO}* Initialized repo${NORM}"; \

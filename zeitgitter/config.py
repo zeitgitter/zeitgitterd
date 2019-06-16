@@ -22,6 +22,7 @@
 
 import datetime
 import logging
+import os
 import random
 
 import configargparse
@@ -89,12 +90,15 @@ def get_args(args=None, config_file_contents=None):
     parser.add_argument('--max-parallel-timeout',
                         type=float,
                         help="""number of seconds to wait for a timestamping thread
-                      before failing (default: wait forever)""")
+                          before failing (default: wait forever)""")
     parser.add_argument('--number-of-gpg-agents',
                         default=1, type=int,
                         help="number of gpg-agents to run")
     parser.add_argument('--gnupg-home',
-                        help="GnuPG Home Dir to use, default: ~/.gnupg/")
+                        default=os.getenv('GNUPGHOME',
+                            os.getenv('HOME', '/var/lib/igitt') + '/.gnupg'),
+                        help="GnuPG Home Dir to use (default from "
+                            "$GNUPGHOME or $HOME/.gnupg)")
     parser.add_argument('--external-pgp-timestamper-keyid',
                         default="70B61F81",
                         help="PGP key ID to obtain email cross-timestamps from")
