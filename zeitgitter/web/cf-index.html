@@ -1,0 +1,104 @@
+<!--
+   Zeitgitter — Independent GIT Timestamping
+
+   Copyright 2019 Marcel Waldvogel <marcel.waldvogel@uni-konstanz.de>
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+   MA 02110-1301, USA.
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Zeitgitter Server Setup</title>
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="zeitgitter.css"/>
+<script src="cf-code.js"></script>
+</head>
+<body>
+<h1 class="top">Zeitgitter Server Setup</h1>
+<form class="setup" action="/?request=apply-webconfig" method="post">
+  <div id="server">
+    <h2 id="server-head">Server Identity</h2>
+    <div id="server-body">
+      <label>Server URL (own virtual host)
+        <input type="url" name="url" placeholder="https://nickname.example.com"
+          pattern="^^https://[a-z0-9][a-z0-9.]+[a-z0-9]/?$" required="required"
+          autofocus="autofocus"/>
+      </label><br/>
+      <label>Email address (for keyid)
+        <input type="email" name="mail" placeholder="nickname@example.com"
+          minlength="10" required="required" />
+      </label><br/>
+      <label>Server Nickname (for keyid)
+        <input type="text" name="name" placeholder="Nickname Timestamping Service"
+          minlength="10" required="required" />
+      </label>
+    </div>
+  </div>
+  <div id="maintainer">
+    <h2 id="maintainer-head">Server Identity</h2>
+    <div id="maintainer-body">
+      <p>Tell the users who you are (HTML tags allowed)</p>
+      <label>Owner Name (who has access to the private key)
+        <input type="text" name="owner" placeholder="Jane Doe"
+         minlength="6" required="required" />
+      </label><br/>
+      <label>Contact Information
+        <textarea name="contact" rows="4" cols="40"
+          placeholder="1234 Main Street<br/>Somewhere, 1337"
+          minlength="10" required="required"></textarea>
+      </label><br/>
+      <label>Country/Jurisdiction
+        <input type="text" name="country" placeholder="Switzerland"
+          minlength="2" required="required" />
+      </label><br/>
+    </div>
+  </div>
+  <div id="generate">
+    <h2 id="generate-head">Generate New Key</h2>
+    <div id="generate-body">
+      <p>Select the signature algorithm</p>
+      <label>Ed25519 (recommended)
+        <input type="radio" name="algo" value="Ed25519" checked="checked" />
+      </label><br/>
+      <label>NIST P-521
+        <input type="radio" name="algo" value="NIST P-521" />
+      </label><br/>
+      <label>Brainpool P512r1
+        <input type="radio" name="algo" value="brainpoolP512r1" />
+      </label><br/>
+      <label>secp256k1
+        <input type="radio" name="algo" value="secp256k1" />
+      </label><br/>
+    </div>
+  </div>
+  <button type="submit">Configure and start Zeitgitter</button>
+</form>
+
+<a href="https://zeitgitter.ch"><table><tr>
+<td width="30%"><img src="zeitgitter.svg" width="100%" /></td>
+<td>Learn more about timestamping, Zeitgitter, the Zeitgitter network, how to use it,
+and how to join it.</td></tr></table></a>
+
+
+<ul class="footer">
+<li><a href="./" class="active">Zeitgitter Home</a></li>
+<li><a href="tos.html">Terms of Service</a></li>
+<li><a href="privacy.html">Privacy Policy</a></li>
+<li><a href="contact.html">Contact Information</a></li>
+</ul>
+</body>
+</html>

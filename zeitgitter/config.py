@@ -42,8 +42,9 @@ def get_args(args=None, config_file_contents=None):
     parser.add_argument('--config-file', '-c',
                         is_config_file=True,
                         help="config file path")
-    parser.add_argument('--allow-webconfiguration',
-                        default=True, type=bool,
+    parser.add_argument('--webconfig',
+                        choices=('never', 'always', 'if-needed'),
+                        default='if-needed',
                         help="allow web-based configuration on"
                             " <listen-address>:<listen-port> if configuration"
                             " is missing important parameters (those marked"
@@ -145,10 +146,15 @@ def get_args(args=None, config_file_contents=None):
 
     arg = parser.parse_args(args=args, config_file_contents=config_file_contents)
 
-    # Disable web configuration if all NECESSARY flags are set
-    if arg.allow_webconfiguration:
-        arg.allow_webconfiguration = not (keyid is None or own_url is None
+    if arg.webconfig == 'auto':
+        # Disable when all 'NECESSARY' parameters are already set
+        arg.webconfig = not (keyid is None or own_url is None
                 or country is None or owner is None or contact is None)
+    else if arg.webconfig == 'always':
+        arg.webconfig = True
+    else:
+        arg.webconfig = False
+
 
     arg.commit_interval = zeitgitter.deltat.parse_time(arg.commit_interval)
     if arg.email_address is None:
