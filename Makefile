@@ -4,7 +4,7 @@ SBINDIR		= ${PREFIX}/sbin
 LIBDIR		= ${PREFIX}/lib
 PYMODDIR	= ${LIBDIR}/python/zeitgitter
 ZEITGITTERHOME	= /var/lib/zeitgitter
-WEBDIR		= ${ZEITGITTERHOME}/web
+WEBDIR		= ${PYMODDIR}/web
 REPODIR		= ${ZEITGITTERHOME}/repo
 ETCDIR		= /etc
 SYSTEMDDIR	= ${ETCDIR}/systemd/system
@@ -36,30 +36,49 @@ export DAEMONREPO=${DAEMONTEMP}
 all:
 	@echo 'Nothing needs to be done for "all"; use "install", "apt", or "test" instead'
 
-install:
+# ----- Installing
+
+install: install-presetup install-files install-postsetup
+
+install-presetup:
 	if ! groups zeitgitter > /dev/null 2>&1; then \
 		adduser --system --disabled-password --disabled-login --group --home ${ZEITGITTERHOME} --gecos "Independent GIT Timestamper" zeitgitter; \
 	fi
+
+install-files:
 	mkdir -p ${PYMODDIR}
 	install -t ${SBINDIR} zeitgitterd.py
 	install -t ${PYMODDIR} zeitgitter/*.py
 	py3compile ${PYMODDIR}/*.py
 	if [ ! -d ${WEBDIR} ]; then \
 		install -o zeitgitter -d ${WEBDIR}; \
-		install -o zeitgitter -m 644 -t ${WEBDIR} web/*; \
+		install -o zeitgitter -m 644 -t ${WEBDIR} zeitgitter/web/*; \
 	else \
 		echo "${INFO}* Not updating ${WEBDIR}${NORM}"; \
 	fi
 	if grep -q _ZEITGITTER_ ${WEBDIR}/*; then echo "${ACT}* Please adapt ${WEBDIR} to your needs${NORM}"; fi
 	install -d -o zeitgitter ${REPODIR}
-# /etc/zeitgitterd.conf contains passwords, so restrict access
-	if [ ! -f ${ETCDIR}/zeitgitterd.conf ]; then \
-		install -o zeitgitter -m 600 sample-zeitgitterd.conf ${ETCDIR}/zeitgitterd.conf; \
-		echo "${ACT}* Customize ${ETCDIR}/zeitgitterd.conf${NORM}"; \
+# /etc/zeitgitter.conf contains passwords, so restrict access
+	if [ ! -f ${ETCDIR}/zeitgitter.conf ]; then \
+		install -o zeitgitter -m 600 zeitgitter/zeitgitter.conf ${ETCDIR}/zeitgitter.conf; \
+		echo "${ACT}* Customize ${ETCDIR}/zeitgitter.conf${NORM}"; \
 	else \
-		echo "${INFO}* Not updating ${ETCDIR}/zeitgitterd.conf${NORM}"; \
+		echo "${INFO}* Not updating ${ETCDIR}/zeitgitter.conf${NORM}"; \
 	fi
-	${SBINDIR}/zeitgitterd.py &
+	if [ ! -f ${SYSTEMDDIR}/zeitgitter.socket ]; then \
+		install -m 644 -t ${SYSTEMDDIR} systemd/*; \
+		systemctl daemon-reload; \
+	else \
+		echo "${INFO}* Not updating ${SYSTEMDDIR}/zeitgitter.*${NORM}"; \
+	fi
+
+install-postsetup:
+	if [ ! -d ${ZEITGITTERHOME}/.gnupg ]; then \
+		systemctl enable zeitgitter.service zeitgitter.socket; \
+		echo "${ACT}* Please create an OpenPGP key, see ../doc/Cryptography.md${NORM}"; \
+	else \
+		systemctl restart zeitgitter.service; \
+	fi
 	if [ ! -d ${REPODIR}/.git ]; then \
 		sudo -Hu zeitgitter git init ${REPODIR}; \
 		echo "${INFO}* Initialized repo${NORM}"; \
@@ -82,6 +101,12 @@ install:
 apt:
 	apt install git python3-pygit2 python3-gnupg python3-configargparse python3-nose
 
+pypi:
+	${RM} -f dist/*
+	./setup.py sdist bdist_wheel
+	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+# ----- Testing
 
 test tests:	unit-tests system-tests
 
