@@ -87,7 +87,7 @@ def test_tag():
     assert stamper.valid_tag('abcdefghijklmnopqrstuvwxyz0123456789-_')
     assert not stamper.valid_tag('')
     for i in (set(range(0, 255))
-              - set((ord('-'), ord('_')))
+              - set((ord('-'), ord('_'), ord('.')))
               - set(range(ord('0'), ord('0') + 10))
               - set(range(ord('A'), ord('A') + 26))
               - set(range(ord('a'), ord('a') + 26))):
@@ -103,6 +103,7 @@ def test_tag():
     assert not stamper.valid_tag('a ')
     assert not stamper.valid_tag('0')
     assert not stamper.valid_tag('a' * 101)
+    assert not stamper.valid_tag('..')
 
 
 def test_pubkey():
