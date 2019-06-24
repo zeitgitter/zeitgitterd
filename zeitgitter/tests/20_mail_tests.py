@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# igittd — Independent GIT Timestamping, HTTPS server
+# zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
 # Copyright (C) 2019 Marcel Waldvogel
 #
@@ -31,14 +31,15 @@ import unittest
 from datetime import datetime, timezone
 from pathlib import Path
 
-import igitt.config
-import igitt.mail
-import igitt.stamper
+import zeitgitter.config
+import zeitgitter.mail
+import zeitgitter.stamper
 
 
 def environment_ok():
-    for i in ('IGITT_SMTP_SERVER', 'IGITT_IMAP_SERVER', 'IGITT_USERNAME',
-              'IGITT_PASSWORD', 'IGITT_MAILADDRESS'):
+    for i in ('ZEITGITTER_SMTP_SERVER', 'ZEITGITTER_IMAP_SERVER',
+              'ZEITGITTER_USERNAME', 'ZEITGITTER_PASSWORD',
+              'ZEITGITTER_MAILADDRESS'):
         if not i in os.environ:
             return False
     return True
@@ -55,11 +56,11 @@ def assertEqual(a, b):
             % (a, type(a), b, type(b)))
 
 
-@unittest.skipUnless(environment_ok(), "IGITT_* environment variables missing")
+@unittest.skipUnless(environment_ok(), "ZEITGITTER_* environment variables missing")
 class MailTests(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.TemporaryDirectory()
-        igitt.config.get_args(args=[
+        zeitgitter.config.get_args(args=[
             '--gnupg-home',
             str(Path(os.path.dirname(os.path.realpath(__file__)),
                      'gnupg')),
@@ -78,7 +79,7 @@ class MailTests(unittest.TestCase):
             '--external-pgp-timestamper-reply', os.environ['IGITT_MAILADDRESS']
         ])
 
-    #    self.stamper = igitt.stamper.Stamper()
+    #    self.stamper = zeitgitter.stamper.Stamper()
 
     def tearDown(self):
         self.tmpdir.cleanup()
@@ -135,10 +136,10 @@ svIDuY71obFkHtgqAXFK4zMXjcm7t3R2GxUqLA760bptwoF1mDOFSA==
 '''
 
     def test_10_send_mail(self):
-        igitt.mail.send(self.testbody)
+        zeitgitter.mail.send(self.testbody)
 
     def test_20_receive_mail(self):
-        p = Path(igitt.config.arg.repository, 'hashes.log')
+        p = Path(zeitgitter.config.arg.repository, 'hashes.log')
         with open(p, 'w') as f:
             f.write('''40324f75a41642f1abf9cf9305f46aa6bfa567e2
 73abac26438e48d2af7476f564b97a7baba14645
@@ -154,4 +155,4 @@ fa94ffe675454658bd11219693d60844b995a74d
                          tzinfo=timezone.utc).timestamp()
         os.utime(p, times=(ftime, ftime))
         # Receive the mail from the previous test
-        igitt.mail.receive_async()
+        zeitgitter.mail.receive_async()
