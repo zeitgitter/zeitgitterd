@@ -40,7 +40,7 @@ class Stamper:
         self.url = zeitgitter.config.arg.own_url
         self.keyid = zeitgitter.config.arg.keyid
         self.gpgs = [gnupg.GPG(gnupghome=zeitgitter.config.arg.gnupg_home)]
-        self.keyinfo = self.gpg().list_keys(keys=self.keyid)
+        self.keyinfo = self.gpg().list_keys(True, keys=self.keyid)
         if len(self.keyinfo) == 0:
             raise ValueError("No keys found")
         self.fullid = self.keyinfo[0]['uids'][0]
