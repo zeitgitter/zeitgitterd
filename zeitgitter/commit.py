@@ -20,7 +20,7 @@
 
 # Committing to git and obtaining upstream timestamps
 #
-# The state machine used is described in ../../doc/StateMachine.md
+# The state machine used is described in ../doc/StateMachine.md
 
 import datetime
 import logging
