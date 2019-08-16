@@ -20,12 +20,12 @@
 
 # Configuration handling
 
+import configargparse
 import datetime
 import logging
 import os
 import random
 
-import configargparse
 import zeitgitter.deltat
 import zeitgitter.version
 
@@ -34,8 +34,11 @@ def get_args(args=None, config_file_contents=None):
     global arg
     # Config file in /etc or the program directory
     parser = configargparse.ArgumentParser(
-        description="zeitgitterd.py — The Independent git Timestamper server.",
-        default_config_files=['/etc/zeitgitterd.conf', './zeitgitterd.conf'])
+        description="zeitgitterd.py — The Independent git Timestamping server.",
+        epilog="""Options marked '(IGNORED)' are only present for future
+            compatibility and are ignored for now.""",
+        default_config_files=['/etc/zeitgitter.conf',
+            os.path.join(os.getenv('HOME'), 'zeitgitter.conf')])
 
     parser.add_argument('--config-file', '-c',
                         is_config_file=True,
