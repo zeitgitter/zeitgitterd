@@ -3,7 +3,8 @@
 # so that no rotation occurs during this test
 #
 export LANG=C # So we can match gpg output
-ts="`pwd`/../client/git-timestamp.py"
+#ts="`pwd`/../client/git-timestamp.py"
+ts="git-timestamp"
 repo=`mktemp -d`
 cd $repo
 
@@ -12,7 +13,7 @@ echo Hello world > hello.txt
 git add hello.txt
 git commit -m "First commit"
 
-export IGITT_FAKE_TIME=1551155115
+export ZEITGITTER_FAKE_TIME=1551155115
 $ts --tag hello-timestamp --server http://localhost:8080
 $ts --branch demo-timestamps --server http://localhost:8080
 git tag -v hello-timestamp 2>&1 | grep 'gpg: Good signature'

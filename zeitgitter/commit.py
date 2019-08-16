@@ -20,7 +20,7 @@
 
 # Committing to git and obtaining upstream timestamps
 #
-# The state machine used is described in ../../doc/StateMachine.md
+# The state machine used is described in ../doc/StateMachine.md
 
 import datetime
 import logging
@@ -43,9 +43,11 @@ serialize = threading.Lock()
 def commit_to_git(repo, log, msg="Newly timestamped commits"):
     subprocess.run(['git', 'add', log.as_posix()],
                    cwd=repo).check_returncode()
+    env = os.environ.copy()
+    env['GNUPGHOME'] = zeitgitter.config.arg.gnupg_home
     subprocess.run(['git', 'commit', '-m', msg, '--allow-empty',
                     '--gpg-sign=' + zeitgitter.config.arg.keyid],
-                   cwd=repo).check_returncode()
+                   cwd=repo, env=env).check_returncode()
     # Mark as processed; use only while locked!
     os.remove(log)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -tt
 #
-# igittd — Independent GIT Timestamping, HTTPS server
+# zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
 # Copyright (C) 2019 Marcel Waldvogel
 #
@@ -25,8 +25,8 @@ import pathlib
 import tempfile
 import threading
 
-import igitt.config
-import igitt.stamper
+import zeitgitter.config
+import zeitgitter.stamper
 
 
 def assertEqual(a, b):
@@ -44,7 +44,7 @@ def setup_module():
     global stamper
     global tmpdir
     tmpdir = tempfile.TemporaryDirectory()
-    igitt.config.get_args(args=[
+    zeitgitter.config.get_args(args=[
         '--gnupg-home',
         str(pathlib.Path(os.path.dirname(os.path.realpath(__file__)),
                          'gnupg')),
@@ -54,12 +54,12 @@ def setup_module():
         '--max-parallel-signatures', '10',
         '--max-parallel-timeout', '1',
         '--repository', tmpdir.name])
-    stamper = igitt.stamper.Stamper()
-    os.environ['IGITT_FAKE_TIME'] = '1551155115'
+    stamper = zeitgitter.stamper.Stamper()
+    os.environ['ZEITGITTER_FAKE_TIME'] = '1551155115'
 
 
 def teardown_module():
-    del os.environ['IGITT_FAKE_TIME']
+    del os.environ['ZEITGITTER_FAKE_TIME']
     tmpdir.cleanup()
 
 
@@ -87,7 +87,7 @@ def test_tag():
     assert stamper.valid_tag('abcdefghijklmnopqrstuvwxyz0123456789-_')
     assert not stamper.valid_tag('')
     for i in (set(range(0, 255))
-              - set((ord('-'), ord('_')))
+              - set((ord('-'), ord('_'), ord('.')))
               - set(range(ord('0'), ord('0') + 10))
               - set(range(ord('A'), ord('A') + 26))
               - set(range(ord('a'), ord('a') + 26))):
