@@ -117,7 +117,7 @@ def get_args(args=None, config_file_contents=None):
                         default="clear@stamper.itconsult.co.uk",
                         help="destination email address "
                              "to obtain email cross-timestamps from")
-    parser.add_argument('--external-pgp-timestamper-reply',
+    parser.add_argument('--external-pgp-timestamper-from',
                         default="mailer@stamper.itconsult.co.uk",
                         help="email address used by PGP timestamper "
                              "in its replies")

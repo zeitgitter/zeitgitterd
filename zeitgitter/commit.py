@@ -32,6 +32,8 @@ import time
 from pathlib import Path
 
 import zeitgitter.config
+import zeitgitter.mail
+import zeitgitter.stamper
 
 # To serialize all commit-related operations
 # - writing commit entries in order (that includes obtaining the timestamp)
@@ -40,7 +42,7 @@ import zeitgitter.config
 serialize = threading.Lock()
 
 
-def commit_to_git(repo, log, msg="Newly timestamped commits"):
+def commit_to_git(repo, log, preserve=None, msg="Newly timestamped commits"):
     subprocess.run(['git', 'add', log.as_posix()],
                    cwd=repo).check_returncode()
     env = os.environ.copy()
@@ -49,7 +51,10 @@ def commit_to_git(repo, log, msg="Newly timestamped commits"):
                     '--gpg-sign=' + zeitgitter.config.arg.keyid],
                    cwd=repo, env=env).check_returncode()
     # Mark as processed; use only while locked!
-    os.remove(log)
+    if preserve is None:
+        os.remove(log)
+    else:
+        os.rename(log, preserve)
 
 
 def commit_dangling(repo, log):
@@ -92,31 +97,39 @@ def do_commit():
     0. Check if there is anything uncommitted
     1. Rotate log file
     2. Commit to git
-    3. (Optionally) cross-timestamp
-    4. (Optionally) push"""
-    repo = zeitgitter.config.arg.repository
-    tmp = Path(repo, 'hashes.work')
-    log = Path(repo, 'hashes.log')
-    with serialize:
-        commit_dangling(repo, log)
-        try:
-            tmp.stat()
-            rotate_log_file(tmp, log)
-            commit_to_git(repo, log)
-            with tmp.open(mode='ab'):
-                pass  # Recreate hashes.work
-        except FileNotFoundError:
-            logging.info("Nothing to rotate")
-    repositories = zeitgitter.config.arg.push_repository
-    branches = zeitgitter.config.arg.push_branch
-    for r in zeitgitter.config.arg.upstream_timestamp:
-        logging.info("Cross-timestamping %s" % r);
-        (branch, server) = r.split('=', 1)
-        cross_timestamp(repo, branch, server)
-    for r in repositories:
-        logging.info("Pushing upstream to %s" % r);
-        push_upstream(repo, r, branches)
-    logging.info("do_commit done")
+    3. (Optionally) cross-timestamp using HTTPS (synchronous)
+    4. (Optionally) push
+    5. (Optionally) cross-timestamp using email (asynchronous)"""
+    try:
+        repo = zeitgitter.config.arg.repository
+        tmp = Path(repo, 'hashes.work')
+        log = Path(repo, 'hashes.log')
+        preserve = Path(repo, 'hashes.stamp')
+        with serialize:
+            commit_dangling(repo, log)
+            try:
+                tmp.stat()
+                rotate_log_file(tmp, log)
+                commit_to_git(repo, log, preserve)
+                with tmp.open(mode='ab'):
+                    pass  # Recreate hashes.work
+            except FileNotFoundError:
+                logging.info("Nothing to rotate")
+        repositories = zeitgitter.config.arg.push_repository
+        branches = zeitgitter.config.arg.push_branch
+        for r in zeitgitter.config.arg.upstream_timestamp:
+            logging.info("Cross-timestamping %s" % r);
+            (branch, server) = r.split('=', 1)
+            cross_timestamp(repo, branch, server)
+        for r in repositories:
+            logging.info("Pushing upstream to %s" % r);
+            push_upstream(repo, r, branches)
+
+        logging.info("Maybe cross-timestamping by mail")
+        zeitgitter.mail.async_email_timestamp(preserve)
+        logging.info("do_commit done")
+    except Exception as e:
+        logging.error("Unhandled exception in do_commit() thread: %s" % sys.exc_info())
 
 
 def wait_until():

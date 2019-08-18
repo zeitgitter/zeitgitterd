@@ -22,7 +22,9 @@
 
 import logging
 import os
+import pygit2 as git
 import subprocess
+
 from datetime import datetime, timedelta
 from imaplib import IMAP4
 from pathlib import Path
@@ -88,13 +90,17 @@ def extract_pgp_body(body):
 
 
 def save_signature(bodylines):
-    with Path(zeitgitter.config.arg.repository, 'hashes.asc').open(mode='x') as f:
+    ascfile = Path(zeitgitter.config.arg.repository, 'hashes.asc')
+    with ascfile.open(mode='w') as f:
         f.write('\n'.join(bodylines))
+    res = subprocess.run(['git', 'add', ascfile])
+    if res.returncode != 0:
+        logging.warn("git add %s failed: %d" % (ascfile, res.returncode))
 
 
 def body_signature_correct(bodylines, stat):
     body = '\n'.join(bodylines)
-    # Cannot use Python gnupg wrapper: Requires pgp1.x to verify
+    # Cannot use Python gnupg wrapper: Requires GPG 1.x to verify
     # Copy env for gnupg without locale
     env = {}
     for k in os.environ:
@@ -138,15 +144,15 @@ def body_signature_correct(bodylines, stat):
     return True
 
 
-def verify_body_and_save_signature(body, stat):
+def verify_body_and_save_signature(body, stat, logfile, msgno):
     bodylines = extract_pgp_body(body)
     if bodylines is None:
         logging.warn("No body lines")
         return False
 
-    res = body_contains_file(bodylines)
+    res = body_contains_file(bodylines, logfile)
     if res is None:
-        logging.warn("No res %s" % '\n'.join(bodylines))
+        logging.warn("File contents not in message %s" % msgno)
         return False
     else:
         (before, after) = res
@@ -163,11 +169,11 @@ def verify_body_and_save_signature(body, stat):
     return True
 
 
-def body_contains_file(bodylines):
+def body_contains_file(bodylines, logfile):
     if bodylines is None:
         return None
     linesbefore = 0
-    with Path(zeitgitter.config.arg.repository, 'hashes.log').open(mode='r') as f:
+    with open(logfile, mode='r') as f:
         # A few empty/comment lines at the beginning
         firstline = f.readline().rstrip()
         for i in range(len(bodylines)):
@@ -197,14 +203,20 @@ def body_contains_file(bodylines):
         return (linesbefore, linesafter)
 
 
-def imap_idle(imap, stat):
-    imap.send(b'%s IDLE\r\n' % (imap._new_tag()))
-    logging.debug("IMAP IDLE")
-    while True:
+def imap_idle(imap, stat, repo, initial_head, logfile):
+    while still_same_head(repo, initial_head):
+        logging.debug("IMAP IDLE")
+        imap.send(b'%s IDLE\r\n' % (imap._new_tag()))
         logging.debug("IMAP waiting for IDLE response")
         line = imap.readline().strip()
         logging.debug("IMAP IDLE → %s" % line)
+        if line != b'+ idling':
+            logging.debug("IMAP IDLE unsuccessful")
+            return False
+        # Wait for new message
         logging.debug("…")
+        line = imap.readline().strip()
+        logging.debug("IMAP IDLE → %s" % line)
         if line == b'' or line.startswith(b'* BYE '):
             logging.debug("IMAP IDLE ends False")
             return False
@@ -212,39 +224,47 @@ def imap_idle(imap, stat):
             logging.debug("You have new mail!")
             # Stop idling
             imap.send(b'DONE\r\n')
-            if check_for_stamper_mail(imap, stat) is True:
+            if check_for_stamper_mail(imap, stat, logfile) is True:
                 logging.debug("IMAP IDLE ends False")
-                return True
+                return False
             logging.debug("x")
         logging.debug("loop")
 
 
-def check_for_stamper_mail(imap, stat):
+def check_for_stamper_mail(imap, stat, logfile):
     logging.debug("IMAP SEARCH…")
     (typ, msgs) = imap.search(
         None,
-        'FROM', '"%s"' % zeitgitter.config.arg.external_pgp_timestamper_reply,
+        'FROM', '"%s"' % zeitgitter.config.arg.external_pgp_timestamper_from,
         'UNSEEN',
         'LARGER', str(stat.st_size),
-        'SMALLER', str(stat.st_size + 8192))
+        'SMALLER', str(stat.st_size + 16384))
     logging.debug("IMAP SEARCH → %s, %s" % (typ, msgs))
     if len(msgs) == 1 and len(msgs[0]) > 0:
         mseq = msgs[0].replace(b' ', b',')
         logging.debug(mseq)
         (typ, contents) = imap.fetch(mseq, 'BODY[TEXT]')
-        logging.debug("IMAP FETCH → %s, %d" % (typ, len(contents)))
+        logging.debug("IMAP FETCH → %s (%d)" % (typ, len(contents)))
         for m in contents:
             if m != b')':
-                logging.debug("IMAP FETCH BODY → %s" % m[1][:20])
-                if verify_body_and_save_signature(m[1], stat):
+                logging.debug("IMAP FETCH BODY → %s…" % m[1][:20])
+                if verify_body_and_save_signature(m[1], stat, logfile, m[0]):
                     logging.debug("Verify_body() succeeded")
                     return True
     return False
 
 
-def receive_async():
+def still_same_head(repo, initial_head):
+    if repo.head == initial_head:
+        return True
+    else:
+        logging.warn("No email answer before next commit")
+        return False
+
+
+def wait_for_receive(repo, initial_head, logfile):
     try:
-        stat = Path(zeitgitter.config.arg.repository, "hashes.log").stat()
+        stat = os.stat(logfile)
         logging.debug("File is from %d" % stat.st_mtime)
     except FileNotFoundError:
         return False
@@ -255,8 +275,28 @@ def receive_async():
             imap.login(zeitgitter.config.arg.mail_username,
                        zeitgitter.config.arg.mail_password)
             imap.select('INBOX')
-            if check_for_stamper_mail(imap, stat) is False:
+            if (check_for_stamper_mail(imap, stat, logfile) is False
+                    and still_same_head(repo, initial_head)):
                 # No existing message found, wait for more incoming messages
-                imap_idle(imap, stat)
+                # and process them until definitely okay or giving up for good
+                imap_idle(imap, stat, repo, initial_head, logfile)
     except FileNotFoundError:  # XXX dummy exception
         pass
+
+
+def async_email_timestamp(logfile):
+    repo = git.Repository(zeitgitter.config.arg.repository)
+    if repo.head_is_unborn:
+        logging.warn("Cannot timestamp by email in repository without commits")
+        return
+    head = repo.head
+    with open(logfile) as f:
+        contents = f.read()
+    if contents == "":
+        logging.info("Not trying to timestamp empty log")
+        return
+    logging.debug("Send contents (%d bytes)", len(contents))
+    send(contents)
+    logging.debug("Contents sent")
+    res = wait_for_receive(repo, head, logfile)
+    logging.debug("Contents received %r" % res)
