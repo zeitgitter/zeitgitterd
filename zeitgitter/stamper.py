@@ -21,6 +21,7 @@
 # Timestamp creation
 
 import os
+import sys
 import re
 import threading
 import time
@@ -29,6 +30,73 @@ from pathlib import Path
 import gnupg
 import zeitgitter.commit
 import zeitgitter.config
+
+
+def get_nick(domain):
+    fields = domain.split('.')
+    for i in fields:
+        if i != '' and i != 'igitt' and i != 'zeitgitter' and 'stamp' not in i:
+            return i
+    sys.exit("Please specify a keyid")
+
+
+def create_key(gpg, keyid):
+    name, mail = keyid.split(' <')
+    mail = mail[:-1]
+    gki = gpg.gen_key_input(name_real=name, name_email=mail,
+            key_type='eddsa', key_curve='Ed25519', key_usage='sign')
+    # Force to not ask (non-existant) user for passphrase
+    gki = '%no-protection\n' + gki
+    key = gpg.gen_key(gki)
+    if key.fingerprint is None:
+        system.exit("Cannot create PGP key for %s: %s" % (keyid, key.stderr))
+    return key.fingerprint
+
+
+def get_keyid(keyid, domain, gnupg_home):
+    """Find (and possibly create) a key ID by trying the following, in order:
+    1. `keyid` is not `None`:
+       1. `keyid` matches exactly one secret key: return the hexadecimal
+           key ID of that key.
+       2. `keyid` does not match any existing key, but matches the pattern
+           "Name <email>": Create an ed25519 key and return its ID.
+       3. Else fail.
+    2. `keyid` is `None`:
+       1. If there is exactly one secret key in the keyring, return that one.
+       2. If there are no secret keys in the keyring, create an ed25519 key
+          named "Nickname Timestamping Service <domain-to-email>", where
+          "Nickname" is the capitalized first dot-separated part of `domain`
+          which is not "zeitgitter", "igitt", or "*stamp*"; and
+          "domain-to-email" is `domain` with its first dot is replaced by an @.
+       3. Else fail.
+    The key is only created if the next start would chose that key
+    (this obviates the need to monkey-patch the config file)."""
+    gpg = gnupg.GPG(gnupghome=gnupg_home)
+    if keyid is not None:
+        keyinfo = gpg.list_keys(secret=True, keys=keyid)
+        if len(keyinfo) == 1:
+            return keyinfo[0]['keyid']
+        elif re.match("^[A-Z][A-Za-z0-9 ]+ <[-_a-z0-9.]+@[-a-z0-9.]+>$",
+                keyid) and len(keyinfo) == 0:
+            return create_key(pgp, keyid)
+        else:
+            if len(keyinfo) > 0:
+                sys.exit("Too many secret keys matching key '%s'" % keyid)
+            else:
+                sys.exit("No secret keys match keyid '%s', "
+                    "use the form 'Description <email>' if zeitgitterd "
+                    "should create one automatically with that name" % keyid)
+    else:
+        keyinfo = gpg.list_keys(secret=True)
+        if len(keyinfo) == 1:
+            return keyinfo[0]['keyid']
+        elif len(keyinfo) == 0:
+            nick = get_nick(domain)
+            maildomain = domain.replace('.', '@', 1)
+            return create_key(pgp, "%s Timestamping Service <%s>"
+                    % (nick.capitalize(), maildomain))
+        else:
+            sys.exit("Please specify a keyid in the configuration file")
 
 
 class Stamper:
