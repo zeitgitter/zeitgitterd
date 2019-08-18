@@ -52,15 +52,15 @@ def commit_to_git(repo, log, preserve=None, msg="Newly timestamped commits"):
                    cwd=repo, env=env).check_returncode()
     # Mark as processed; use only while locked!
     if preserve is None:
-        os.remove(log)
+        log.unlink(log)
     else:
-        os.rename(log, preserve)
+        log.rename(preserve)
 
 
 def commit_dangling(repo, log):
     """If there is still a hashes.log hanging around, commit it now"""
     try:
-        stat = os.stat(log)
+        stat = log.stat()
         d = datetime.datetime.utcfromtimestamp(stat.st_mtime)
         dstr = d.strftime('%Y-%m-%d %H:%M:%S')
         commit_to_git(repo, log,

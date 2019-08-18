@@ -173,7 +173,7 @@ def body_contains_file(bodylines, logfile):
     if bodylines is None:
         return None
     linesbefore = 0
-    with open(logfile, mode='r') as f:
+    with logfile.open(mode='r') as f:
         # A few empty/comment lines at the beginning
         firstline = f.readline().rstrip()
         for i in range(len(bodylines)):
@@ -268,7 +268,7 @@ def still_same_head(repo, initial_head):
 
 def wait_for_receive(repo, initial_head, logfile):
     try:
-        stat = os.stat(logfile)
+        stat = logfile.stat()
         logging.debug("File is from %d" % stat.st_mtime)
     except FileNotFoundError:
         return False
@@ -294,7 +294,7 @@ def async_email_timestamp(logfile):
         logging.warning("Cannot timestamp by email in repository without commits")
         return
     head = repo.head
-    with open(logfile) as f:
+    with logfile.open() as f:
         contents = f.read()
     if contents == "":
         logging.info("Not trying to timestamp empty log")
