@@ -79,7 +79,8 @@ def get_args(args=None, config_file_contents=None):
                         help="path to the GIT repository")
     parser.add_argument('--upstream-timestamp',
                         default="",
-                        help="any number of <branch>=<URL> tuples of upstream IGITT timestampers")
+                        help="any number of <branch>=<URL> tuples of upstream"
+                        " Zeitgitter timestampers")
     parser.add_argument('--listen-address',
                         default='127.0.0.1',  # Still not all machines support ::1
                         help="IP address to listen on")
@@ -100,7 +101,7 @@ def get_args(args=None, config_file_contents=None):
                         help="number of gpg-agents to run")
     parser.add_argument('--gnupg-home',
                         default=os.getenv('GNUPGHOME',
-                            os.getenv('HOME', '/var/lib/igitt') + '/.gnupg'),
+                            os.getenv('HOME', '/var/lib/zeitgitter') + '/.gnupg'),
                         help="GnuPG Home Dir to use (default from "
                             "$GNUPGHOME or $HOME/.gnupg)")
     parser.add_argument('--external-pgp-timestamper-keyid',
