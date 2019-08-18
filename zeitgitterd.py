@@ -19,8 +19,6 @@
 #
 
 # Main server process
-#
-# This is not used when installing from PyPI
 
 import sys
 sys.path.append('/usr/local/lib/python')
