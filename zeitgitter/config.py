@@ -23,6 +23,7 @@
 import datetime
 import logging
 import os
+import sys
 import random
 
 import configargparse
@@ -33,6 +34,7 @@ import zeitgitter.version
 
 def get_args(args=None, config_file_contents=None):
     global arg
+    writeback = {}
     # Config file in /etc or the program directory
     parser = configargparse.ArgumentParser(
         description="zeitgitterd.py — The Independent git Timestamper server.",
@@ -53,7 +55,8 @@ def get_args(args=None, config_file_contents=None):
                         default=0, type=int,
                         help="increase debugging output")
     parser.add_argument('--keyid',
-                        help="our PGP key ID to timestamp with (NECESSARY)")
+                        help="""the PGP key ID to timestamp with, creating
+                            this key first if necessary.""")
     parser.add_argument('--own-url',
                         help="the URL of this service (NECESSARY)")
     parser.add_argument('--domain',
@@ -161,8 +164,8 @@ def get_args(args=None, config_file_contents=None):
         if arg.commit_interval < datetime.timedelta(minutes=1):
             sys.exit("--commit-interval may not be shorter than 1m")
     else:
-        if arg.commit_interval < datetime.timedelta(minutes=30):
-            sys.exit("--commit-interval may not be shorter than 30m when "
+        if arg.commit_interval < datetime.timedelta(minutes=10):
+            sys.exit("--commit-interval may not be shorter than 10m when "
                      "using the PGP Digital Timestamper")
 
     if arg.commit_offset is None:

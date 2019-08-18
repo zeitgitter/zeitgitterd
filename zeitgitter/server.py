@@ -27,6 +27,7 @@ import os
 import re
 import socket
 import socketserver
+import subprocess
 import urllib
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -132,11 +133,15 @@ stamper = None
 public_key = None
 
 
+def ensure_stamper():
+    global stamper
+    if stamper is None:
+        stamper = zeitgitter.stamper.Stamper()
+
+
 class StamperRequestHandler(FlatFileRequestHandler):
     def __init__(self, *args, **kwargs):
-        global stamper
-        if stamper is None:
-            stamper = zeitgitter.stamper.Stamper()
+        ensure_stamper()
         self.protocol_version = 'HTTP/1.1'
         super().__init__(*args, **kwargs)
 
@@ -236,9 +241,40 @@ class StamperRequestHandler(FlatFileRequestHandler):
         else:
             super().do_GET()
 
+def finish_setup(arg):
+    # 1. Determine or create key, if possible
+    #    (Not yet ready to use global stamper)
+    arg.keyid = zeitgitter.stamper.get_keyid(arg.keyid,
+                    arg.domain, arg.gnupg_home)
+    # Now, we're ready
+    ensure_stamper()
+
+    # 2. Create git repository, if necessary
+    #    and set user name/email
+    repo = zeitgitter.config.arg.repository
+    Path(repo).mkdir(parents=True, exist_ok=True)
+    if not Path(repo, '.git').is_dir():
+        subprocess.run(['git', 'init'], cwd=repo).check_returncode()
+        (name, mail) = stamper.fullid[:-1].split(' <')
+        subprocess.run(['git', 'config', 'user.name', name]).check_returncode()
+        subprocess.run(['git', 'config', 'user.email', mail]).check_returncode()
+
+    # 3. Create initial files in repo, when needed
+    #    (`hashes.work` will be created on demand)
+    pubkey = Path(repo, 'pubkey.asc')
+    if not pubkey.is_file():
+        with pubkey.open('w') as f:
+            f.write(stamper.get_public_key())
+        subprocess.run(['git', 'add', 'pubkey.asc'],
+                cwd=repo).check_returncode()
+
 
 def run():
     zeitgitter.config.get_args()
+    finish_setup(zeitgitter.config.arg)
+    ### TODO: Stop if --check-and-setup-only is specified
+    ### This option also logs to stderr with debug
+    ### Be verbose in finish_setup()
     zeitgitter.commit.run()
     httpd = SocketActivationHTTPServer(
         (zeitgitter.config.arg.listen_address, zeitgitter.config.arg.listen_port),
