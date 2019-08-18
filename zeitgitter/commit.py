@@ -29,6 +29,7 @@ import subprocess
 import sys
 import threading
 import time
+import traceback
 from pathlib import Path
 
 import zeitgitter.config
@@ -129,7 +130,8 @@ def do_commit():
         zeitgitter.mail.async_email_timestamp(preserve)
         logging.info("do_commit done")
     except Exception as e:
-        logging.error("Unhandled exception in do_commit() thread: %s" % sys.exc_info())
+        logging.error("Unhandled exception in do_commit() thread: %s: %s" %
+                (e, ''.join(traceback.format_tb(sys.exc_info()[2]))))
 
 
 def wait_until():
