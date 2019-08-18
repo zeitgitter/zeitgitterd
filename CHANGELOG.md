@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Added
 - Allow dots in tag names, as long as they are not next to each other
   (i.e., `..` is not allowed)
+- Added support for
+  [PGP Digital Timestamping Service](http://www.itconsult.co.uk/stamper.htm)
+  and improved documentation
 
 ## Fixed
 

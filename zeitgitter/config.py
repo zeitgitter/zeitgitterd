@@ -20,12 +20,13 @@
 
 # Configuration handling
 
+import configargparse
 import datetime
 import logging
 import os
+import sys
 import random
 
-import configargparse
 import zeitgitter.deltat
 import zeitgitter.version
 
@@ -34,8 +35,11 @@ def get_args(args=None, config_file_contents=None):
     global arg
     # Config file in /etc or the program directory
     parser = configargparse.ArgumentParser(
-        description="zeitgitterd.py — The Independent git Timestamper server.",
-        default_config_files=['/etc/zeitgitterd.conf', './zeitgitterd.conf'])
+        description="zeitgitterd.py — The Independent git Timestamping server.",
+        epilog="""Options marked '(IGNORED)' are only present for future
+            compatibility and are ignored for now.""",
+        default_config_files=['/etc/zeitgitter.conf',
+            os.path.join(os.getenv('HOME'), 'zeitgitter.conf')])
 
     parser.add_argument('--config-file', '-c',
                         is_config_file=True,
@@ -54,19 +58,25 @@ def get_args(args=None, config_file_contents=None):
                              "Defaults to host part of --own-url")
     parser.add_argument('--country',
                         required=True,
-                        help="the jurisdiction this falls under, for HTML substitution")
+                        help="the jurisdiction this falls under,"
+                            " for HTML substitution")
     parser.add_argument('--owner',
                         required=True,
-                        help="owner and operator of this instance, for HTML substitution")
+                        help="owner and operator of this instance,"
+                        " for HTML substitution")
     parser.add_argument('--contact',
                         required=True,
-                        help="contact for this instance, for HTML substitution")
+                        help="contact for this instance,"
+                        " for HTML substitution")
     parser.add_argument('--commit-interval',
                         default='4h',
                         help="how often to commit")
     parser.add_argument('--commit-offset',
-                        help="when to commit within that interval; e.g. after 37m19.3s. "
-                             "Default: Random choice in the interval")
+                        help="""when to commit within that interval; e.g. after
+                            37m19.3s. Default: Random choice in the interval.
+                            For a production server, please fix a value in
+                            the config file to avoid it jumping after every
+                            restart.""")
     parser.add_argument('--webroot',
                         default='web',
                         help="(preferably absolute) path to the webroot")
@@ -75,7 +85,8 @@ def get_args(args=None, config_file_contents=None):
                         help="path to the GIT repository")
     parser.add_argument('--upstream-timestamp',
                         default="",
-                        help="any number of <branch>=<URL> tuples of upstream IGITT timestampers")
+                        help="any number of <branch>=<URL> tuples of upstream"
+                        " Zeitgitter timestampers")
     parser.add_argument('--listen-address',
                         default='127.0.0.1',  # Still not all machines support ::1
                         help="IP address to listen on")
@@ -96,7 +107,7 @@ def get_args(args=None, config_file_contents=None):
                         help="number of gpg-agents to run")
     parser.add_argument('--gnupg-home',
                         default=os.getenv('GNUPGHOME',
-                            os.getenv('HOME', '/var/lib/igitt') + '/.gnupg'),
+                            os.getenv('HOME', '/var/lib/zeitgitter') + '/.gnupg'),
                         help="GnuPG Home Dir to use (default from "
                             "$GNUPGHOME or $HOME/.gnupg)")
     parser.add_argument('--external-pgp-timestamper-keyid',
@@ -106,7 +117,7 @@ def get_args(args=None, config_file_contents=None):
                         default="clear@stamper.itconsult.co.uk",
                         help="destination email address "
                              "to obtain email cross-timestamps from")
-    parser.add_argument('--external-pgp-timestamper-reply',
+    parser.add_argument('--external-pgp-timestamper-from',
                         default="mailer@stamper.itconsult.co.uk",
                         help="email address used by PGP timestamper "
                              "in its replies")

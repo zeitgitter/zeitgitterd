@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -tt
 #
-# igittd — Independent GIT Timestamping, HTTPS server
+# zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
 # Copyright (C) 2019 Marcel Waldvogel
 #
@@ -26,8 +26,8 @@ import tempfile
 import threading
 import time
 
-import igitt.config
-import igitt.stamper
+import zeitgitter.config
+import zeitgitter.stamper
 
 
 def assertEqual(a, b):
@@ -45,7 +45,7 @@ def setup_module():
     global stamper
     global tmpdir
     tmpdir = tempfile.TemporaryDirectory()
-    igitt.config.get_args(args=[
+    zeitgitter.config.get_args(args=[
         '--gnupg-home',
         str(pathlib.Path(os.path.dirname(os.path.realpath(__file__)),
                          'gnupg')),
@@ -56,12 +56,12 @@ def setup_module():
         '--max-parallel-timeout', '1',
         '--number-of-gpg-agents', '10',
         '--repository', tmpdir.name])
-    stamper = igitt.stamper.Stamper()
-    os.environ['IGITT_FAKE_TIME'] = '1551155115'
+    stamper = zeitgitter.stamper.Stamper()
+    os.environ['ZEITGITTER_FAKE_TIME'] = '1551155115'
 
 
 def teardown_module():
-    del os.environ['IGITT_FAKE_TIME']
+    del os.environ['ZEITGITTER_FAKE_TIME']
     tmpdir.cleanup()
 
 

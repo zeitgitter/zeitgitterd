@@ -74,7 +74,7 @@ class Stamper:
 
     def sig_time(self):
         """Current time, unless in test mode"""
-        return int(os.getenv('IGITT_FAKE_TIME', time.time()))
+        return int(os.getenv('ZEITGITTER_FAKE_TIME', time.time()))
 
     def get_public_key(self):
         return self.pubkey
