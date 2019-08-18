@@ -95,7 +95,7 @@ def save_signature(bodylines):
         f.write('\n'.join(bodylines))
     res = subprocess.run(['git', 'add', ascfile])
     if res.returncode != 0:
-        logging.warn("git add %s failed: %d" % (ascfile, res.returncode))
+        logging.warning("git add %s failed: %d" % (ascfile, res.returncode))
 
 
 def body_signature_correct(bodylines, stat):
@@ -115,29 +115,29 @@ def body_signature_correct(bodylines, stat):
         return False
     logging.debug(res.stderr)
     if not '\ngpg: Good signature' in res.stderr:
-        logging.warn("Not good signature (%r)" % res.stderr)
+        logging.warning("Not good signature (%r)" % res.stderr)
         return False
     if not res.stderr.startswith('gpg: Signature made '):
-        logging.warn("Signature not made (%r)" % res.stderr)
+        logging.warning("Signature not made (%r)" % res.stderr)
         return False
     if not ((' key ID %s\n' % zeitgitter.config.arg.external_pgp_timestamper_keyid)
             in res.stderr):
-        logging.warn("Wrong KeyID (%r)" % res.stderr)
+        logging.warning("Wrong KeyID (%r)" % res.stderr)
         return False
     try:
         logging.debug(res.stderr[24:48])
         sigtime = datetime.strptime(res.stderr[24:48], "%b %d %H:%M:%S %Y %Z")
         logging.debug(sigtime)
     except ValueError:
-        logging.warn("Illegal date (%r)" % res.stderr)
+        logging.warning("Illegal date (%r)" % res.stderr)
         return False
     if sigtime > datetime.utcnow() + timedelta(seconds=30):
-        logging.warn("Signature time %s lies more than 30 seconds in the future"
+        logging.warning("Signature time %s lies more than 30 seconds in the future"
                      % sigtime)
         return False
     modtime = datetime.utcfromtimestamp(stat.st_mtime)
     if sigtime < modtime - timedelta(seconds=30):
-        logging.warn("Signature time %s is more than 30 seconds before\n"
+        logging.warning("Signature time %s is more than 30 seconds before\n"
                      "file modification time %s"
                      % (sigtime, modtime))
         return False
@@ -147,22 +147,22 @@ def body_signature_correct(bodylines, stat):
 def verify_body_and_save_signature(body, stat, logfile, msgno):
     bodylines = extract_pgp_body(body)
     if bodylines is None:
-        logging.warn("No body lines")
+        logging.warning("No body lines")
         return False
 
     res = body_contains_file(bodylines, logfile)
     if res is None:
-        logging.warn("File contents not in message %s" % msgno)
+        logging.warning("File contents not in message %s" % msgno)
         return False
     else:
         (before, after) = res
         logging.debug("before %d, after %d" % (before, after))
         if before > 20 or after > 20:
-            logging.warn("Before/after wrong")
+            logging.warning("Before/after wrong")
             return False
 
     if not body_signature_correct(bodylines, stat):
-        logging.warn("Body signature incorrect")
+        logging.warning("Body signature incorrect")
         return False
 
     save_signature(bodylines)
@@ -245,11 +245,15 @@ def check_for_stamper_mail(imap, stat, logfile):
         logging.debug(mseq)
         (typ, contents) = imap.fetch(mseq, 'BODY[TEXT]')
         logging.debug("IMAP FETCH → %s (%d)" % (typ, len(contents)))
+        remaining_msgids = mseq.split(b',')
         for m in contents:
             if m != b')':
-                logging.debug("IMAP FETCH BODY → %s…" % m[1][:20])
-                if verify_body_and_save_signature(m[1], stat, logfile, m[0]):
-                    logging.debug("Verify_body() succeeded")
+                msgid = remaining_msgids[0]
+                remaining_msgids = remaining_msgids[1:]
+                logging.debug("IMAP FETCH BODY (%s) → %s…" % (msgid, m[1][:20]))
+                if verify_body_and_save_signature(m[1], stat, logfile, msgid):
+                    logging.debug("Verify_body() succeeded; deleting %s" % msgid)
+                    imap.store(msgid, '+FLAGS', '\\Deleted')
                     return True
     return False
 
@@ -258,7 +262,7 @@ def still_same_head(repo, initial_head):
     if repo.head == initial_head:
         return True
     else:
-        logging.warn("No email answer before next commit")
+        logging.warning("No email answer before next commit")
         return False
 
 
@@ -287,7 +291,7 @@ def wait_for_receive(repo, initial_head, logfile):
 def async_email_timestamp(logfile):
     repo = git.Repository(zeitgitter.config.arg.repository)
     if repo.head_is_unborn:
-        logging.warn("Cannot timestamp by email in repository without commits")
+        logging.warning("Cannot timestamp by email in repository without commits")
         return
     head = repo.head
     with open(logfile) as f:
