@@ -58,19 +58,25 @@ def get_args(args=None, config_file_contents=None):
                              "Defaults to host part of --own-url")
     parser.add_argument('--country',
                         required=True,
-                        help="the jurisdiction this falls under, for HTML substitution")
+                        help="the jurisdiction this falls under,"
+                            " for HTML substitution")
     parser.add_argument('--owner',
                         required=True,
-                        help="owner and operator of this instance, for HTML substitution")
+                        help="owner and operator of this instance,"
+                        " for HTML substitution")
     parser.add_argument('--contact',
                         required=True,
-                        help="contact for this instance, for HTML substitution")
+                        help="contact for this instance,"
+                        " for HTML substitution")
     parser.add_argument('--commit-interval',
                         default='4h',
                         help="how often to commit")
     parser.add_argument('--commit-offset',
-                        help="when to commit within that interval; e.g. after 37m19.3s. "
-                             "Default: Random choice in the interval")
+                        help="""when to commit within that interval; e.g. after
+                            37m19.3s. Default: Random choice in the interval.
+                            For a production server, please fix a value in
+                            the config file to avoid it jumping after every
+                            restart.""")
     parser.add_argument('--webroot',
                         default='web',
                         help="(preferably absolute) path to the webroot")
