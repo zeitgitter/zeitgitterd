@@ -146,24 +146,10 @@ applied:
   the delta compression ability of `git`, as the list of hashes in both
   files will be identical.
 
-As the PGP Timestamper uses a PGP 2.x key and software, signature verification
-needs to be done by PGP 2.x compatible software.  For security reasons, current
-versions of GnuPG (2.1 and later) no longer do work with those keys and
-messages. Therefore, running [GnuPG 1.4](https://www.gnupg.org/download/) with
-the `---pgp2` option is recommended.
-
-On Debian 9, the following can be used to initialize GnuPG 1.4 for use with
-the PGP Digital Timestamping Service:
-
-```sh
-# Installing GnuPG 1.x (as gpg1)
-apt install gnupg1
-# Importing the key
-wget -O - http://www.itconsult.co.uk/stamper/stampinf.htm | gpg1 --import --pgp2
-```
-:warning: Note that GnuPG 1.x uses a different keyring from GnuPG 2.x, so your
-GnuPG 2.x commands (the default) will not see those keys. This is OK, as they
-would have trouble with those keys anyway (there is a reason to use `gpg1`!).
+As the PGP Timestamper uses a PGP 2.x-compatible key and software,
+signature verification needs to be done by PGP 2.x or
+[GnuPG 1.4](https://www.gnupg.org/download/) needs to be used with the
+`---pgp2` option.
 
 ## Obtaining `zeitgitter` Timestamps
 

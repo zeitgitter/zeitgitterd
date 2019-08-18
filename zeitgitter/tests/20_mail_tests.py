@@ -22,7 +22,7 @@
 
 # All the information needs to be passed in environment variables, as the
 # credentials cannot be included in the test suite:
-# ZEITGITTER_SMTP_SERVER, ZEITGITTER_IMAP_SERVER, ZEITGITTER_USERNAME, ZEITGITTER_PASSWORD, ZEITGITTER_MAILADDRESS
+# IGITT_SMTP_SERVER, IGITT_IMAP_SERVER, IGITT_USERNAME, IGITT_PASSWORD, IGITT_MAILADDRESS
 
 
 import os
@@ -37,8 +37,9 @@ import zeitgitter.stamper
 
 
 def environment_ok():
-    for i in ('ZEITGITTER_SMTP_SERVER', 'ZEITGITTER_IMAP_SERVER', 'ZEITGITTER_USERNAME',
-              'ZEITGITTER_PASSWORD', 'ZEITGITTER_MAILADDRESS'):
+    for i in ('ZEITGITTER_SMTP_SERVER', 'ZEITGITTER_IMAP_SERVER',
+              'ZEITGITTER_USERNAME', 'ZEITGITTER_PASSWORD',
+              'ZEITGITTER_MAILADDRESS'):
         if not i in os.environ:
             return False
     return True
@@ -67,15 +68,15 @@ class MailTests(unittest.TestCase):
             '--own-url', 'https://hagrid.snakeoil',
             '--max-parallel-timeout', '1',
             '--repository', self.tmpdir.name,
-            '--email-address', os.environ['ZEITGITTER_MAILADDRESS'],
-            '--imap-server', os.environ['ZEITGITTER_IMAP_SERVER'],
-            '--smtp-server', os.environ['ZEITGITTER_SMTP_SERVER'],
-            '--mail-username', os.environ['ZEITGITTER_USERNAME'],
-            '--mail-password', os.environ['ZEITGITTER_PASSWORD'],
-            '--email-address', os.environ['ZEITGITTER_MAILADDRESS'],
+            '--email-address', os.environ['IGITT_MAILADDRESS'],
+            '--imap-server', os.environ['IGITT_IMAP_SERVER'],
+            '--smtp-server', os.environ['IGITT_SMTP_SERVER'],
+            '--mail-username', os.environ['IGITT_USERNAME'],
+            '--mail-password', os.environ['IGITT_PASSWORD'],
+            '--email-address', os.environ['IGITT_MAILADDRESS'],
             # Send test mails to self
-            '--external-pgp-timestamper-to', os.environ['ZEITGITTER_MAILADDRESS'],
-            '--external-pgp-timestamper-reply', os.environ['ZEITGITTER_MAILADDRESS']
+            '--external-pgp-timestamper-to', os.environ['IGITT_MAILADDRESS'],
+            '--external-pgp-timestamper-reply', os.environ['IGITT_MAILADDRESS']
         ])
 
     #    self.stamper = zeitgitter.stamper.Stamper()

@@ -1,0 +1,2 @@
+include zeitgitter/web/*
+include zeitgitter/zeitgitter.conf

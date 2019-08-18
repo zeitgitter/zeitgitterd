@@ -46,14 +46,14 @@ def mailtest():
     '--country', '?',
     '--max-parallel-timeout', '1',
     '--repository', tmpdir.name,
-    '--email-address', os.environ['ZEITGITTER_MAILADDRESS'],
-    '--imap-server', os.environ['ZEITGITTER_IMAP_SERVER'],
-    '--smtp-server', os.environ['ZEITGITTER_SMTP_SERVER'],
-    '--mail-username', os.environ['ZEITGITTER_USERNAME'],
-    '--mail-password', os.environ['ZEITGITTER_PASSWORD'],
+    '--email-address', os.environ['IGITT_MAILADDRESS'],
+    '--imap-server', os.environ['IGITT_IMAP_SERVER'],
+    '--smtp-server', os.environ['IGITT_SMTP_SERVER'],
+    '--mail-username', os.environ['IGITT_USERNAME'],
+    '--mail-password', os.environ['IGITT_PASSWORD'],
     # Send test mails to self
-    '--external-pgp-timestamper-to', os.environ['ZEITGITTER_MAILADDRESS'],
-    '--external-pgp-timestamper-reply', os.environ['ZEITGITTER_MAILADDRESS']
+    '--external-pgp-timestamper-to', os.environ['IGITT_MAILADDRESS'],
+    '--external-pgp-timestamper-reply', os.environ['IGITT_MAILADDRESS']
   ])
   zeitgitter.mail.send('''Stamper is a service provided free of charge to Internet users.
 
@@ -123,11 +123,11 @@ fa94ffe675454658bd11219693d60844b995a74d
   os.utime(p, times=(ftime, ftime))
   zeitgitter.mail.receive_async()
 
-if ('ZEITGITTER_MAILADDRESS' in os.environ
-    and 'ZEITGITTER_IMAP_SERVER' in os.environ
-    and 'ZEITGITTER_SMTP_SERVER' in os.environ
-    and 'ZEITGITTER_USERNAME' in os.environ
-    and 'ZEITGITTER_PASSWORD' in os.environ):
+if ('IGITT_MAILADDRESS' in os.environ
+    and 'IGITT_IMAP_SERVER' in os.environ
+    and 'IGITT_SMTP_SERVER' in os.environ
+    and 'IGITT_USERNAME' in os.environ
+    and 'IGITT_PASSWORD' in os.environ):
   mailtest()
 else:
   print("Skipping mailtest --- configuration environment variables missing")
