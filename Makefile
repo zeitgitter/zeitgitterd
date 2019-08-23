@@ -39,12 +39,22 @@ all:
 # ----- Installing
 
 install: install-presetup install-files install-postsetup
-install-docker: install-files
+install-docker: install-files-docker
 
 install-presetup:
 	if ! groups zeitgitter > /dev/null 2>&1; then \
 		adduser --system --disabled-password --disabled-login --group --home ${ZEITGITTERHOME} --gecos "Independent GIT Timestamper" zeitgitter; \
 	fi
+
+install-files-docker:
+	mkdir -p ${PYMODDIR}
+	install -t ${SBINDIR} zeitgitterd.py
+	install -t ${PYMODDIR} zeitgitter/*.py
+	py3compile ${PYMODDIR}/*.py
+	install -d ${WEBDIR}
+	install -m 644 -t ${WEBDIR} zeitgitter/web/*
+	install -d ${REPODIR}
+	install -m 600 sample-zeitgitter.conf ${ETCDIR}/zeitgitter.conf
 
 install-files:
 	mkdir -p ${PYMODDIR}
