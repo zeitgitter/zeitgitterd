@@ -142,6 +142,9 @@ def get_args(args=None, config_file_contents=None):
 
     arg = parser.parse_args(args=args, config_file_contents=config_file_contents)
 
+    level = logging.WARN - arg.debug_level * (logging.WARN - logging.INFO)
+    logging.basicConfig(level=level)
+
     arg.commit_interval = zeitgitter.deltat.parse_time(arg.commit_interval)
     if arg.email_address is None:
         if arg.commit_interval < datetime.timedelta(minutes=1):
@@ -175,8 +178,5 @@ def get_args(args=None, config_file_contents=None):
         if not '=' in i:
             sys.exit("--upstream-timestamp requires (space-separated list of)"
                 " <branch>=<url> arguments")
-
-    level = logging.WARN - arg.debug_level * (logging.WARN - logging.INFO)
-    logging.basicConfig(level=level)
 
     return arg
