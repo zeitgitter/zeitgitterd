@@ -56,19 +56,23 @@ def get_args(args=None, config_file_contents=None):
                         help="""the PGP key ID to timestamp with, creating
                             this key first if necessary.""")
     parser.add_argument('--own-url',
-                        help="the URL of this service (NECESSARY)")
+                        required = True,
+                        help="the URL of this service")
     parser.add_argument('--domain',
                         help="the domain name, for HTML substitution and SMTP greeting. "
                              "Defaults to host part of --own-url")
     parser.add_argument('--country',
+                        required = True,
                         help="the jurisdiction this falls under,"
-                            " for HTML substitution (NECESSARY)")
+                            " for HTML substitution")
     parser.add_argument('--owner',
+                        required = True,
                         help="owner and operator of this instance,"
-                        " for HTML substitution (NECESSARY)")
+                        " for HTML substitution")
     parser.add_argument('--contact',
+                        required = True,
                         help="contact for this instance,"
-                        " for HTML substitution (NECESSARY)")
+                        " for HTML substitution")
     parser.add_argument('--commit-interval',
                         default='4h',
                         help="how often to commit")

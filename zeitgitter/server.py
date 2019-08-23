@@ -36,7 +36,6 @@ import zeitgitter.commit
 import zeitgitter.config
 import zeitgitter.stamper
 import zeitgitter.version
-import zeitgitter.webconfig
 
 
 class SocketActivationMixin:
@@ -254,15 +253,20 @@ def finish_setup(arg):
     repo = zeitgitter.config.arg.repository
     Path(repo).mkdir(parents=True, exist_ok=True)
     if not Path(repo, '.git').is_dir():
+        logging.info("Initializing new repo with user info")
         subprocess.run(['git', 'init'], cwd=repo).check_returncode()
         (name, mail) = stamper.fullid[:-1].split(' <')
-        subprocess.run(['git', 'config', 'user.name', name]).check_returncode()
-        subprocess.run(['git', 'config', 'user.email', mail]).check_returncode()
+        subprocess.run(['git', 'config', 'user.name', name],
+                cwd=repo).check_returncode()
+        subprocess.run(['git', 'config', 'user.email', mail],
+                cwd=repo).check_returncode()
 
     # 3. Create initial files in repo, when needed
-    #    (`hashes.work` will be created on demand)
+    #    (`hashes.work` will be created on demand).
+    #    Will be committed with first commit.
     pubkey = Path(repo, 'pubkey.asc')
     if not pubkey.is_file():
+        logging.info("Storing pubkey.asc in repository")
         with pubkey.open('w') as f:
             f.write(stamper.get_public_key())
         subprocess.run(['git', 'add', 'pubkey.asc'],

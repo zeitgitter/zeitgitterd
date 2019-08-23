@@ -50,6 +50,7 @@ def create_key(gpg, keyid):
     key = gpg.gen_key(gki)
     if key.fingerprint is None:
         system.exit("Cannot create PGP key for %s: %s" % (keyid, key.stderr))
+    logging.info("Created PGP key %s" % key.fingerprint)
     return key.fingerprint
 
 
@@ -78,7 +79,7 @@ def get_keyid(keyid, domain, gnupg_home):
             return keyinfo[0]['keyid']
         elif re.match("^[A-Z][A-Za-z0-9 ]+ <[-_a-z0-9.]+@[-a-z0-9.]+>$",
                 keyid) and len(keyinfo) == 0:
-            return create_key(pgp, keyid)
+            return create_key(gpg, keyid)
         else:
             if len(keyinfo) > 0:
                 sys.exit("Too many secret keys matching key '%s'" % keyid)
@@ -129,7 +130,6 @@ class Stamper:
                     home.symlink_to(zeitgitter.config.arg.gnupg_home)
                 nextgpg = gnupg.GPG(gnupghome=home.as_posix())
                 self.gpgs.append(nextgpg)
-                print(nextgpg)
                 return nextgpg
             else:
                 # Rotate list left and return element wrapped around (if the list
@@ -137,7 +137,6 @@ class Stamper:
                 nextgpg = self.gpgs[0]
                 self.gpgs = self.gpgs[1:]
                 self.gpgs.append(nextgpg)
-                print(nextgpg)
                 return nextgpg
 
     def sig_time(self):
