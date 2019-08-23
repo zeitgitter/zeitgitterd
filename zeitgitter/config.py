@@ -45,8 +45,13 @@ def get_args(args=None, config_file_contents=None):
                         is_config_file=True,
                         help="config file path")
     parser.add_argument('--debug-level',
-                        default=0, type=int,
-                        help="increase debugging output")
+                        default=0,
+                        help="""Specify debug output. 0, 1, 2 mean WARNING,
+                            INFO, DEBUG, respectively. Names can also be
+                            specified. Debug levels for specific loggers
+                            can also be specified using 'name=level'.
+                            Example: `DEBUG,gnupg=INFO` sets the default
+                            debug level to DEBUG, except for `gnupg`.""")
     parser.add_argument('--keyid',
                         help="""the PGP key ID to timestamp with, creating
                             this key first if necessary.""")
@@ -142,8 +147,21 @@ def get_args(args=None, config_file_contents=None):
 
     arg = parser.parse_args(args=args, config_file_contents=config_file_contents)
 
-    level = logging.WARN - arg.debug_level * (logging.WARN - logging.INFO)
-    logging.basicConfig(level=level)
+    logging.basicConfig()
+    for level in str(arg.debug_level).split(','):
+        if '=' in level:
+            (logger, lvl) = level.split('=', 1)
+        else:
+            logger = None # Root logger
+            lvl = level
+        try:
+            lvl = int(lvl)
+            lvl = logging.WARN - lvl * (logging.WARN - logging.INFO)
+        except ValueError:
+            # Does not work in Python 3.4.0 and 3.4.1
+            # See note in https://docs.python.org/3/library/logging.html#logging.getLevelName
+            lvl = logging.getLevelName(lvl.upper())
+        logging.getLogger(logger).setLevel(lvl)
 
     arg.commit_interval = zeitgitter.deltat.parse_time(arg.commit_interval)
     if arg.email_address is None:
