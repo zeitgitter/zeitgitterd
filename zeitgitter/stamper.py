@@ -95,7 +95,7 @@ def get_keyid(keyid, domain, gnupg_home):
         elif len(keyinfo) == 0:
             nick = get_nick(domain)
             maildomain = domain.replace('.', '@', 1)
-            return create_key(pgp, "%s Timestamping Service <%s>"
+            return create_key(gpg, "%s Timestamping Service <%s>"
                     % (nick.capitalize(), maildomain))
         else:
             sys.exit("Please specify a keyid in the configuration file")
