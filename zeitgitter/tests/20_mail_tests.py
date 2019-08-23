@@ -37,8 +37,9 @@ import zeitgitter.stamper
 
 
 def environment_ok():
-    for i in ('ZEITGITTER_SMTP_SERVER', 'ZEITGITTER_IMAP_SERVER', 'ZEITGITTER_USERNAME',
-              'ZEITGITTER_PASSWORD', 'ZEITGITTER_MAILADDRESS'):
+    for i in ('ZEITGITTER_SMTP_SERVER', 'ZEITGITTER_IMAP_SERVER',
+              'ZEITGITTER_USERNAME', 'ZEITGITTER_PASSWORD',
+              'ZEITGITTER_MAILADDRESS'):
         if not i in os.environ:
             return False
     return True

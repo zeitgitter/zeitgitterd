@@ -103,6 +103,7 @@ def test_tag():
     assert not stamper.valid_tag('a ')
     assert not stamper.valid_tag('0')
     assert not stamper.valid_tag('a' * 101)
+    assert not stamper.valid_tag('..')
 
 
 def test_pubkey():

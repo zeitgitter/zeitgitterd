@@ -27,6 +27,7 @@ import os
 import re
 import socket
 import socketserver
+import subprocess
 import urllib
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -93,13 +94,16 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(explain)
 
     def do_GET(self):
-        subst = {b'ZEITGITTER_DOMAIN': bytes(zeitgitter.config.arg.domain, 'UTF-8'),
-                 b'ZEITGITTER_OWNER': bytes(zeitgitter.config.arg.owner, 'UTF-8'),
+        subst = {b'ZEITGITTER_DOMAIN':  bytes(zeitgitter.config.arg.domain,  'UTF-8'),
+                 b'ZEITGITTER_OWNER':   bytes(zeitgitter.config.arg.owner,   'UTF-8'),
                  b'ZEITGITTER_CONTACT': bytes(zeitgitter.config.arg.contact, 'UTF-8'),
                  b'ZEITGITTER_COUNTRY': bytes(zeitgitter.config.arg.country, 'UTF-8')}
 
         if self.path == '/':
-            self.send_file('text/html', 'index.html', replace=subst)
+            if zeitgitter.config.arg.webconfig:
+                self.send_file('text/html', 'cf-index.html')
+            else:
+                self.send_file('text/html', 'index.html', replace=subst)
         else:
             match = re.match('^/([a-z0-9][-_.a-z0-9]*).(html|css|js|png|jpe?g|svg)$', self.path, re.IGNORECASE)
             mimemap = {
@@ -110,6 +114,10 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
                 'svg': 'image/svg+xml',
                 'jpg': 'image/jpeg',
                 'jpeg': 'image/jpeg'}
+            if (not zeitgitter.config.arg.webconfig
+                    and self.path.startswith('/cf-')):
+                self.send_bodyerr(403, "Forbidden",
+                                  "<p>Only available in webconfig mode.</p>")
             if match and match.group(2) in mimemap:
                 if match.group(2) == 'html':
                     self.send_file(mimemap[match.group(2)], self.path[1:], replace=subst)
@@ -124,11 +132,15 @@ stamper = None
 public_key = None
 
 
+def ensure_stamper():
+    global stamper
+    if stamper is None:
+        stamper = zeitgitter.stamper.Stamper()
+
+
 class StamperRequestHandler(FlatFileRequestHandler):
     def __init__(self, *args, **kwargs):
-        global stamper
-        if stamper is None:
-            stamper = zeitgitter.stamper.Stamper()
+        ensure_stamper()
         self.protocol_version = 'HTTP/1.1'
         super().__init__(*args, **kwargs)
 
@@ -169,6 +181,14 @@ class StamperRequestHandler(FlatFileRequestHandler):
             return 406
 
     def handle_request(self, params):
+        if 'request' in params and params['request'][0] == 'apply-webconfig':
+            if zeitgitter.config.arg.webconfig:
+                zeitgitter.webconfig.apply(self, params)
+            else:
+                self.send_bodyerr(403, "Forbidden",
+                                  "<p>Only available in webconfig mode.</p>")
+            return
+
         sig = self.handle_signature(params)
         if sig == 406:
             self.send_bodyerr(406, "Unsupported timestamping request",
@@ -220,9 +240,45 @@ class StamperRequestHandler(FlatFileRequestHandler):
         else:
             super().do_GET()
 
+def finish_setup(arg):
+    # 1. Determine or create key, if possible
+    #    (Not yet ready to use global stamper)
+    arg.keyid = zeitgitter.stamper.get_keyid(arg.keyid,
+                    arg.domain, arg.gnupg_home)
+    # Now, we're ready
+    ensure_stamper()
+
+    # 2. Create git repository, if necessary
+    #    and set user name/email
+    repo = zeitgitter.config.arg.repository
+    Path(repo).mkdir(parents=True, exist_ok=True)
+    if not Path(repo, '.git').is_dir():
+        logging.info("Initializing new repo with user info")
+        subprocess.run(['git', 'init'], cwd=repo).check_returncode()
+        (name, mail) = stamper.fullid[:-1].split(' <')
+        subprocess.run(['git', 'config', 'user.name', name],
+                cwd=repo).check_returncode()
+        subprocess.run(['git', 'config', 'user.email', mail],
+                cwd=repo).check_returncode()
+
+    # 3. Create initial files in repo, when needed
+    #    (`hashes.work` will be created on demand).
+    #    Will be committed with first commit.
+    pubkey = Path(repo, 'pubkey.asc')
+    if not pubkey.is_file():
+        logging.info("Storing pubkey.asc in repository")
+        with pubkey.open('w') as f:
+            f.write(stamper.get_public_key())
+        subprocess.run(['git', 'add', 'pubkey.asc'],
+                cwd=repo).check_returncode()
+
 
 def run():
     zeitgitter.config.get_args()
+    finish_setup(zeitgitter.config.arg)
+    ### TODO: Stop if --check-and-setup-only is specified
+    ### This option also logs to stderr with debug
+    ### Be verbose in finish_setup()
     zeitgitter.commit.run()
     httpd = SocketActivationHTTPServer(
         (zeitgitter.config.arg.listen_address, zeitgitter.config.arg.listen_port),

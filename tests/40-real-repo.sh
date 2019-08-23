@@ -3,8 +3,11 @@
 # so that no rotation occurs during this test
 #
 export LANG=C # So we can match gpg output
-#ts="`pwd`/../client/git-timestamp.py"
-ts="git-timestamp"
+if [ -r ../../git-timestamp/git-timestamp.py ]; then
+  ts="`pwd`/../../git-timestamp/git-timestamp.py"
+else
+  ts="git-timestamp"
+fi
 repo=`mktemp -d`
 cd $repo
 
