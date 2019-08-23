@@ -48,7 +48,7 @@ install-presetup:
 
 install-files-docker:
 	mkdir -p ${PYMODDIR}
-	install -t ${SBINDIR} zeitgitterd.py docker/dockgitter.sh
+	install -t / zeitgitterd.py docker/dockgitter.sh
 	install -t ${PYMODDIR} zeitgitter/*.py
 	py3compile ${PYMODDIR}/*.py
 	install -d ${WEBDIR}
