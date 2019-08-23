@@ -20,6 +20,7 @@
 
 # Timestamp creation
 
+import logging
 import os
 import sys
 import re

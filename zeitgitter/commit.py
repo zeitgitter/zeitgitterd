@@ -126,8 +126,9 @@ def do_commit():
             logging.info("Pushing upstream to %s" % r);
             push_upstream(repo, r, branches)
 
-        logging.info("Maybe cross-timestamping by mail")
-        zeitgitter.mail.async_email_timestamp(preserve)
+        if zeitgitter.config.arg.email_address:
+            logging.info("cross-timestamping by mail")
+            zeitgitter.mail.async_email_timestamp(preserve)
         logging.info("do_commit done")
     except Exception as e:
         logging.error("Unhandled exception in do_commit() thread: %s: %s" %

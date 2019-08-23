@@ -74,8 +74,6 @@ install-postsetup:
 	else \
 		echo "${INFO}* Not updating ${SYSTEMDDIR}/zeitgitter.*${NORM}"; \
 	fi
-
-install-postsetup:
 	if [ ! -d ${ZEITGITTERHOME}/.gnupg ]; then \
 		systemctl enable zeitgitter.service zeitgitter.socket; \
 		echo "${ACT}* Please create an OpenPGP key, see ../doc/Cryptography.md${NORM}"; \
