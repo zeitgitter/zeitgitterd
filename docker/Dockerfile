@@ -8,4 +8,4 @@ WORKDIR /tmp/zeitgitterd
 RUN git checkout docker-test
 RUN make install-docker
 RUN rm -rf /tmp/zeitgitterd
-ENTRYPOINT /usr/local/sbin/dockgitter.sh
+ENTRYPOINT /dockgitter.sh
