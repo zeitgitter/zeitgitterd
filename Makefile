@@ -39,6 +39,7 @@ all:
 # ----- Installing
 
 install: install-presetup install-files install-postsetup
+install-docker: install-files
 
 install-presetup:
 	if ! groups zeitgitter > /dev/null 2>&1; then \
@@ -97,6 +98,7 @@ install-postsetup:
 		fi; \
 	fi
 	sudo -Hu zeitgitter touch ${REPODIR}/hashes.work
+
 
 apt:
 	apt install git python3-pygit2 python3-gnupg python3-configargparse python3-nose
