@@ -23,7 +23,7 @@ sudo make install
     key for its entire lifetime, not just only after the revocation. Prefer
     to destroy the key before it falls into wrong hands.
 * Enter the maintainer information in the `[Maintainer]` part of
-  `/etc/zeitgitter.conf`.
+  `/etc/zeitgitterd.conf`.
 * Chose a unique time interval and offset within that interval to commit your
   changes and cross-timestamp (parameters `commit-interval` and `commit-offset`).
 * Configure the remaining parameters, including whether to have upstream
