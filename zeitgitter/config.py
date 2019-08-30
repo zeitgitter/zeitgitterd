@@ -27,7 +27,6 @@ import os
 import sys
 import random
 
-import configargparse
 from zeitgitter import moddir
 import zeitgitter.deltat
 import zeitgitter.version
@@ -38,6 +37,7 @@ def get_args(args=None, config_file_contents=None):
     writeback = {}
     # Config file in /etc or the program directory
     parser = configargparse.ArgumentParser(
+        auto_env_var_prefix="zeitgitter_",
         description="zeitgitterd.py — The Independent git Timestamping server.",
         default_config_files=['/etc/zeitgitter.conf',
             os.path.join(os.getenv('HOME'), 'zeitgitter.conf')])
