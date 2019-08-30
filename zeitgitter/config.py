@@ -57,8 +57,10 @@ def get_args(args=None, config_file_contents=None):
                         help="""the PGP key ID to timestamp with, creating
                             this key first if necessary.""")
     parser.add_argument('--own-url',
-                        required = True,
                         help="the URL of this service")
+    parser.add_arument('--learn-name-from-proxy',
+                       default='^(127\.|192\.168\.|10\.|172\.1[6-9]\.|172\.2.\.|172\.3[01]\.|::1|fd[0-9a-f][0-9a-f]:|fe[89][0-9a-f]:)',
+                       help="automatically learn URL/domain from a proxy, if the proxy sits on this IP address and URL/domain has not been specifiedif it has not been specified")
     parser.add_argument('--domain',
                         help="the domain name, for HTML substitution and SMTP greeting. "
                              "Defaults to host part of --own-url")
