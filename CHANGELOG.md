@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   and improved documentation
 - Configuration now easier: Just look for `EASYCONFIG` in `zeitgitter.conf`
 - Added support for (semi-)automatic configuration
+- Configuration through environment variables
 - Support Docker
 - More detailed debug support (see `--debug-level`)
 
