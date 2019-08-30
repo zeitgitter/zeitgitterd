@@ -100,9 +100,6 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
                  b'ZEITGITTER_COUNTRY': bytes(zeitgitter.config.arg.country, 'UTF-8')}
 
         if self.path == '/':
-            if zeitgitter.config.arg.webconfig:
-                self.send_file('text/html', 'cf-index.html')
-            else:
                 self.send_file('text/html', 'index.html', replace=subst)
         else:
             match = re.match('^/([a-z0-9][-_.a-z0-9]*).(html|css|js|png|jpe?g|svg)$', self.path, re.IGNORECASE)
@@ -114,10 +111,6 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
                 'svg': 'image/svg+xml',
                 'jpg': 'image/jpeg',
                 'jpeg': 'image/jpeg'}
-            if (not zeitgitter.config.arg.webconfig
-                    and self.path.startswith('/cf-')):
-                self.send_bodyerr(403, "Forbidden",
-                                  "<p>Only available in webconfig mode.</p>")
             if match and match.group(2) in mimemap:
                 if match.group(2) == 'html':
                     self.send_file(mimemap[match.group(2)], self.path[1:], replace=subst)
@@ -181,14 +174,6 @@ class StamperRequestHandler(FlatFileRequestHandler):
             return 406
 
     def handle_request(self, params):
-        if 'request' in params and params['request'][0] == 'apply-webconfig':
-            if zeitgitter.config.arg.webconfig:
-                zeitgitter.webconfig.apply(self, params)
-            else:
-                self.send_bodyerr(403, "Forbidden",
-                                  "<p>Only available in webconfig mode.</p>")
-            return
-
         sig = self.handle_signature(params)
         if sig == 406:
             self.send_bodyerr(406, "Unsupported timestamping request",
