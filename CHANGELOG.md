@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Configuration through environment variables
 - Support Docker
 - More detailed debug support (see `--debug-level`)
+- Minimal support for HTTP `HEAD` requests
 
 ## Fixed
 
