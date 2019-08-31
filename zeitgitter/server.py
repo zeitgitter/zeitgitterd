@@ -190,6 +190,7 @@ class StamperRequestHandler(FlatFileRequestHandler):
             self.wfile.write(sig)
 
     def do_POST(self):
+        self.method = 'POST'
         ctype, pdict = cgi.parse_header(self.headers['Content-Type'])
         try:
             clen = self.headers['Content-Length']
@@ -215,6 +216,7 @@ class StamperRequestHandler(FlatFileRequestHandler):
                               "<p>Need form data input</p>")
 
     def do_GET(self):
+        self.method = 'GET'
         if self.path.startswith('/?'):
             params = urllib.parse.parse_qs(self.path[2:])
             if 'request' in params and params['request'][0] == 'get-public-key-v1':
@@ -224,6 +226,24 @@ class StamperRequestHandler(FlatFileRequestHandler):
                                   "<p>Need a valid `request` parameter</p>")
         else:
             super().do_GET()
+
+    def send_response(self, code, message=None):
+        if code != 200 and self.method == 'HEAD':
+            self.method = self.method + '+error'
+        super().send_response(code, message)
+
+    def end_headers(self):
+        """If it is a successful HEAD request, drop the body.
+        Evil hack for minimal HEAD support."""
+        super().end_headers()
+        if self.method == 'HEAD':
+            self.wfile.close()
+            self.rfile.close()
+
+    def do_HEAD(self):
+        self.method = 'HEAD'
+        self.do_GET()
+
 
 def finish_setup(arg):
     # 1. Determine or create key, if possible
