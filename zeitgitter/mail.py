@@ -259,9 +259,14 @@ def check_for_stamper_mail(imap, stat, logfile):
 
 
 def still_same_head(repo, initial_head):
-    if repo.head == initial_head:
+    logging.debug('still_same_head():')
+    logging.debug(repo.head.target.hex)
+    logging.debug(initial_head.target.hex)
+    if repo.head.target.hex == initial_head.target.hex:
+        logging.debug('True')
         return True
     else:
+        logging.debug('False')
         logging.warning("No email answer before next commit")
         return False
 
@@ -279,7 +284,7 @@ def wait_for_receive(repo, initial_head, logfile):
             imap.login(zeitgitter.config.arg.mail_username,
                        zeitgitter.config.arg.mail_password)
             imap.select('INBOX')
-            if (check_for_stamper_mail(imap, stat, logfile) is False
+            if (check_for_stamper_mail(imap, stat, logfile) == False
                     and still_same_head(repo, initial_head)):
                 # No existing message found, wait for more incoming messages
                 # and process them until definitely okay or giving up for good
