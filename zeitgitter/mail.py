@@ -60,8 +60,7 @@ To: %s
 Date: %s
 Subject: %s
 
-%s
-""" % (frm, to, date, subject, body)
+%s""" % (frm, to, date, subject, body)
         smtp.sendmail(frm, to, msg)
 
 
