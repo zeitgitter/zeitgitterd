@@ -56,9 +56,6 @@ def commit_to_git(repo, log, preserve=None, msg="Newly timestamped commits"):
         log.unlink(log)
     else:
         log.rename(preserve)
-        with preserve.open('r') as p:
-            for line in p:
-                logging.debug('%s: %s' % (preserve, line))
 
 
 def commit_dangling(repo, log):
