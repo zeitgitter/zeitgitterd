@@ -305,6 +305,10 @@ def async_email_timestamp(logfile):
     if contents == "":
         logging.info("Not trying to timestamp empty log")
         return
+    append = '\ngit commit: %s\n' % head.target.hex
+    with logfile.open('a') as f:
+        f.write(append)
+    contents = contents + append
     logging.debug("Send contents (%d bytes)", len(contents))
     send(contents)
     logging.debug("Contents sent")
