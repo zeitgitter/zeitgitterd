@@ -89,12 +89,14 @@ def extract_pgp_body(body):
 
 
 def save_signature(bodylines):
-    ascfile = Path(zeitgitter.config.arg.repository, 'hashes.asc')
+    repo = zeitgitter.config.arg.repository
+    ascfile = Path(repo, 'hashes.asc')
     with ascfile.open(mode='w') as f:
         f.write('\n'.join(bodylines))
-    res = subprocess.run(['git', 'add', ascfile])
+    res = subprocess.run(['git', 'add', ascfile], cwd=repo)
     if res.returncode != 0:
-        logging.warning("git add %s failed: %d" % (ascfile, res.returncode))
+        logging.warning("git add %s in %s failed: %d"
+                % (ascfile, repo, res.returncode))
 
 
 def body_signature_correct(bodylines, stat):
