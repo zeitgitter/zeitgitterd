@@ -20,13 +20,13 @@
 
 # Configuration handling
 
+import configargparse
 import datetime
 import logging
 import os
 import sys
 import random
 
-import configargparse
 from zeitgitter import moddir
 import zeitgitter.deltat
 import zeitgitter.version
@@ -37,7 +37,8 @@ def get_args(args=None, config_file_contents=None):
     writeback = {}
     # Config file in /etc or the program directory
     parser = configargparse.ArgumentParser(
-        description="zeitgitterd.py — The Independent git Timestamper server.",
+        auto_env_var_prefix="zeitgitter_",
+        description="zeitgitterd.py — The Independent git Timestamping server.",
         default_config_files=['/etc/zeitgitter.conf',
             os.path.join(os.getenv('HOME'), 'zeitgitter.conf')])
 
@@ -77,8 +78,11 @@ def get_args(args=None, config_file_contents=None):
                         default='4h',
                         help="how often to commit")
     parser.add_argument('--commit-offset',
-                        help="when to commit within that interval; e.g. after 37m19.3s. "
-                             "Default: Random choice in the interval")
+                        help="""when to commit within that interval; e.g. after
+                            37m19.3s. Default: Random choice in the interval.
+                            For a production server, please fix a value in
+                            the config file to avoid it jumping after every
+                            restart.""")
     parser.add_argument('--webroot',
                         default=moddir('web'),
                         help="path to the webroot")
@@ -90,8 +94,8 @@ def get_args(args=None, config_file_contents=None):
                         default=
                           'diversity-timestamps=https://diversity.zeitgitter.net'
                           ' gitta-timestamps=https://gitta.zeitgitter.net',
-                        help="any number of space-separated <branch>=<URL>"
-                            " tuples of upstream IGITT timestampers")
+                        help="any number of <branch>=<URL> tuples of upstream"
+                        " Zeitgitter timestampers")
     parser.add_argument('--listen-address',
                         default='127.0.0.1',  # Still not all machines support ::1
                         help="IP address to listen on")
@@ -122,7 +126,7 @@ def get_args(args=None, config_file_contents=None):
                         default="clear@stamper.itconsult.co.uk",
                         help="destination email address "
                              "to obtain email cross-timestamps from")
-    parser.add_argument('--external-pgp-timestamper-reply',
+    parser.add_argument('--external-pgp-timestamper-from',
                         default="mailer@stamper.itconsult.co.uk",
                         help="email address used by PGP timestamper "
                              "in its replies")

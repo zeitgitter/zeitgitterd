@@ -20,6 +20,7 @@
 
 # Timestamp creation
 
+import logging
 import os
 import sys
 import re
@@ -94,7 +95,7 @@ def get_keyid(keyid, domain, gnupg_home):
         elif len(keyinfo) == 0:
             nick = get_nick(domain)
             maildomain = domain.replace('.', '@', 1)
-            return create_key(pgp, "%s Timestamping Service <%s>"
+            return create_key(gpg, "%s Timestamping Service <%s>"
                     % (nick.capitalize(), maildomain))
         else:
             sys.exit("Please specify a keyid in the configuration file")
@@ -141,7 +142,7 @@ class Stamper:
 
     def sig_time(self):
         """Current time, unless in test mode"""
-        return int(os.getenv('IGITT_FAKE_TIME', time.time()))
+        return int(os.getenv('ZEITGITTER_FAKE_TIME', time.time()))
 
     def get_public_key(self):
         return self.pubkey

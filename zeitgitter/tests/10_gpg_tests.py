@@ -55,11 +55,11 @@ def setup_module():
         '--max-parallel-timeout', '1',
         '--repository', tmpdir.name])
     stamper = zeitgitter.stamper.Stamper()
-    os.environ['IGITT_FAKE_TIME'] = '1551155115'
+    os.environ['ZEITGITTER_FAKE_TIME'] = '1551155115'
 
 
 def teardown_module():
-    del os.environ['IGITT_FAKE_TIME']
+    del os.environ['ZEITGITTER_FAKE_TIME']
     tmpdir.cleanup()
 
 

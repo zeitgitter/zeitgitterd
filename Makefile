@@ -39,11 +39,22 @@ all:
 # ----- Installing
 
 install: install-presetup install-files install-postsetup
+install-docker: install-files-docker
 
 install-presetup:
 	if ! groups zeitgitter > /dev/null 2>&1; then \
 		adduser --system --disabled-password --disabled-login --group --home ${ZEITGITTERHOME} --gecos "Independent GIT Timestamper" zeitgitter; \
 	fi
+
+install-files-docker:
+	mkdir -p ${PYMODDIR}
+	install -t / zeitgitterd.py docker/dockgitter.sh
+	install -t ${PYMODDIR} zeitgitter/*.py
+	py3compile ${PYMODDIR}/*.py
+	install -d ${WEBDIR}
+	install -m 644 -t ${WEBDIR} zeitgitter/web/*
+	install -d ${REPODIR}
+	install -m 600 sample-zeitgitter.conf ${ETCDIR}/zeitgitter.conf
 
 install-files:
 	mkdir -p ${PYMODDIR}
@@ -60,43 +71,26 @@ install-files:
 	install -d -o zeitgitter ${REPODIR}
 # /etc/zeitgitter.conf contains passwords, so restrict access
 	if [ ! -f ${ETCDIR}/zeitgitter.conf ]; then \
-		install -o zeitgitter -m 600 zeitgitter/zeitgitter.conf ${ETCDIR}/zeitgitter.conf; \
+		install -o zeitgitter -m 600 sample-zeitgitter.conf ${ETCDIR}/zeitgitter.conf; \
 		echo "${ACT}* Customize ${ETCDIR}/zeitgitter.conf${NORM}"; \
 	else \
 		echo "${INFO}* Not updating ${ETCDIR}/zeitgitter.conf${NORM}"; \
 	fi
+
+install-postsetup:
 	if [ ! -f ${SYSTEMDDIR}/zeitgitter.socket ]; then \
 		install -m 644 -t ${SYSTEMDDIR} systemd/*; \
 		systemctl daemon-reload; \
 	else \
 		echo "${INFO}* Not updating ${SYSTEMDDIR}/zeitgitter.*${NORM}"; \
 	fi
-
-install-postsetup:
 	if [ ! -d ${ZEITGITTERHOME}/.gnupg ]; then \
 		systemctl enable zeitgitter.service zeitgitter.socket; \
 		echo "${ACT}* Please create an OpenPGP key, see ../doc/Cryptography.md${NORM}"; \
 	else \
 		systemctl restart zeitgitter.service; \
 	fi
-	if [ ! -d ${REPODIR}/.git ]; then \
-		sudo -Hu zeitgitter git init ${REPODIR}; \
-		echo "${INFO}* Initialized repo${NORM}"; \
-	fi
-	if [ ! -s ${REPODIR}/pubkey.asc ]; then \
-		if sudo -Hu zeitgitter wget --no-verbose -O ${REPODIR}/pubkey.asc 'http://127.0.0.1:15177/?request=get-public-key-v1'; then \
-			(cd ${REPODIR} && sudo -Hu zeitgitter git add pubkey.asc); \
-			echo "${INFO}* Added public key${NORM}"; \
-			if sudo -Hu zeitgitter gpg --list-packets ${REPODIR}/pubkey.asc | \
-				sudo -Hu zeitgitter tools/set-git-config-from-pubkey.py ${REPODIR}; then \
-				echo "${INFO}* Set git repo user identity from pubkey.asc${NORM}"; \
-			fi; \
-		else \
-			echo "${ACT}* Cannot obtain public key${NORM}"; \
-			rm ${REPODIR}/pubkey.asc; \
-		fi; \
-	fi
-	sudo -Hu zeitgitter touch ${REPODIR}/hashes.work
+
 
 apt:
 	apt install git python3-pygit2 python3-gnupg python3-configargparse python3-nose
