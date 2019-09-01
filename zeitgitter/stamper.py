@@ -148,12 +148,14 @@ class Stamper:
         return self.pubkey
 
     def valid_tag(self, tag):
-        """Tag validity defined in doc/Protocol.md"""
+        """Tag validity defined in doc/Protocol.md
+
+        Switching to `pygit2.reference_is_valid_name()` should be considered
+        when this function is widely availabe in installations
+        (was only added on 2018-10-17)"""
         # '$' always matches '\n' as well. Don't want this here.
-        if '\n' in tag:
-            return False
-        return (re.match('^[a-z][-._a-z0-9]{,99}$', tag, re.IGNORECASE)
-                and ".." not in tag)
+        return (re.match('^[_a-z][-._a-z0-9]{,99}$', tag, re.IGNORECASE)
+                and ".." not in tag and not '\n' in tag)
 
     def valid_commit(self, commit):
         # '$' always matches '\n' as well. Don't want this here.
