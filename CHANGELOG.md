@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added support for
   [PGP Digital Timestamping Service](http://www.itconsult.co.uk/stamper.htm)
   and improved documentation
+- Timestamp our commit id as well with PGP Timestamper
 - Configuration now easier: Just look for `EASYCONFIG` in `zeitgitter.conf`
 - Added support for (semi-)automatic configuration
 - Configuration through environment variables

@@ -89,16 +89,19 @@ def extract_pgp_body(body):
 
 
 def save_signature(bodylines):
-    ascfile = Path(zeitgitter.config.arg.repository, 'hashes.asc')
+    repo = zeitgitter.config.arg.repository
+    ascfile = Path(repo, 'hashes.asc')
     with ascfile.open(mode='w') as f:
         f.write('\n'.join(bodylines))
-    res = subprocess.run(['git', 'add', ascfile])
+    res = subprocess.run(['git', 'add', ascfile], cwd=repo)
     if res.returncode != 0:
-        logging.warning("git add %s failed: %d" % (ascfile, res.returncode))
+        logging.warning("git add %s in %s failed: %d"
+                % (ascfile, repo, res.returncode))
 
 
 def body_signature_correct(bodylines, stat):
     body = '\n'.join(bodylines)
+    logging.debug("Bodylines: %s" % body)
     # Cannot use Python gnupg wrapper: Requires GPG 1.x to verify
     # Copy env for gnupg without locale
     env = {}
@@ -110,9 +113,10 @@ def body_signature_correct(bodylines, stat):
     res = subprocess.run(['gpg1', '--pgp2', '--verify'],
                          encoding='ASCII', env=env,
                          input=body, stderr=subprocess.PIPE)
-    if res.returncode != 0:
-        return False
     logging.debug(res.stderr)
+    if res.returncode != 0:
+        logging.debug("gpg1 return code %d" % res.returncode)
+        return False
     if not '\ngpg: Good signature' in res.stderr:
         logging.warning("Not good signature (%r)" % res.stderr)
         return False
@@ -226,8 +230,6 @@ def imap_idle(imap, stat, repo, initial_head, logfile):
             if check_for_stamper_mail(imap, stat, logfile) is True:
                 logging.debug("IMAP IDLE ends False")
                 return False
-            logging.debug("x")
-        logging.debug("loop")
 
 
 def check_for_stamper_mail(imap, stat, logfile):
@@ -258,15 +260,11 @@ def check_for_stamper_mail(imap, stat, logfile):
 
 
 def still_same_head(repo, initial_head):
-    logging.debug('still_same_head():')
-    logging.debug(repo.head.target.hex)
-    logging.debug(initial_head.target.hex)
     if repo.head.target.hex == initial_head.target.hex:
-        logging.debug('True')
         return True
     else:
-        logging.debug('False')
-        logging.warning("No email answer before next commit")
+        logging.warning("No valid email answer before next commit (%s->%s)"
+                % initial_head.target.hex, repo.head.target.hex)
         return False
 
 
@@ -303,6 +301,10 @@ def async_email_timestamp(logfile):
     if contents == "":
         logging.info("Not trying to timestamp empty log")
         return
+    append = '\ngit commit: %s\n' % head.target.hex
+    with logfile.open('a') as f:
+        f.write(append)
+    contents = contents + append
     logging.debug("Send contents (%d bytes)", len(contents))
     send(contents)
     logging.debug("Contents sent")
