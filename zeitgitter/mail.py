@@ -274,20 +274,17 @@ def wait_for_receive(repo, initial_head, logfile):
         logging.debug("File is from %d" % stat.st_mtime)
     except FileNotFoundError:
         return False
-    try:
-        (host, port) = split_host_port(zeitgitter.config.arg.imap_server, 143)
-        with IMAP4(host=host, port=port) as imap:
-            imap.starttls()
-            imap.login(zeitgitter.config.arg.mail_username,
-                       zeitgitter.config.arg.mail_password)
-            imap.select('INBOX')
-            if (check_for_stamper_mail(imap, stat, logfile) == False
-                    and still_same_head(repo, initial_head)):
-                # No existing message found, wait for more incoming messages
-                # and process them until definitely okay or giving up for good
-                imap_idle(imap, stat, repo, initial_head, logfile)
-    except FileNotFoundError:  # XXX dummy exception
-        pass
+    (host, port) = split_host_port(zeitgitter.config.arg.imap_server, 143)
+    with IMAP4(host=host, port=port) as imap:
+        imap.starttls()
+        imap.login(zeitgitter.config.arg.mail_username,
+                   zeitgitter.config.arg.mail_password)
+        imap.select('INBOX')
+        if (check_for_stamper_mail(imap, stat, logfile) == False
+                and still_same_head(repo, initial_head)):
+            # No existing message found, wait for more incoming messages
+            # and process them until definitely okay or giving up for good
+            imap_idle(imap, stat, repo, initial_head, logfile)
 
 
 def async_email_timestamp(logfile):
