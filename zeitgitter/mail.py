@@ -53,7 +53,7 @@ def send(body, subject='Stamping request', to=None):
         smtp.starttls()
         smtp.login(zeitgitter.config.arg.mail_username,
                    zeitgitter.config.arg.mail_password)
-        frm = zeitgitter.config.arg.email_address
+        frm = zeitgitter.config.arg.mail_address
         date = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
         msg = """From: %s
 To: %s
