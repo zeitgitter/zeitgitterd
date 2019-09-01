@@ -101,6 +101,7 @@ def save_signature(bodylines):
 
 def body_signature_correct(bodylines, stat):
     body = '\n'.join(bodylines)
+    logging.debug("Bodylines: %s" % body)
     # Cannot use Python gnupg wrapper: Requires GPG 1.x to verify
     # Copy env for gnupg without locale
     env = {}
@@ -112,9 +113,10 @@ def body_signature_correct(bodylines, stat):
     res = subprocess.run(['gpg1', '--pgp2', '--verify'],
                          encoding='ASCII', env=env,
                          input=body, stderr=subprocess.PIPE)
-    if res.returncode != 0:
-        return False
     logging.debug(res.stderr)
+    if res.returncode != 0:
+        logging.debug("gpg1 return code %d" % res.returncode)
+        return False
     if not '\ngpg: Good signature' in res.stderr:
         logging.warning("Not good signature (%r)" % res.stderr)
         return False
@@ -228,8 +230,6 @@ def imap_idle(imap, stat, repo, initial_head, logfile):
             if check_for_stamper_mail(imap, stat, logfile) is True:
                 logging.debug("IMAP IDLE ends False")
                 return False
-            logging.debug("x")
-        logging.debug("loop")
 
 
 def check_for_stamper_mail(imap, stat, logfile):
@@ -260,15 +260,11 @@ def check_for_stamper_mail(imap, stat, logfile):
 
 
 def still_same_head(repo, initial_head):
-    logging.debug('still_same_head():')
-    logging.debug(repo.head.target.hex)
-    logging.debug(initial_head.target.hex)
     if repo.head.target.hex == initial_head.target.hex:
-        logging.debug('True')
         return True
     else:
-        logging.debug('False')
-        logging.warning("No email answer before next commit")
+        logging.warning("No valid email answer before next commit (%s->%s)"
+                % initial_head.target.hex, repo.head.target.hex)
         return False
 
 
