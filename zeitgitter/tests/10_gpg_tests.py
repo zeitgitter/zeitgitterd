@@ -63,6 +63,11 @@ def teardown_module():
     tmpdir.cleanup()
 
 
+def oirset(start, end):
+    """Set of the range of `ord()` values from `start` to `end`, inclusive"""
+    return set(range(ord(start), ord(end)+1))
+
+
 def test_commit():
     assert stamper.valid_commit('0123456789012345678901234567890123456789')
     assert stamper.valid_commit('0123456789abcdef678901234567890123456789')
@@ -72,8 +77,7 @@ def test_commit():
     assert not stamper.valid_commit('0123456789ABCDEF678901234567890123456789')
     assert not stamper.valid_commit('0123456789abcdefghij01234567890123456789')
     for i in (set(range(0, 255))
-              - set(range(ord('0'), ord('0') + 10))
-              - set(range(ord('a'), ord('a') + 6))):
+            - oirset('0', '9') - oirset('a', 'f')):
         commit = chr(i) * 40
         if stamper.valid_commit(commit):
             raise AssertionError(
@@ -88,15 +92,12 @@ def test_tag():
     assert not stamper.valid_tag('')
     for i in (set(range(0, 255))
               - set((ord('-'), ord('_'), ord('.')))
-              - set(range(ord('0'), ord('0') + 10))
-              - set(range(ord('A'), ord('A') + 26))
-              - set(range(ord('a'), ord('a') + 26))):
+              - oirset('0', '9') - oirset('A', 'Z') - oirset('a', 'z')):
         if stamper.valid_tag('a' + chr(i)):
             raise AssertionError(
                 "Assertion failed: 'a%s' (%d) is valid tag" % (chr(i), i))
     for i in (set(range(0, 255))
-              - set(range(ord('A'), ord('A') + 26))
-              - set(range(ord('a'), ord('a') + 26))):
+              - oirset('A', 'Z') - oirset('a', 'z')):
         if stamper.valid_tag(chr(i)):
             raise AssertionError(
                 "Assertion failed: '%s' (%d) is valid tag" % (chr(i), i))
