@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Split into client (git-timestamp) and server (zeitgitterd).
 - Calculate a default for `--gnupg-home` to allow `--number-of-gpg-agents` > 1
 - `--email-address` is now deprecated; please use `--mail-address` instead
+- Commit log message includes timestamp as well to improve readability for
+  `git blame` etc.
 
 
 # 0.9.2 - 2019-05-10

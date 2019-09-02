@@ -112,9 +112,12 @@ def do_commit():
         with serialize:
             commit_dangling(repo, log)
             try:
-                tmp.stat()
+                stat = tmp.stat()
                 rotate_log_file(tmp, log)
-                commit_to_git(repo, log, preserve)
+                d = datetime.datetime.utcfromtimestamp(stat.st_mtime)
+                dstr = d.strftime('%Y-%m-%d %H:%M:%S')
+                commit_to_git(repo, log, preserve,
+                        "Newly timestamped commits up to " + dstr)
                 with tmp.open(mode='ab'):
                     pass  # Recreate hashes.work
             except FileNotFoundError:
