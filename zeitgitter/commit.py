@@ -23,7 +23,7 @@
 # The state machine used is described in ../doc/StateMachine.md
 
 import datetime
-import logging
+import logging as _logging
 import os
 import subprocess
 import sys
@@ -35,6 +35,9 @@ from pathlib import Path
 import zeitgitter.config
 import zeitgitter.mail
 import zeitgitter.stamper
+
+
+logging = _logging.getLogger('commit')
 
 # To serialize all commit-related operations
 # - writing commit entries in order (that includes obtaining the timestamp)
@@ -66,7 +69,7 @@ def commit_dangling(repo, log):
     try:
         stat = log.stat()
         d = datetime.datetime.utcfromtimestamp(stat.st_mtime)
-        dstr = d.strftime('%Y-%m-%d %H:%M:%S')
+        dstr = d.strftime('%Y-%m-%d %H:%M:%S UTC')
         commit_to_git(repo, log,
                       "Found uncommitted data from " + dstr)
     except FileNotFoundError:
@@ -112,9 +115,12 @@ def do_commit():
         with serialize:
             commit_dangling(repo, log)
             try:
-                tmp.stat()
+                stat = tmp.stat()
                 rotate_log_file(tmp, log)
-                commit_to_git(repo, log, preserve)
+                d = datetime.datetime.utcfromtimestamp(stat.st_mtime)
+                dstr = d.strftime('%Y-%m-%d %H:%M:%S UTC')
+                commit_to_git(repo, log, preserve,
+                        "Newly timestamped commits up to " + dstr)
                 with tmp.open(mode='ab'):
                     pass  # Recreate hashes.work
             except FileNotFoundError:
@@ -129,7 +135,7 @@ def do_commit():
             logging.info("Pushing upstream to %s" % r);
             push_upstream(repo, r, branches)
 
-        if zeitgitter.config.arg.email_address:
+        if zeitgitter.config.arg.mail_address:
             logging.info("cross-timestamping by mail")
             zeitgitter.mail.async_email_timestamp(preserve)
         logging.info("do_commit done")

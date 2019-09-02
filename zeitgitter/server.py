@@ -22,7 +22,7 @@
 
 
 import cgi
-import logging
+import logging as _logging
 import os
 import re
 import socket
@@ -36,6 +36,9 @@ import zeitgitter.commit
 import zeitgitter.config
 import zeitgitter.stamper
 import zeitgitter.version
+
+
+logging = _logging.getLogger('server')
 
 
 class SocketActivationMixin:

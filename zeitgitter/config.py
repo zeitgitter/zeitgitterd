@@ -22,7 +22,7 @@
 
 import configargparse
 import datetime
-import logging
+import logging as _logging
 import os
 import sys
 import random
@@ -30,6 +30,9 @@ import random
 from zeitgitter import moddir
 import zeitgitter.deltat
 import zeitgitter.version
+
+
+logging = _logging.getLogger('config')
 
 
 def get_args(args=None, config_file_contents=None):
@@ -130,7 +133,7 @@ def get_args(args=None, config_file_contents=None):
                         default="mailer@stamper.itconsult.co.uk",
                         help="email address used by PGP timestamper "
                              "in its replies")
-    parser.add_argument('--email-address',
+    parser.add_argument('--mail-address', '--email-address',
                         help="our email address; enables "
                              "cross-timestamping from the PGP timestamper")
     parser.add_argument('--smtp-server',
@@ -155,7 +158,7 @@ def get_args(args=None, config_file_contents=None):
 
     arg = parser.parse_args(args=args, config_file_contents=config_file_contents)
 
-    logging.basicConfig()
+    _logging.basicConfig()
     for level in str(arg.debug_level).split(','):
         if '=' in level:
             (logger, lvl) = level.split('=', 1)
@@ -164,15 +167,15 @@ def get_args(args=None, config_file_contents=None):
             lvl = level
         try:
             lvl = int(lvl)
-            lvl = logging.WARN - lvl * (logging.WARN - logging.INFO)
+            lvl = _logging.WARN - lvl * (_logging.WARN - _logging.INFO)
         except ValueError:
             # Does not work in Python 3.4.0 and 3.4.1
             # See note in https://docs.python.org/3/library/logging.html#logging.getLevelName
-            lvl = logging.getLevelName(lvl.upper())
-        logging.getLogger(logger).setLevel(lvl)
+            lvl = _logging.getLevelName(lvl.upper())
+        _logging.getLogger(logger).setLevel(lvl)
 
     arg.commit_interval = zeitgitter.deltat.parse_time(arg.commit_interval)
-    if arg.email_address is None:
+    if arg.mail_address is None:
         if arg.commit_interval < datetime.timedelta(minutes=1):
             sys.exit("--commit-interval may not be shorter than 1m")
     else:

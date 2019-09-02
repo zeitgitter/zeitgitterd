@@ -20,7 +20,7 @@
 
 # Sending and receiving mail
 
-import logging
+import logging as _logging
 import os
 import pygit2 as git
 import subprocess
@@ -33,6 +33,7 @@ from time import gmtime, strftime
 
 import zeitgitter.config
 
+logging = _logging.getLogger('mail')
 
 def split_host_port(host, default_port):
     if ':' in host:
@@ -53,7 +54,7 @@ def send(body, subject='Stamping request', to=None):
         smtp.starttls()
         smtp.login(zeitgitter.config.arg.mail_username,
                    zeitgitter.config.arg.mail_password)
-        frm = zeitgitter.config.arg.email_address
+        frm = zeitgitter.config.arg.mail_address
         date = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
         msg = """From: %s
 To: %s
@@ -92,12 +93,18 @@ def save_signature(bodylines):
     repo = zeitgitter.config.arg.repository
     ascfile = Path(repo, 'hashes.asc')
     with ascfile.open(mode='w') as f:
-        f.write('\n'.join(bodylines))
+        f.write('\n'.join(bodylines) + '\n')
     res = subprocess.run(['git', 'add', ascfile], cwd=repo)
     if res.returncode != 0:
         logging.warning("git add %s in %s failed: %d"
                 % (ascfile, repo, res.returncode))
 
+def maybe_decode(str):
+    """Decode, if it is not `None`"""
+    if str is None:
+        return str
+    else:
+        return str.decode('ASCII')
 
 def body_signature_correct(bodylines, stat):
     body = '\n'.join(bodylines)
@@ -111,28 +118,30 @@ def body_signature_correct(bodylines, stat):
     env['LANG'] = 'C'
     env['TZ'] = 'UTC'
     res = subprocess.run(['gpg1', '--pgp2', '--verify'],
-                         encoding='ASCII', env=env,
-                         input=body, stderr=subprocess.PIPE)
-    logging.debug(res.stderr)
+                         env=env, input=body.encode('ASCII'),
+                         stderr=subprocess.PIPE)
+    stderr = maybe_decode(res.stderr)
+    stdout = maybe_decode(res.stdout)
+    logging.debug(stderr)
     if res.returncode != 0:
-        logging.debug("gpg1 return code %d" % res.returncode)
+        logging.warning("gpg1 return code %d (%r)" % (res.returncode, stderr))
         return False
-    if not '\ngpg: Good signature' in res.stderr:
-        logging.warning("Not good signature (%r)" % res.stderr)
+    if not '\ngpg: Good signature' in stderr:
+        logging.warning("Not good signature (%r)" % stderr)
         return False
-    if not res.stderr.startswith('gpg: Signature made '):
-        logging.warning("Signature not made (%r)" % res.stderr)
+    if not stderr.startswith('gpg: Signature made '):
+        logging.warning("Signature not made (%r)" % stderr)
         return False
     if not ((' key ID %s\n' % zeitgitter.config.arg.external_pgp_timestamper_keyid)
-            in res.stderr):
-        logging.warning("Wrong KeyID (%r)" % res.stderr)
+            in stderr):
+        logging.warning("Wrong KeyID (%r)" % stderr)
         return False
     try:
-        logging.debug(res.stderr[24:48])
-        sigtime = datetime.strptime(res.stderr[24:48], "%b %d %H:%M:%S %Y %Z")
+        logging.debug(stderr[24:48])
+        sigtime = datetime.strptime(stderr[24:48], "%b %d %H:%M:%S %Y %Z")
         logging.debug(sigtime)
     except ValueError:
-        logging.warning("Illegal date (%r)" % res.stderr)
+        logging.warning("Illegal date (%r)" % stderr)
         return False
     if sigtime > datetime.utcnow() + timedelta(seconds=30):
         logging.warning("Signature time %s lies more than 30 seconds in the future"
@@ -210,7 +219,7 @@ def imap_idle(imap, stat, repo, initial_head, logfile):
     while still_same_head(repo, initial_head):
         logging.debug("IMAP IDLE")
         imap.send(b'%s IDLE\r\n' % (imap._new_tag()))
-        logging.debug("IMAP waiting for IDLE response")
+        logging.info("IMAP waiting for IDLE response")
         line = imap.readline().strip()
         logging.debug("IMAP IDLE → %s" % line)
         if line != b'+ idling':
@@ -240,7 +249,7 @@ def check_for_stamper_mail(imap, stat, logfile):
         'UNSEEN',
         'LARGER', str(stat.st_size),
         'SMALLER', str(stat.st_size + 16384))
-    logging.debug("IMAP SEARCH → %s, %s" % (typ, msgs))
+    logging.info("IMAP SEARCH → %s, %s" % (typ, msgs))
     if len(msgs) == 1 and len(msgs[0]) > 0:
         mseq = msgs[0].replace(b' ', b',')
         logging.debug(mseq)
@@ -253,7 +262,7 @@ def check_for_stamper_mail(imap, stat, logfile):
                 remaining_msgids = remaining_msgids[1:]
                 logging.debug("IMAP FETCH BODY (%s) → %s…" % (msgid, m[1][:20]))
                 if verify_body_and_save_signature(m[1], stat, logfile, msgid):
-                    logging.debug("Verify_body() succeeded; deleting %s" % msgid)
+                    logging.info("Verify_body() succeeded; deleting %s" % msgid)
                     imap.store(msgid, '+FLAGS', '\\Deleted')
                     return True
     return False
@@ -290,7 +299,7 @@ def wait_for_receive(repo, initial_head, logfile):
 def async_email_timestamp(logfile):
     repo = git.Repository(zeitgitter.config.arg.repository)
     if repo.head_is_unborn:
-        logging.warning("Cannot timestamp by email in repository without commits")
+        logging.error("Cannot timestamp by email in repository without commits")
         return
     head = repo.head
     with logfile.open() as f:

@@ -20,7 +20,7 @@
 
 # Timestamp creation
 
-import logging
+import logging as _logging
 import os
 import sys
 import re
@@ -31,6 +31,9 @@ from pathlib import Path
 import gnupg
 import zeitgitter.commit
 import zeitgitter.config
+
+
+logging = _logging.getLogger('stamper')
 
 
 def get_nick(domain):

@@ -35,10 +35,19 @@ sudo make install
 
 ## Additionally, for use with the PGP Digital Timestamper
 
-* Install GnuPG 1.x (for downward compatibility with the old PGP 2.x key)
+* Install GnuPG 1.x (for downward compatibility with the old PGP 2.x key)  
 ```sh
 sudo apt install gnupg1
 ```
-* Create a mail account and enter its parameters into the configuration file.  
+
+* Import the PGP Digital Timestamping Service's keys  
+```sh
+wget -O - http://www.itconsult.co.uk/stamper/stampinf.htm | gpg1 --pgp2 --import
+```
+
+* Create a mail account and enter its parameters into the configuration file
+  (`email-addres`, `imap-server`, `smtp-server`, `mail-username`,
+  and `mail-password`).  
   You may want to use a non-public email address for this; it will not show
-  up anywhere and only needs to be used when contacting stamper.
+  up anywhere and only is used when contacting stamper. You should not use it
+  for anything else.

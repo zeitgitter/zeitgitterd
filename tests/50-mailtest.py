@@ -46,7 +46,7 @@ def mailtest():
     '--country', '?',
     '--max-parallel-timeout', '1',
     '--repository', tmpdir.name,
-    '--email-address', os.environ['ZEITGITTER_MAILADDRESS'],
+    '--mail-address', os.environ['ZEITGITTER_MAILADDRESS'],
     '--imap-server', os.environ['ZEITGITTER_IMAP_SERVER'],
     '--smtp-server', os.environ['ZEITGITTER_SMTP_SERVER'],
     '--mail-username', os.environ['ZEITGITTER_USERNAME'],
