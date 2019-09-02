@@ -123,7 +123,7 @@ def body_signature_correct(bodylines, stat):
     stdout = maybe_decode(res.stdout)
     logging.debug(stderr)
     if res.returncode != 0:
-        logging.debug("gpg1 return code %d" % res.returncode)
+        logging.warning("gpg1 return code %d (%r)" % (res.returncode, stderr))
         return False
     if not '\ngpg: Good signature' in stderr:
         logging.warning("Not good signature (%r)" % stderr)
@@ -218,7 +218,7 @@ def imap_idle(imap, stat, repo, initial_head, logfile):
     while still_same_head(repo, initial_head):
         logging.debug("IMAP IDLE")
         imap.send(b'%s IDLE\r\n' % (imap._new_tag()))
-        logging.debug("IMAP waiting for IDLE response")
+        logging.info("IMAP waiting for IDLE response")
         line = imap.readline().strip()
         logging.debug("IMAP IDLE → %s" % line)
         if line != b'+ idling':
@@ -248,7 +248,7 @@ def check_for_stamper_mail(imap, stat, logfile):
         'UNSEEN',
         'LARGER', str(stat.st_size),
         'SMALLER', str(stat.st_size + 16384))
-    logging.debug("IMAP SEARCH → %s, %s" % (typ, msgs))
+    logging.info("IMAP SEARCH → %s, %s" % (typ, msgs))
     if len(msgs) == 1 and len(msgs[0]) > 0:
         mseq = msgs[0].replace(b' ', b',')
         logging.debug(mseq)
@@ -261,7 +261,7 @@ def check_for_stamper_mail(imap, stat, logfile):
                 remaining_msgids = remaining_msgids[1:]
                 logging.debug("IMAP FETCH BODY (%s) → %s…" % (msgid, m[1][:20]))
                 if verify_body_and_save_signature(m[1], stat, logfile, msgid):
-                    logging.debug("Verify_body() succeeded; deleting %s" % msgid)
+                    logging.info("Verify_body() succeeded; deleting %s" % msgid)
                     imap.store(msgid, '+FLAGS', '\\Deleted')
                     return True
     return False
@@ -298,7 +298,7 @@ def wait_for_receive(repo, initial_head, logfile):
 def async_email_timestamp(logfile):
     repo = git.Repository(zeitgitter.config.arg.repository)
     if repo.head_is_unborn:
-        logging.warning("Cannot timestamp by email in repository without commits")
+        logging.error("Cannot timestamp by email in repository without commits")
         return
     head = repo.head
     with logfile.open() as f:
