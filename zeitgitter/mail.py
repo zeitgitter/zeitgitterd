@@ -93,7 +93,7 @@ def save_signature(bodylines):
     repo = zeitgitter.config.arg.repository
     ascfile = Path(repo, 'hashes.asc')
     with ascfile.open(mode='w') as f:
-        f.write('\n'.join(bodylines))
+        f.write('\n'.join(bodylines) + '\n')
     res = subprocess.run(['git', 'add', ascfile], cwd=repo)
     if res.returncode != 0:
         logging.warning("git add %s in %s failed: %d"
