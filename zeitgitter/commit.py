@@ -23,7 +23,7 @@
 # The state machine used is described in ../doc/StateMachine.md
 
 import datetime
-import logging
+import logging as _logging
 import os
 import subprocess
 import sys
@@ -35,6 +35,9 @@ from pathlib import Path
 import zeitgitter.config
 import zeitgitter.mail
 import zeitgitter.stamper
+
+
+logging = _logging.getLogger('commit')
 
 # To serialize all commit-related operations
 # - writing commit entries in order (that includes obtaining the timestamp)

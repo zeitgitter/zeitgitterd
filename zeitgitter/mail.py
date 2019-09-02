@@ -20,7 +20,7 @@
 
 # Sending and receiving mail
 
-import logging
+import logging as _logging
 import os
 import pygit2 as git
 import subprocess
@@ -33,6 +33,7 @@ from time import gmtime, strftime
 
 import zeitgitter.config
 
+logging = _logging.getLogger('mail')
 
 def split_host_port(host, default_port):
     if ':' in host:
