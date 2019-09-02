@@ -11,12 +11,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added support for
   [PGP Digital Timestamping Service](http://www.itconsult.co.uk/stamper.htm)
   and improved documentation
+- Timestamp our commit id as well with PGP Timestamper
+- Configuration now easier: Just look for `EASYCONFIG` in `zeitgitter.conf`
+- Added support for (semi-)automatic configuration
+- Configuration through environment variables
+- Support Docker
+- More detailed debug support (see `--debug-level`)
+- Minimal support for HTTP `HEAD` requests
 
 ## Fixed
 
 ## Changed
 - Split into client (git-timestamp) and server (zeitgitterd).
 - Calculate a default for `--gnupg-home` to allow `--number-of-gpg-agents` > 1
+- `--email-address` is now deprecated; please use `--mail-address` instead
+- Commit log message includes timestamp as well to improve readability for
+  `git blame` etc.
+- Log message timestamps (including "Found uncommitted data") now say "UTC"
 
 
 # 0.9.2 - 2019-05-10

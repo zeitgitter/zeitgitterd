@@ -28,7 +28,7 @@ operations are performed:
 
 ## 2. Try to send mail to the PGP Timestamper, if enabled
 
-If a file `hashes.work` exists, the `email-address` configuration 
+If a file `hashes.work` exists, the `mail-address` configuration 
 variable exists (i.e., mail should be sent to the PGP Timestamper) and 
 *no* file `hashes.mail` exists, the following operations are performed:
 
@@ -53,7 +53,7 @@ for up to 15 minutes.
 ## 4. Commit to `git`
 
 If `hashes.log` exists and
-- `email-address` is not defined (no PGP Timestamping should occur),
+- `mail-address` is not defined (no PGP Timestamping should occur),
 - `hashes.asc` exists (PGP Timestamping was successful),
 - `hashes.mail` does not exist at all, or
 - 15 minutes have passed since `hashes.mail` was created,

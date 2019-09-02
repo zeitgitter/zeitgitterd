@@ -22,11 +22,12 @@
 
 
 import cgi
-import logging
+import logging as _logging
 import os
 import re
 import socket
 import socketserver
+import subprocess
 import urllib
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -35,6 +36,9 @@ import zeitgitter.commit
 import zeitgitter.config
 import zeitgitter.stamper
 import zeitgitter.version
+
+
+logging = _logging.getLogger('server')
 
 
 class SocketActivationMixin:
@@ -93,13 +97,13 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(explain)
 
     def do_GET(self):
-        subst = {b'ZEITGITTER_DOMAIN': bytes(zeitgitter.config.arg.domain, 'UTF-8'),
-                 b'ZEITGITTER_OWNER': bytes(zeitgitter.config.arg.owner, 'UTF-8'),
+        subst = {b'ZEITGITTER_DOMAIN':  bytes(zeitgitter.config.arg.domain,  'UTF-8'),
+                 b'ZEITGITTER_OWNER':   bytes(zeitgitter.config.arg.owner,   'UTF-8'),
                  b'ZEITGITTER_CONTACT': bytes(zeitgitter.config.arg.contact, 'UTF-8'),
                  b'ZEITGITTER_COUNTRY': bytes(zeitgitter.config.arg.country, 'UTF-8')}
 
         if self.path == '/':
-            self.send_file('text/html', 'index.html', replace=subst)
+                self.send_file('text/html', 'index.html', replace=subst)
         else:
             match = re.match('^/([a-z0-9][-_.a-z0-9]*).(html|css|js|png|jpe?g|svg)$', self.path, re.IGNORECASE)
             mimemap = {
@@ -124,11 +128,15 @@ stamper = None
 public_key = None
 
 
+def ensure_stamper():
+    global stamper
+    if stamper is None:
+        stamper = zeitgitter.stamper.Stamper()
+
+
 class StamperRequestHandler(FlatFileRequestHandler):
     def __init__(self, *args, **kwargs):
-        global stamper
-        if stamper is None:
-            stamper = zeitgitter.stamper.Stamper()
+        ensure_stamper()
         self.protocol_version = 'HTTP/1.1'
         super().__init__(*args, **kwargs)
 
@@ -185,6 +193,7 @@ class StamperRequestHandler(FlatFileRequestHandler):
             self.wfile.write(sig)
 
     def do_POST(self):
+        self.method = 'POST'
         ctype, pdict = cgi.parse_header(self.headers['Content-Type'])
         try:
             clen = self.headers['Content-Length']
@@ -210,6 +219,7 @@ class StamperRequestHandler(FlatFileRequestHandler):
                               "<p>Need form data input</p>")
 
     def do_GET(self):
+        self.method = 'GET'
         if self.path.startswith('/?'):
             params = urllib.parse.parse_qs(self.path[2:])
             if 'request' in params and params['request'][0] == 'get-public-key-v1':
@@ -220,9 +230,63 @@ class StamperRequestHandler(FlatFileRequestHandler):
         else:
             super().do_GET()
 
+    def send_response(self, code, message=None):
+        if code != 200 and self.method == 'HEAD':
+            self.method = self.method + '+error'
+        super().send_response(code, message)
+
+    def end_headers(self):
+        """If it is a successful HEAD request, drop the body.
+        Evil hack for minimal HEAD support."""
+        super().end_headers()
+        if self.method == 'HEAD':
+            self.wfile.close()
+            self.rfile.close()
+
+    def do_HEAD(self):
+        self.method = 'HEAD'
+        self.do_GET()
+
+
+def finish_setup(arg):
+    # 1. Determine or create key, if possible
+    #    (Not yet ready to use global stamper)
+    arg.keyid = zeitgitter.stamper.get_keyid(arg.keyid,
+                    arg.domain, arg.gnupg_home)
+    # Now, we're ready
+    ensure_stamper()
+
+    # 2. Create git repository, if necessary
+    #    and set user name/email
+    repo = zeitgitter.config.arg.repository
+    Path(repo).mkdir(parents=True, exist_ok=True)
+    if not Path(repo, '.git').is_dir():
+        logging.info("Initializing new repo with user info")
+        subprocess.run(['git', 'init'], cwd=repo).check_returncode()
+        (name, mail) = stamper.fullid[:-1].split(' <')
+        subprocess.run(['git', 'config', 'user.name', name],
+                cwd=repo).check_returncode()
+        subprocess.run(['git', 'config', 'user.email', mail],
+                cwd=repo).check_returncode()
+
+    # 3. Create initial files in repo, when needed
+    #    (`hashes.work` will be created on demand).
+    #    Will be committed with first commit.
+    pubkey = Path(repo, 'pubkey.asc')
+    if not pubkey.is_file():
+        logging.info("Storing pubkey.asc in repository")
+        with pubkey.open('w') as f:
+            f.write(stamper.get_public_key())
+        subprocess.run(['git', 'add', 'pubkey.asc'],
+                cwd=repo).check_returncode()
+
 
 def run():
     zeitgitter.config.get_args()
+    finish_setup(zeitgitter.config.arg)
+    ### TODO: Stop if --check-and-setup-only is specified
+    ### This option also logs to stderr with debug
+    ### Be verbose in finish_setup()
     zeitgitter.commit.run()
     httpd = SocketActivationHTTPServer(
         (zeitgitter.config.arg.listen_address, zeitgitter.config.arg.listen_port),

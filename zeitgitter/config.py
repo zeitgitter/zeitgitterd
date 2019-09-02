@@ -22,22 +22,26 @@
 
 import configargparse
 import datetime
-import logging
+import logging as _logging
 import os
 import sys
 import random
 
+from zeitgitter import moddir
 import zeitgitter.deltat
 import zeitgitter.version
 
 
+logging = _logging.getLogger('config')
+
+
 def get_args(args=None, config_file_contents=None):
     global arg
+    writeback = {}
     # Config file in /etc or the program directory
     parser = configargparse.ArgumentParser(
+        auto_env_var_prefix="zeitgitter_",
         description="zeitgitterd.py — The Independent git Timestamping server.",
-        epilog="""Options marked '(IGNORED)' are only present for future
-            compatibility and are ignored for now.""",
         default_config_files=['/etc/zeitgitter.conf',
             os.path.join(os.getenv('HOME'), 'zeitgitter.conf')])
 
@@ -45,27 +49,32 @@ def get_args(args=None, config_file_contents=None):
                         is_config_file=True,
                         help="config file path")
     parser.add_argument('--debug-level',
-                        default=0, type=int,
-                        help="increase debugging output")
+                        default=0,
+                        help="""Specify debug output. 0, 1, 2 mean WARNING,
+                            INFO, DEBUG, respectively. Names can also be
+                            specified. Debug levels for specific loggers
+                            can also be specified using 'name=level'.
+                            Example: `DEBUG,gnupg=INFO` sets the default
+                            debug level to DEBUG, except for `gnupg`.""")
     parser.add_argument('--keyid',
-                        required=True,
-                        help="our PGP key ID to timestamp with")
+                        help="""the PGP key ID to timestamp with, creating
+                            this key first if necessary.""")
     parser.add_argument('--own-url',
-                        required=True,
+                        required = True,
                         help="the URL of this service")
     parser.add_argument('--domain',
                         help="the domain name, for HTML substitution and SMTP greeting. "
                              "Defaults to host part of --own-url")
     parser.add_argument('--country',
-                        required=True,
+                        required = True,
                         help="the jurisdiction this falls under,"
                             " for HTML substitution")
     parser.add_argument('--owner',
-                        required=True,
+                        required = True,
                         help="owner and operator of this instance,"
                         " for HTML substitution")
     parser.add_argument('--contact',
-                        required=True,
+                        required = True,
                         help="contact for this instance,"
                         " for HTML substitution")
     parser.add_argument('--commit-interval',
@@ -78,13 +87,16 @@ def get_args(args=None, config_file_contents=None):
                             the config file to avoid it jumping after every
                             restart.""")
     parser.add_argument('--webroot',
-                        default='web',
-                        help="(preferably absolute) path to the webroot")
+                        default=moddir('web'),
+                        help="path to the webroot")
     parser.add_argument('--repository',
-                        required=True,
+                        default=os.path.join(
+                            os.getenv('HOME', '/var/lib/zeitgitter'), 'repo'),
                         help="path to the GIT repository")
     parser.add_argument('--upstream-timestamp',
-                        default="",
+                        default=
+                          'diversity-timestamps=https://diversity.zeitgitter.net'
+                          ' gitta-timestamps=https://gitta.zeitgitter.net',
                         help="any number of <branch>=<URL> tuples of upstream"
                         " Zeitgitter timestampers")
     parser.add_argument('--listen-address',
@@ -96,7 +108,7 @@ def get_args(args=None, config_file_contents=None):
     parser.add_argument('--max-parallel-signatures',
                         default=2, type=int,
                         help="""maximum number of parallel timestamping operations.
-                      Please not that GnuPG serializes all operations through
+                      Please note that GnuPG serializes all operations through
                       the gpg-agent, so parallelism helps very little""")
     parser.add_argument('--max-parallel-timeout',
                         type=float,
@@ -121,7 +133,7 @@ def get_args(args=None, config_file_contents=None):
                         default="mailer@stamper.itconsult.co.uk",
                         help="email address used by PGP timestamper "
                              "in its replies")
-    parser.add_argument('--email-address',
+    parser.add_argument('--mail-address', '--email-address',
                         help="our email address; enables "
                              "cross-timestamping from the PGP timestamper")
     parser.add_argument('--smtp-server',
@@ -146,13 +158,29 @@ def get_args(args=None, config_file_contents=None):
 
     arg = parser.parse_args(args=args, config_file_contents=config_file_contents)
 
+    _logging.basicConfig()
+    for level in str(arg.debug_level).split(','):
+        if '=' in level:
+            (logger, lvl) = level.split('=', 1)
+        else:
+            logger = None # Root logger
+            lvl = level
+        try:
+            lvl = int(lvl)
+            lvl = _logging.WARN - lvl * (_logging.WARN - _logging.INFO)
+        except ValueError:
+            # Does not work in Python 3.4.0 and 3.4.1
+            # See note in https://docs.python.org/3/library/logging.html#logging.getLevelName
+            lvl = _logging.getLevelName(lvl.upper())
+        _logging.getLogger(logger).setLevel(lvl)
+
     arg.commit_interval = zeitgitter.deltat.parse_time(arg.commit_interval)
-    if arg.email_address is None:
+    if arg.mail_address is None:
         if arg.commit_interval < datetime.timedelta(minutes=1):
             sys.exit("--commit-interval may not be shorter than 1m")
     else:
-        if arg.commit_interval < datetime.timedelta(minutes=30):
-            sys.exit("--commit-interval may not be shorter than 30m when "
+        if arg.commit_interval < datetime.timedelta(minutes=10):
+            sys.exit("--commit-interval may not be shorter than 10m when "
                      "using the PGP Digital Timestamper")
 
     if arg.commit_offset is None:
@@ -177,9 +205,7 @@ def get_args(args=None, config_file_contents=None):
 
     for i in arg.upstream_timestamp:
         if not '=' in i:
-            sys.exit("--upstream-timestamp requires (space-separated list of) <branch>=<url> arguments")
-
-    level = logging.WARN - arg.debug_level * (logging.WARN - logging.INFO)
-    logging.basicConfig(level=level)
+            sys.exit("--upstream-timestamp requires (space-separated list of)"
+                " <branch>=<url> arguments")
 
     return arg

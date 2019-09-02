@@ -37,8 +37,9 @@ import zeitgitter.stamper
 
 
 def environment_ok():
-    for i in ('ZEITGITTER_SMTP_SERVER', 'ZEITGITTER_IMAP_SERVER', 'ZEITGITTER_USERNAME',
-              'ZEITGITTER_PASSWORD', 'ZEITGITTER_MAILADDRESS'):
+    for i in ('ZEITGITTER_SMTP_SERVER', 'ZEITGITTER_IMAP_SERVER',
+              'ZEITGITTER_USERNAME', 'ZEITGITTER_PASSWORD',
+              'ZEITGITTER_MAILADDRESS'):
         if not i in os.environ:
             return False
     return True
@@ -67,12 +68,11 @@ class MailTests(unittest.TestCase):
             '--own-url', 'https://hagrid.snakeoil',
             '--max-parallel-timeout', '1',
             '--repository', self.tmpdir.name,
-            '--email-address', os.environ['ZEITGITTER_MAILADDRESS'],
+            '--mail-address', os.environ['ZEITGITTER_MAILADDRESS'],
             '--imap-server', os.environ['ZEITGITTER_IMAP_SERVER'],
             '--smtp-server', os.environ['ZEITGITTER_SMTP_SERVER'],
             '--mail-username', os.environ['ZEITGITTER_USERNAME'],
             '--mail-password', os.environ['ZEITGITTER_PASSWORD'],
-            '--email-address', os.environ['ZEITGITTER_MAILADDRESS'],
             # Send test mails to self
             '--external-pgp-timestamper-to', os.environ['ZEITGITTER_MAILADDRESS'],
             '--external-pgp-timestamper-reply', os.environ['ZEITGITTER_MAILADDRESS']
