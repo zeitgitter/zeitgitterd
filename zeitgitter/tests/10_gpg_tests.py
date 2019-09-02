@@ -97,6 +97,7 @@ def test_tag():
             raise AssertionError(
                 "Assertion failed: 'a%s' (%d) is valid tag" % (chr(i), i))
     for i in (set(range(0, 255))
+              - set((ord('_'),))
               - oirset('A', 'Z') - oirset('a', 'z')):
         if stamper.valid_tag(chr(i)):
             raise AssertionError(
