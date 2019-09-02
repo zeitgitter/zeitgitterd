@@ -98,6 +98,12 @@ def save_signature(bodylines):
         logging.warning("git add %s in %s failed: %d"
                 % (ascfile, repo, res.returncode))
 
+def maybe_decode(str):
+    """Decode, if it is not `None`"""
+    if str is None:
+        return str
+    else:
+        return str.decode('ASCII')
 
 def body_signature_correct(bodylines, stat):
     body = '\n'.join(bodylines)
@@ -111,28 +117,30 @@ def body_signature_correct(bodylines, stat):
     env['LANG'] = 'C'
     env['TZ'] = 'UTC'
     res = subprocess.run(['gpg1', '--pgp2', '--verify'],
-                         encoding='ASCII', env=env,
-                         input=body, stderr=subprocess.PIPE)
-    logging.debug(res.stderr)
+                         env=env, input=body.encode('ASCII'),
+                         stderr=subprocess.PIPE)
+    stderr = maybe_decode(res.stderr)
+    stdout = maybe_decode(res.stdout)
+    logging.debug(stderr)
     if res.returncode != 0:
         logging.debug("gpg1 return code %d" % res.returncode)
         return False
-    if not '\ngpg: Good signature' in res.stderr:
-        logging.warning("Not good signature (%r)" % res.stderr)
+    if not '\ngpg: Good signature' in stderr:
+        logging.warning("Not good signature (%r)" % stderr)
         return False
-    if not res.stderr.startswith('gpg: Signature made '):
-        logging.warning("Signature not made (%r)" % res.stderr)
+    if not stderr.startswith('gpg: Signature made '):
+        logging.warning("Signature not made (%r)" % stderr)
         return False
     if not ((' key ID %s\n' % zeitgitter.config.arg.external_pgp_timestamper_keyid)
-            in res.stderr):
-        logging.warning("Wrong KeyID (%r)" % res.stderr)
+            in stderr):
+        logging.warning("Wrong KeyID (%r)" % stderr)
         return False
     try:
-        logging.debug(res.stderr[24:48])
-        sigtime = datetime.strptime(res.stderr[24:48], "%b %d %H:%M:%S %Y %Z")
+        logging.debug(stderr[24:48])
+        sigtime = datetime.strptime(stderr[24:48], "%b %d %H:%M:%S %Y %Z")
         logging.debug(sigtime)
     except ValueError:
-        logging.warning("Illegal date (%r)" % res.stderr)
+        logging.warning("Illegal date (%r)" % stderr)
         return False
     if sigtime > datetime.utcnow() + timedelta(seconds=30):
         logging.warning("Signature time %s lies more than 30 seconds in the future"
