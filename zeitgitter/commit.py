@@ -66,7 +66,7 @@ def commit_dangling(repo, log):
     try:
         stat = log.stat()
         d = datetime.datetime.utcfromtimestamp(stat.st_mtime)
-        dstr = d.strftime('%Y-%m-%d %H:%M:%S')
+        dstr = d.strftime('%Y-%m-%d %H:%M:%S UTC')
         commit_to_git(repo, log,
                       "Found uncommitted data from " + dstr)
     except FileNotFoundError:
@@ -115,7 +115,7 @@ def do_commit():
                 stat = tmp.stat()
                 rotate_log_file(tmp, log)
                 d = datetime.datetime.utcfromtimestamp(stat.st_mtime)
-                dstr = d.strftime('%Y-%m-%d %H:%M:%S')
+                dstr = d.strftime('%Y-%m-%d %H:%M:%S UTC')
                 commit_to_git(repo, log, preserve,
                         "Newly timestamped commits up to " + dstr)
                 with tmp.open(mode='ab'):
