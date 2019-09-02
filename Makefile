@@ -9,6 +9,8 @@ REPODIR		= ${ZEITGITTERHOME}/repo
 ETCDIR		= /etc
 SYSTEMDDIR	= ${ETCDIR}/systemd/system
 
+OWNER		= zeitgitter
+
 # Color
 ACT		= \033[7;34m
 INFO		= \033[7;32m
@@ -42,8 +44,8 @@ install: install-presetup install-files install-postsetup
 install-docker: install-files-docker
 
 install-presetup:
-	if ! groups zeitgitter > /dev/null 2>&1; then \
-		adduser --system --disabled-password --disabled-login --group --home ${ZEITGITTERHOME} --gecos "Independent GIT Timestamper" zeitgitter; \
+	if ! groups ${OWNER} > /dev/null 2>&1; then \
+		adduser --system --disabled-password --disabled-login --group --home ${ZEITGITTERHOME} --gecos "Independent GIT Timestamper" ${OWNER}; \
 	fi
 
 install-files-docker:
@@ -62,16 +64,16 @@ install-files:
 	install -t ${PYMODDIR} zeitgitter/*.py
 	py3compile ${PYMODDIR}/*.py
 	if [ ! -d ${WEBDIR} ]; then \
-		install -o zeitgitter -d ${WEBDIR}; \
-		install -o zeitgitter -m 644 -t ${WEBDIR} zeitgitter/web/*; \
+		install -o ${OWNER} -d ${WEBDIR}; \
+		install -o ${OWNER} -m 644 -t ${WEBDIR} zeitgitter/web/*; \
 	else \
 		echo "${INFO}* Not updating ${WEBDIR}${NORM}"; \
 	fi
 	if grep -q _ZEITGITTER_ ${WEBDIR}/*; then echo "${ACT}* Please adapt ${WEBDIR} to your needs${NORM}"; fi
-	install -d -o zeitgitter ${REPODIR}
+	install -d -o ${OWNER} ${REPODIR}
 # /etc/zeitgitter.conf contains passwords, so restrict access
 	if [ ! -f ${ETCDIR}/zeitgitter.conf ]; then \
-		install -o zeitgitter -m 600 sample-zeitgitter.conf ${ETCDIR}/zeitgitter.conf; \
+		install -o ${OWNER} -m 600 sample-zeitgitter.conf ${ETCDIR}/zeitgitter.conf; \
 		echo "${ACT}* Customize ${ETCDIR}/zeitgitter.conf${NORM}"; \
 	else \
 		echo "${INFO}* Not updating ${ETCDIR}/zeitgitter.conf${NORM}"; \
