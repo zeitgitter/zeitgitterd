@@ -4,8 +4,8 @@
 if [ ! -f /zgdata/zeitgitter.conf ]; then
 	cp /etc/zeitgitter.conf /zgdata/
 	echo
-	echo "*** Please configure /var/lib/zeitgitter/zeitgitter.conf first."
-	echo "*** For a first run, edit everything marked EASYCONFIG."
+	echo '*** Please configure `/var/lib/zeitgitter/zeitgitter.conf` first.'
+	echo '*** For a first run, edit everything marked `EASYCONFIG`.'
 	echo
 	exit 1
 fi
