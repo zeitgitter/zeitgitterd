@@ -26,6 +26,7 @@ import pygit2 as git
 import re
 import subprocess
 import time
+import threading
 
 from datetime import datetime, timedelta
 from imaplib import IMAP4
@@ -330,3 +331,13 @@ def async_email_timestamp(logfile):
     logging.debug("Contents sent")
     res = wait_for_receive(repo, head, logfile)
     logging.debug("Contents received %r" % res)
+
+
+def wait_for_mail():
+    """Continuous mail fetching thread"""
+
+
+def run():
+    """Start background thread to wait for given time"""
+    threading.Thread(target=wait_for_mail, daemon=True).start()
+
