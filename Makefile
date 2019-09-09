@@ -56,7 +56,13 @@ install-files-docker:
 	install -d ${WEBDIR}
 	install -m 644 -t ${WEBDIR} zeitgitter/web/*
 	install -d ${REPODIR}
-	install -m 600 sample-zeitgitter.conf ${ETCDIR}/zeitgitter.conf
+# Delete all existing `listen-address =` lines (probably none)
+# and add `listen-address = 0.0.0.0` (visible in the entire Docker
+# network) after the `; listen-address = …` comment
+	sed -e '/^listen-address/d' \
+		-e '/^; listen-address/a\' -e 'listen-address = 0.0.0.0' \
+		< sample-zeitgitter.conf > /etc/zeitgitter.conf
+	if ! grep -q '^listen-address =' /etc/zeitgitter.conf; then echo '*** Error replacing listen-address'; exit 1; fi
 
 install-files:
 	mkdir -p ${PYMODDIR}
