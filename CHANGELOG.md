@@ -18,8 +18,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support Docker
 - More detailed debug support (see `--debug-level`)
 - Minimal support for HTTP `HEAD` requests
+- Can use IMAP servers without `IDLE` support (are there still any out there?)
 
 ## Fixed
+- Correctly handles IMAP `IDLE` responses other than `EXISTS` (especially
+  Dovecot's `* OK still here`)
 
 ## Changed
 - Split into client (git-timestamp) and server (zeitgitterd).
