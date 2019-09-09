@@ -8,5 +8,9 @@ WORKDIR /tmp/zeitgitterd
 RUN git checkout docker-test
 RUN make install-docker
 WORKDIR /
-RUN rm -rf /tmp/zeitgitterd
-ENTRYPOINT /dockgitter.sh
+COPY stamper.asc /tmp/
+RUN gpg1 --import /tmp/stamper.asc
+RUN rm -rf /tmp/zeitgitterd /tmp/stamper.asc
+RUN mkdir /zgdata
+EXPOSE 8080
+ENTRYPOINT /dockgitter.sh --listen-address 0.0.0.0
