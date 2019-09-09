@@ -23,6 +23,7 @@
 import logging as _logging
 import os
 import pygit2 as git
+import re
 import subprocess
 
 from datetime import datetime, timedelta
@@ -226,19 +227,22 @@ def imap_idle(imap, stat, repo, initial_head, logfile):
             logging.debug("IMAP IDLE unsuccessful")
             return False
         # Wait for new message
-        logging.debug("…")
-        line = imap.readline().strip()
-        logging.debug("IMAP IDLE → %s" % line)
-        if line == b'' or line.startswith(b'* BYE '):
-            logging.debug("IMAP IDLE ends False")
-            return False
-        if line.endswith(b' EXISTS'):
-            logging.debug("You have new mail!")
-            # Stop idling
-            imap.send(b'DONE\r\n')
-            if check_for_stamper_mail(imap, stat, logfile) is True:
+        while True:
+            logging.debug("…")
+            line = imap.readline().strip()
+            logging.debug("IMAP IDLE → %s" % line)
+            if line == b'' or line.startswith(b'* BYE '):
                 logging.debug("IMAP IDLE ends False")
                 return False
+            if re.match(r'^\* [0-9]+ EXISTS$', str(line, 'ASCII')):
+                logging.debug("You have new mail!")
+                # Stop idling
+                imap.send(b'DONE\r\n')
+                if check_for_stamper_mail(imap, stat, logfile) is True:
+                    logging.debug("IMAP IDLE ends False")
+                    return False
+                break # Restart IDLE command
+            # Otherwise: Seen untagged response we don't care for, continue idling
 
 
 def check_for_stamper_mail(imap, stat, logfile):
