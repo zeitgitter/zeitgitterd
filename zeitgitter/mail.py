@@ -25,6 +25,7 @@ import os
 import pygit2 as git
 import re
 import subprocess
+import time
 
 from datetime import datetime, timedelta
 from imaplib import IMAP4
@@ -297,7 +298,16 @@ def wait_for_receive(repo, initial_head, logfile):
                 and still_same_head(repo, initial_head)):
             # No existing message found, wait for more incoming messages
             # and process them until definitely okay or giving up for good
-            imap_idle(imap, stat, repo, initial_head, logfile)
+            if 'IDLE' in imap.capabilities:
+                imap_idle(imap, stat, repo, initial_head, logfile)
+            else:
+                logging.warning("IMAP server does not support IDLE")
+                for i in range(10):
+                    time.sleep(60)
+                    if not still_same_head(repo, initial_head):
+                        return
+                    if check_for_stamper_mail(imap, stat, logfile):
+                        return
 
 
 def async_email_timestamp(logfile):
