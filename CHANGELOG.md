@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Commit log message includes timestamp as well to improve readability for
   `git blame` etc.
 - Log message timestamps (including "Found uncommitted data") now say "UTC"
+- Renamed all PGP Digital Timestamper related parameters to a common
+  `--stamper-` prefix (the old names are still accepted, but deprecated)
 
 
 # 0.9.2 - 2019-05-10
