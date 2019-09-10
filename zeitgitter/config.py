@@ -47,6 +47,7 @@ def get_args(args=None, config_file_contents=None):
         default_config_files=['/etc/zeitgitter.conf',
             os.path.join(os.getenv('HOME'), 'zeitgitter.conf')])
 
+    # General
     parser.add_argument('--config-file', '-c',
                         is_config_file=True,
                         help="config file path")
@@ -58,6 +59,10 @@ def get_args(args=None, config_file_contents=None):
                             can also be specified using 'name=level'.
                             Example: `DEBUG,gnupg=INFO` sets the default
                             debug level to DEBUG, except for `gnupg`.""")
+    parser.add_argument('--version',
+                        action='version', version=zeitgitter.version.VERSION)
+
+    # Identity
     parser.add_argument('--keyid',
                         help="""the PGP key ID to timestamp with, creating
                             this key first if necessary.""")
@@ -79,35 +84,19 @@ def get_args(args=None, config_file_contents=None):
                         required = True,
                         help="contact for this instance,"
                         " for HTML substitution")
-    parser.add_argument('--commit-interval',
-                        default='4h',
-                        help="how often to commit")
-    parser.add_argument('--commit-offset',
-                        help="""when to commit within that interval; e.g. after
-                            37m19.3s. Default: Random choice in the interval.
-                            For a production server, please fix a value in
-                            the config file to avoid it jumping after every
-                            restart.""")
+
+    # Server
     parser.add_argument('--webroot',
                         default=moddir('web'),
                         help="path to the webroot (default: module directory+'/web'")
-    parser.add_argument('--repository',
-                        default=os.path.join(
-                            os.getenv('HOME', '/var/lib/zeitgitter'), 'repo'),
-                        help="""path to the GIT repository (default from
-                            $HOME/repo or /var/lib/zeitgitter/repo)""")
-    parser.add_argument('--upstream-timestamp',
-                        default=
-                          'diversity-timestamps=https://diversity.zeitgitter.net'
-                          ' gitta-timestamps=https://gitta.zeitgitter.net',
-                        help="any number of <branch>=<URL> tuples of upstream"
-                        " Zeitgitter timestampers")
     parser.add_argument('--listen-address',
                         default='127.0.0.1',  # Still not all machines support ::1
                         help="IP address to listen on")
     parser.add_argument('--listen-port',
                         default=8080, type=int,
                         help="port number to listen on")
+
+    # GnuPG
     parser.add_argument('--max-parallel-signatures',
                         default=2, type=int,
                         help="""maximum number of parallel timestamping operations.
@@ -125,30 +114,30 @@ def get_args(args=None, config_file_contents=None):
                             os.getenv('HOME', '/var/lib/zeitgitter') + '/.gnupg'),
                         help="""GnuPG Home Dir to use (default from $GNUPGHOME
                             or $HOME/.gnupg or /var/lib/zeitgitter/.gnupg)""")
-    parser.add_argument('--external-pgp-timestamper-keyid',
-                        default="70B61F81",
-                        help="PGP key ID to obtain email cross-timestamps from")
-    parser.add_argument('--external-pgp-timestamper-to',
-                        default="clear@stamper.itconsult.co.uk",
-                        help="""destination email address
-                            to obtain email cross-timestamps from""")
-    parser.add_argument('--external-pgp-timestamper-from',
-                        default="mailer@stamper.itconsult.co.uk",
-                        help="""email address used by PGP timestamper
-                            in its replies""")
-    parser.add_argument('--mail-address', '--email-address',
-                        help="""our email address; enables
-                            cross-timestamping from the PGP timestamper""")
-    parser.add_argument('--smtp-server',
-                        help="""SMTP server to use for
-                            sending mail to PGP Timestamper""")
-    parser.add_argument('--imap-server',
-                        help="""IMAP server to use for
-                            receiving mail from PGP Timestamper""")
-    parser.add_argument('--mail-username',
-                        help="username to use for IMAP and SMTP")
-    parser.add_argument('--mail-password',
-                        help="password to use for IMAP and SMTP")
+
+    # Stamping
+    parser.add_argument('--commit-interval',
+                        default='4h',
+                        help="how often to commit")
+    parser.add_argument('--commit-offset',
+                        help="""when to commit within that interval; e.g. after
+                            37m19.3s. Default: Random choice in the interval.
+                            For a production server, please fix a value in
+                            the config file to avoid it jumping after every
+                            restart.""")
+    parser.add_argument('--repository',
+                        default=os.path.join(
+                            os.getenv('HOME', '/var/lib/zeitgitter'), 'repo'),
+                        help="""path to the GIT repository (default from
+                            $HOME/repo or /var/lib/zeitgitter/repo)""")
+    parser.add_argument('--upstream-timestamp',
+                        default=
+                          'diversity-timestamps=https://diversity.zeitgitter.net'
+                          ' gitta-timestamps=https://gitta.zeitgitter.net',
+                        help="any number of <branch>=<URL> tuples of upstream"
+                        " Zeitgitter timestampers")
+
+    # Pushing
     parser.add_argument('--push-repository',
                         default='',
                         help="""Space-separated list of repositores to push to;
@@ -156,8 +145,33 @@ def get_args(args=None, config_file_contents=None):
     parser.add_argument('--push-branch',
                         default='',
                         help="Space-separated list of branches to push")
-    parser.add_argument('--version',
-                        action='version', version=zeitgitter.version.VERSION)
+
+    # PGP Digital Timestamper interface
+    parser.add_argument('--stamper-own-address', '--mail-address', '--email-address',
+                        help="""our email address; enables
+                            cross-timestamping from the PGP timestamper""")
+    parser.add_argument('--stamper-keyid', '--external-pgp-timestamper-keyid',
+                        default="70B61F81",
+                        help="PGP key ID to obtain email cross-timestamps from")
+    parser.add_argument('--stamper-to', '--external-pgp-timestamper-to',
+                        default="clear@stamper.itconsult.co.uk",
+                        help="""destination email address
+                            to obtain email cross-timestamps from""")
+    parser.add_argument('--stamper-from', '--external-pgp-timestamper-from',
+                        default="mailer@stamper.itconsult.co.uk",
+                        help="""email address used by PGP timestamper
+                            in its replies""")
+    parser.add_argument('--stamper-smtp-server', '--smtp-server',
+                        help="""SMTP server to use for
+                            sending mail to PGP Timestamper""")
+    parser.add_argument('--stamper-imap-server', '--imap-server',
+                        help="""IMAP server to use for
+                            receiving mail from PGP Timestamper""")
+    parser.add_argument('--stamper-username', '--mail-username',
+                        help="""username to use for IMAP and SMTP
+                            (default from `--stamper-own-address`)""")
+    parser.add_argument('--stamper-password', '--mail-password',
+                        help="password to use for IMAP and SMTP")
 
     arg = parser.parse_args(args=args, config_file_contents=config_file_contents)
 
@@ -177,8 +191,11 @@ def get_args(args=None, config_file_contents=None):
             lvl = _logging.getLevelName(lvl.upper())
         _logging.getLogger(logger).setLevel(lvl)
 
+    if arg.stamper_username is None:
+        arg.stamper_username = arg.stamper_own_address
+
     arg.commit_interval = zeitgitter.deltat.parse_time(arg.commit_interval)
-    if arg.mail_address is None:
+    if arg.stamper_own_address is None:
         if arg.commit_interval < datetime.timedelta(minutes=1):
             sys.exit("--commit-interval may not be shorter than 1m")
     else:
