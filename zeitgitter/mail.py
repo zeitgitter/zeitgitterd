@@ -49,14 +49,14 @@ def send(body, subject='Stamping request', to=None):
     # Does not work in unittests if assigned in function header
     # (are bound too early? At load time instead of at call time?)
     if to is None:
-        to = zeitgitter.config.arg.external_pgp_timestamper_to
-    (host, port) = split_host_port(zeitgitter.config.arg.smtp_server, 587)
+        to = zeitgitter.config.arg.stamper_to
+    (host, port) = split_host_port(zeitgitter.config.arg.stamper_smtp_server, 587)
     with SMTP(host, port=port,
               local_hostname=zeitgitter.config.arg.domain) as smtp:
         smtp.starttls()
-        smtp.login(zeitgitter.config.arg.mail_username,
-                   zeitgitter.config.arg.mail_password)
-        frm = zeitgitter.config.arg.mail_address
+        smtp.login(zeitgitter.config.arg.stamper_username,
+                   zeitgitter.config.arg.stamper_password)
+        frm = zeitgitter.config.arg.stamper_own_address
         date = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
         msg = """From: %s
 To: %s
@@ -134,7 +134,7 @@ def body_signature_correct(bodylines, stat):
     if not stderr.startswith('gpg: Signature made '):
         logging.warning("Signature not made (%r)" % stderr)
         return False
-    if not ((' key ID %s\n' % zeitgitter.config.arg.external_pgp_timestamper_keyid)
+    if not ((' key ID %s\n' % zeitgitter.config.arg.stamper_keyid)
             in stderr):
         logging.warning("Wrong KeyID (%r)" % stderr)
         return False
@@ -250,7 +250,7 @@ def check_for_stamper_mail(imap, stat, logfile):
     logging.debug("IMAP SEARCH…")
     (typ, msgs) = imap.search(
         None,
-        'FROM', '"%s"' % zeitgitter.config.arg.external_pgp_timestamper_from,
+        'FROM', '"%s"' % zeitgitter.config.arg.stamper_from,
         'UNSEEN',
         'LARGER', str(stat.st_size),
         'SMALLER', str(stat.st_size + 16384))
@@ -288,11 +288,11 @@ def wait_for_receive(repo, initial_head, logfile):
         logging.debug("File is from %d" % stat.st_mtime)
     except FileNotFoundError:
         return False
-    (host, port) = split_host_port(zeitgitter.config.arg.imap_server, 143)
+    (host, port) = split_host_port(zeitgitter.config.arg.stamper_imap_server, 143)
     with IMAP4(host=host, port=port) as imap:
         imap.starttls()
-        imap.login(zeitgitter.config.arg.mail_username,
-                   zeitgitter.config.arg.mail_password)
+        imap.login(zeitgitter.config.arg.stamper_username,
+                   zeitgitter.config.arg.stamper_password)
         imap.select('INBOX')
         if (check_for_stamper_mail(imap, stat, logfile) == False
                 and still_same_head(repo, initial_head)):
