@@ -20,6 +20,7 @@
 
 # Configuration handling
 
+import argparse
 import configargparse
 import datetime
 import logging as _logging
@@ -41,6 +42,7 @@ def get_args(args=None, config_file_contents=None):
     # Config file in /etc or the program directory
     parser = configargparse.ArgumentParser(
         auto_env_var_prefix="zeitgitter_",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="zeitgitterd.py — The Independent git Timestamping server.",
         default_config_files=['/etc/zeitgitter.conf',
             os.path.join(os.getenv('HOME'), 'zeitgitter.conf')])
@@ -88,11 +90,12 @@ def get_args(args=None, config_file_contents=None):
                             restart.""")
     parser.add_argument('--webroot',
                         default=moddir('web'),
-                        help="path to the webroot")
+                        help="path to the webroot (default: module directory+'/web'")
     parser.add_argument('--repository',
                         default=os.path.join(
                             os.getenv('HOME', '/var/lib/zeitgitter'), 'repo'),
-                        help="path to the GIT repository")
+                        help="""path to the GIT repository (default from
+                            $HOME/repo or /var/lib/zeitgitter/repo)""")
     parser.add_argument('--upstream-timestamp',
                         default=
                           'diversity-timestamps=https://diversity.zeitgitter.net'
@@ -108,48 +111,48 @@ def get_args(args=None, config_file_contents=None):
     parser.add_argument('--max-parallel-signatures',
                         default=2, type=int,
                         help="""maximum number of parallel timestamping operations.
-                      Please note that GnuPG serializes all operations through
-                      the gpg-agent, so parallelism helps very little""")
+                            Please note that GnuPG serializes all operations through
+                            the gpg-agent, so parallelism helps very little""")
     parser.add_argument('--max-parallel-timeout',
                         type=float,
                         help="""number of seconds to wait for a timestamping thread
-                          before failing (default: wait forever)""")
+                            before failing (default: wait forever)""")
     parser.add_argument('--number-of-gpg-agents',
                         default=1, type=int,
                         help="number of gpg-agents to run")
     parser.add_argument('--gnupg-home',
                         default=os.getenv('GNUPGHOME',
                             os.getenv('HOME', '/var/lib/zeitgitter') + '/.gnupg'),
-                        help="GnuPG Home Dir to use (default from "
-                            "$GNUPGHOME or $HOME/.gnupg)")
+                        help="""GnuPG Home Dir to use (default from $GNUPGHOME
+                            or $HOME/.gnupg or /var/lib/zeitgitter/.gnupg)""")
     parser.add_argument('--external-pgp-timestamper-keyid',
                         default="70B61F81",
                         help="PGP key ID to obtain email cross-timestamps from")
     parser.add_argument('--external-pgp-timestamper-to',
                         default="clear@stamper.itconsult.co.uk",
-                        help="destination email address "
-                             "to obtain email cross-timestamps from")
+                        help="""destination email address
+                            to obtain email cross-timestamps from""")
     parser.add_argument('--external-pgp-timestamper-from',
                         default="mailer@stamper.itconsult.co.uk",
-                        help="email address used by PGP timestamper "
-                             "in its replies")
+                        help="""email address used by PGP timestamper
+                            in its replies""")
     parser.add_argument('--mail-address', '--email-address',
-                        help="our email address; enables "
-                             "cross-timestamping from the PGP timestamper")
+                        help="""our email address; enables
+                            cross-timestamping from the PGP timestamper""")
     parser.add_argument('--smtp-server',
-                        help="SMTP server to use for "
-                             "sending mail to PGP Timestamper")
+                        help="""SMTP server to use for
+                            sending mail to PGP Timestamper""")
     parser.add_argument('--imap-server',
-                        help="IMAP server to use for "
-                             "receiving mail from PGP Timestamper")
+                        help="""IMAP server to use for
+                            receiving mail from PGP Timestamper""")
     parser.add_argument('--mail-username',
                         help="username to use for IMAP and SMTP")
     parser.add_argument('--mail-password',
                         help="password to use for IMAP and SMTP")
     parser.add_argument('--push-repository',
                         default='',
-                        help="Space-separated list of repositores to push to; "
-                             "setting this enables automatic push")
+                        help="""Space-separated list of repositores to push to;
+                            setting this enables automatic push""")
     parser.add_argument('--push-branch',
                         default='',
                         help="Space-separated list of branches to push")
