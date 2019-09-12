@@ -50,6 +50,7 @@ def send(body, subject='Stamping request', to=None):
     # (are bound too early? At load time instead of at call time?)
     if to is None:
         to = zeitgitter.config.arg.stamper_to
+    logging.debug('SMTP server %s' % zeitgitter.config.arg.stamper_smtp_server)
     (host, port) = split_host_port(zeitgitter.config.arg.stamper_smtp_server, 587)
     with SMTP(host, port=port,
               local_hostname=zeitgitter.config.arg.domain) as smtp:
@@ -70,20 +71,23 @@ Subject: %s
 def extract_pgp_body(body):
     try:
         body = str(body, 'ASCII')
-    except TypeError:
+    except TypeError as t:
+        logging.warning("Conversion error for message body: %s" % t)
         return None
     lines = body.splitlines()
     start = None
-    for i in range(0, len(lines) - 1):
+    for i in range(0, len(lines)):
         if lines[i] == '-----BEGIN PGP SIGNED MESSAGE-----':
+            logging.debug("Found start at %d: %s" % (i, lines[i]))
             start = i
             break
     else:
         return None
 
     end = None
-    for i in range(start, len(lines) - 1):
+    for i in range(start, len(lines)):
         if lines[i] == '-----END PGP SIGNATURE-----':
+            logging.debug("Found end at %d: %s" % (i, lines[i]))
             end = i
             break
     else:
@@ -159,6 +163,7 @@ def body_signature_correct(bodylines, stat):
 
 
 def verify_body_and_save_signature(body, stat, logfile, msgno):
+    logging.debug(body)
     bodylines = extract_pgp_body(body)
     if bodylines is None:
         logging.warning("No body lines")
