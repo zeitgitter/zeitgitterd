@@ -121,7 +121,7 @@ system-tests: prepare-tmp-git kill-daemon
 ## Wait for daemon to be ready
 	sleep 0.5
 ## Run tests with daemon
-	@d=`mktemp -d`; for i in tests/*; do echo; echo ===== $$i $$d; $$i $$d || exit 1; done; echo ===== Cleanup; ${RM} -r $$d
+	@d=`mktemp -d`; for i in tests/[0-9][0-9]-*; do echo; echo ===== $$i $$d; $$i $$d || exit 1; done; echo ===== Cleanup; ${RM} -r $$d
 ## Cleanup
 	${RM} -r ${DAEMONTEMP}
 	killall zeitgitterd.py

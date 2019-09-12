@@ -36,6 +36,8 @@ import zeitgitter.mail
 def mailtest():
   tmpdir = tempfile.TemporaryDirectory()
   zeitgitter.config.get_args(args=[
+    '-c', 'tests/mailtest.conf',
+    '--debug', 2,
     '--gnupg-home',
     str(Path(os.path.dirname(os.path.realpath(__file__)),
                      'gnupg')),
@@ -46,14 +48,6 @@ def mailtest():
     '--country', '?',
     '--max-parallel-timeout', '1',
     '--repository', tmpdir.name,
-    '--mail-address', os.environ['ZEITGITTER_MAILADDRESS'],
-    '--imap-server', os.environ['ZEITGITTER_IMAP_SERVER'],
-    '--smtp-server', os.environ['ZEITGITTER_SMTP_SERVER'],
-    '--mail-username', os.environ['ZEITGITTER_USERNAME'],
-    '--mail-password', os.environ['ZEITGITTER_PASSWORD'],
-    # Send test mails to self
-    '--external-pgp-timestamper-to', os.environ['ZEITGITTER_MAILADDRESS'],
-    '--external-pgp-timestamper-reply', os.environ['ZEITGITTER_MAILADDRESS']
   ])
   zeitgitter.mail.send('''Stamper is a service provided free of charge to Internet users.
 
@@ -123,11 +117,7 @@ fa94ffe675454658bd11219693d60844b995a74d
   os.utime(p, times=(ftime, ftime))
   zeitgitter.mail.receive_async()
 
-if ('ZEITGITTER_MAILADDRESS' in os.environ
-    and 'ZEITGITTER_IMAP_SERVER' in os.environ
-    and 'ZEITGITTER_SMTP_SERVER' in os.environ
-    and 'ZEITGITTER_USERNAME' in os.environ
-    and 'ZEITGITTER_PASSWORD' in os.environ):
-  mailtest()
+if os.path.isfile('tests/mailtest.conf'):
+    mailtest()
 else:
-  print("Skipping mailtest --- configuration environment variables missing")
+    print("Skipping mailtest, no file mailtest.conf (see sample-mailtest.conf)")
