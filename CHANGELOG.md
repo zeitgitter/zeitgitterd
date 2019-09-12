@@ -27,12 +27,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Changed
 - Split into client (git-timestamp) and server (zeitgitterd).
 - Calculate a default for `--gnupg-home` to allow `--number-of-gpg-agents` > 1
-- `--email-address` is now deprecated; please use `--mail-address` instead
 - Commit log message includes timestamp as well to improve readability for
   `git blame` etc.
 - Log message timestamps (including "Found uncommitted data") now say "UTC"
 - Renamed all PGP Digital Timestamper related parameters to a common
   `--stamper-` prefix (the old names are still accepted, but deprecated)
+- Mail tests now include a (local) configuration file for the site secrets.
 
 
 # 0.9.2 - 2019-05-10

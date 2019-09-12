@@ -3,7 +3,7 @@
 # so that no rotation occurs during this test
 #
 export LANG=C # So we can match gpg output
-if [ -r ../../git-timestamp/git-timestamp.py ]; then
+if [ -x ../../git-timestamp/git-timestamp.py ]; then
   ts="`pwd`/../../git-timestamp/git-timestamp.py"
 else
   ts="git-timestamp"
