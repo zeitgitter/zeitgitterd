@@ -46,24 +46,22 @@ install-docker: install-files-docker
 
 install-presetup:
 	if ! groups ${OWNER} > /dev/null 2>&1; then \
-		adduser --system --disabled-password --disabled-login --group --home ${ZEITGITTERHOME} --gecos "Independent GIT Timestamper" ${OWNER}; \
+		adduser --system --disabled-password --disabled-login --group \
+			--home ${ZEITGITTERHOME} \
+			--gecos "Independent GIT Timestamper" ${OWNER}; \
 	fi
 
 install-files-docker:
 	mkdir -p ${PYMODDIR}
-	install -t / zeitgitterd.py docker/dockgitter.sh
+	install -t / zeitgitterd.py docker/zeitgitter/dockgitter.sh
 	install -t ${PYMODDIR} zeitgitter/*.py
 	py3compile ${PYMODDIR}/*.py
 	install -d ${WEBDIR}
 	install -m 644 -t ${WEBDIR} zeitgitter/web/*
 	install -d ${REPODIR}
-# Delete all existing `listen-address =` lines (probably none)
-# and add `listen-address = 0.0.0.0` (visible in the entire Docker
-# network) after the `; listen-address = …` comment
-	sed -e '/^listen-address/d' \
-		-e '/^; listen-address/a\' -e 'listen-address = 0.0.0.0' \
+# Activate DOCKER_ACTIVATE_LINE lines
+	sed -e '/DOCKER_ACTIVATE_LINE/s/^[#; ]*//' \
 		< sample-zeitgitter.conf > /etc/zeitgitter.conf
-	if ! grep -q '^listen-address =' /etc/zeitgitter.conf; then echo '*** Error replacing listen-address'; exit 1; fi
 
 install-files:
 	mkdir -p ${PYMODDIR}
