@@ -19,7 +19,8 @@ NORM		= \033[0m
 # Tests
 DAEMONTEMP	:= $(shell mktemp -d)
 KEYID		= 353DFEC512FA47C7
-KEYHOME		= ${CURDIR}/zeitgitter/tests/gnupg/
+KEYHOME		= ${DAEMONTEMP}/gnupg/
+KEYHOMEIN	= ${CURDIR}/zeitgitter/tests/gnupg/
 DAEMONPARAMS	= \
 	--keyid ${KEYID} \
 	--own-url https://hagrid.snakeoil \
@@ -131,6 +132,7 @@ kill-daemon:
 
 prepare-tmp-git:
 	git init ${DAEMONTEMP}
+	cp -rp ${KEYHOMEIN} ${KEYHOME}
 	chmod 700 ${KEYHOME}
 # Avoid "gpg: WARNING: unsafe permissions on homedir"
 	gpg --export -a ${KEYID} > ${DAEMONTEMP}/pubkey.asc
