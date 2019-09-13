@@ -46,7 +46,9 @@ install-docker: install-files-docker
 
 install-presetup:
 	if ! groups ${OWNER} > /dev/null 2>&1; then \
-		adduser --system --disabled-password --disabled-login --group --home ${ZEITGITTERHOME} --gecos "Independent GIT Timestamper" ${OWNER}; \
+		adduser --system --disabled-password --disabled-login --group \
+			--home ${ZEITGITTERHOME} \
+			--gecos "Independent GIT Timestamper" ${OWNER}; \
 	fi
 
 install-files-docker:
