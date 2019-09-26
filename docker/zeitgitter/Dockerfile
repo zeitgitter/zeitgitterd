@@ -5,7 +5,6 @@ RUN apt install -y git python3-pygit2 python3-gnupg python3-configargparse pytho
 RUN pip3 install git-timestamp
 RUN git clone https://gitlab.com/zeitgitter/zeitgitterd.git /tmp/zeitgitterd
 WORKDIR /tmp/zeitgitterd
-RUN git checkout docker-test
 RUN make install-docker
 WORKDIR /
 COPY stamper.asc /tmp/
