@@ -8,7 +8,7 @@ WORKDIR /tmp/zeitgitterd
 RUN make install-docker
 WORKDIR /
 COPY stamper.asc /tmp/
-RUN gpg1 --import /tmp/stamper.asc
+RUN gpg1 --pgp2 --quiet --import /tmp/stamper.asc
 RUN rm -rf /tmp/zeitgitterd /tmp/stamper.asc
 RUN mkdir /zgdata
 EXPOSE 8080
