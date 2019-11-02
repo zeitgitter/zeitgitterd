@@ -76,7 +76,10 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
             for k, v in replace.items():
                 contents = contents.replace(k, v)
             self.send_response(200)
-            self.send_header('Content-Type', content_type)
+            if content_type.startswith('text/'):
+                self.send_header('Content-Type', content_type + '; charset=UTF-8')
+            else:
+                self.send_header('Content-Type', content_type)
             self.send_header('Content-Length', len(contents))
             self.end_headers()
             self.wfile.write(contents)
@@ -91,7 +94,7 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
 """ % (title, title, body)
         explain = bytes(explain, 'UTF-8')
         self.send_response(status)
-        self.send_header('Content-Type', 'text/html')
+        self.send_header('Content-Type', 'text/html; charset=UTF-8')
         self.send_header('Content-Length', len(explain))
         self.end_headers()
         self.wfile.write(explain)
