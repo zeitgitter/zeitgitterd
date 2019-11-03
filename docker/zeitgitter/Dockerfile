@@ -4,9 +4,7 @@ RUN apt upgrade -y
 RUN apt install -y git python3-pygit2 python3-gnupg python3-configargparse python3-requests python3-pip gnupg1
 RUN pip3 install git-timestamp
 RUN git clone https://gitlab.com/zeitgitter/zeitgitterd.git /tmp/zeitgitterd
-WORKDIR /tmp/zeitgitterd
-RUN make install-docker
-WORKDIR /
+RUN cd /tmp/zeitgitterd && make install-docker
 COPY stamper.asc /tmp/
 RUN gpg1 --pgp2 --quiet --import /tmp/stamper.asc
 RUN rm -rf /tmp/zeitgitterd /tmp/stamper.asc
