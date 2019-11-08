@@ -20,12 +20,14 @@
 
 # Test mail sending
 
+from datetime import datetime, timezone
 import os
 from pathlib import Path
+import pygit2 as git
 import tempfile
 import time
-from datetime import datetime, timezone
 import threading
+import subprocess
 import sys
 sys.path.append('.')
 
@@ -36,6 +38,8 @@ import zeitgitter.mail
 def mailtest():
   tmpdir = tempfile.TemporaryDirectory()
   zeitgitter.config.get_args(args=[
+    '-c', 'tests/mailtest.conf',
+    '--debug', '2',
     '--gnupg-home',
     str(Path(os.path.dirname(os.path.realpath(__file__)),
                      'gnupg')),
@@ -46,14 +50,6 @@ def mailtest():
     '--country', '?',
     '--max-parallel-timeout', '1',
     '--repository', tmpdir.name,
-    '--mail-address', os.environ['ZEITGITTER_MAILADDRESS'],
-    '--imap-server', os.environ['ZEITGITTER_IMAP_SERVER'],
-    '--smtp-server', os.environ['ZEITGITTER_SMTP_SERVER'],
-    '--mail-username', os.environ['ZEITGITTER_USERNAME'],
-    '--mail-password', os.environ['ZEITGITTER_PASSWORD'],
-    # Send test mails to self
-    '--external-pgp-timestamper-to', os.environ['ZEITGITTER_MAILADDRESS'],
-    '--external-pgp-timestamper-reply', os.environ['ZEITGITTER_MAILADDRESS']
   ])
   zeitgitter.mail.send('''Stamper is a service provided free of charge to Internet users.
 
@@ -121,13 +117,16 @@ fa94ffe675454658bd11219693d60844b995a74d
                    hour=16, minute=55, second=0,
                    tzinfo=timezone.utc).timestamp()
   os.utime(p, times=(ftime, ftime))
-  zeitgitter.mail.receive_async()
+  subprocess.run(['git', 'init'],
+          cwd=zeitgitter.config.arg.repository).check_returncode()
+  subprocess.run(['git', 'add', 'hashes.log'],
+          cwd=zeitgitter.config.arg.repository).check_returncode()
+  subprocess.run(['git', 'commit', '-m', "First commit"],
+          cwd=zeitgitter.config.arg.repository).check_returncode()
+  repo = git.Repository(zeitgitter.config.arg.repository)
+  zeitgitter.mail.wait_for_receive(repo, repo.head, p)
 
-if ('ZEITGITTER_MAILADDRESS' in os.environ
-    and 'ZEITGITTER_IMAP_SERVER' in os.environ
-    and 'ZEITGITTER_SMTP_SERVER' in os.environ
-    and 'ZEITGITTER_USERNAME' in os.environ
-    and 'ZEITGITTER_PASSWORD' in os.environ):
-  mailtest()
+if os.path.isfile('tests/mailtest.conf'):
+    mailtest()
 else:
-  print("Skipping mailtest --- configuration environment variables missing")
+    print("Skipping mailtest, no file mailtest.conf (see sample-mailtest.conf)")

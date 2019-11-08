@@ -135,7 +135,7 @@ def do_commit():
             logging.info("Pushing upstream to %s" % r);
             push_upstream(repo, r, branches)
 
-        if zeitgitter.config.arg.mail_address:
+        if zeitgitter.config.arg.stamper_own_address:
             logging.info("cross-timestamping by mail")
             zeitgitter.mail.async_email_timestamp(preserve)
         logging.info("do_commit done")

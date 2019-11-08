@@ -23,7 +23,9 @@
 import logging as _logging
 import os
 import pygit2 as git
+import re
 import subprocess
+import time
 
 from datetime import datetime, timedelta
 from imaplib import IMAP4
@@ -47,14 +49,15 @@ def send(body, subject='Stamping request', to=None):
     # Does not work in unittests if assigned in function header
     # (are bound too early? At load time instead of at call time?)
     if to is None:
-        to = zeitgitter.config.arg.external_pgp_timestamper_to
-    (host, port) = split_host_port(zeitgitter.config.arg.smtp_server, 587)
+        to = zeitgitter.config.arg.stamper_to
+    logging.debug('SMTP server %s' % zeitgitter.config.arg.stamper_smtp_server)
+    (host, port) = split_host_port(zeitgitter.config.arg.stamper_smtp_server, 587)
     with SMTP(host, port=port,
               local_hostname=zeitgitter.config.arg.domain) as smtp:
         smtp.starttls()
-        smtp.login(zeitgitter.config.arg.mail_username,
-                   zeitgitter.config.arg.mail_password)
-        frm = zeitgitter.config.arg.mail_address
+        smtp.login(zeitgitter.config.arg.stamper_username,
+                   zeitgitter.config.arg.stamper_password)
+        frm = zeitgitter.config.arg.stamper_own_address
         date = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
         msg = """From: %s
 To: %s
@@ -68,20 +71,23 @@ Subject: %s
 def extract_pgp_body(body):
     try:
         body = str(body, 'ASCII')
-    except TypeError:
+    except TypeError as t:
+        logging.warning("Conversion error for message body: %s" % t)
         return None
     lines = body.splitlines()
     start = None
-    for i in range(0, len(lines) - 1):
+    for i in range(0, len(lines)):
         if lines[i] == '-----BEGIN PGP SIGNED MESSAGE-----':
+            logging.debug("Found start at %d: %s" % (i, lines[i]))
             start = i
             break
     else:
         return None
 
     end = None
-    for i in range(start, len(lines) - 1):
+    for i in range(start, len(lines)):
         if lines[i] == '-----END PGP SIGNATURE-----':
+            logging.debug("Found end at %d: %s" % (i, lines[i]))
             end = i
             break
     else:
@@ -132,7 +138,7 @@ def body_signature_correct(bodylines, stat):
     if not stderr.startswith('gpg: Signature made '):
         logging.warning("Signature not made (%r)" % stderr)
         return False
-    if not ((' key ID %s\n' % zeitgitter.config.arg.external_pgp_timestamper_keyid)
+    if not ((' key ID %s\n' % zeitgitter.config.arg.stamper_keyid)
             in stderr):
         logging.warning("Wrong KeyID (%r)" % stderr)
         return False
@@ -157,6 +163,7 @@ def body_signature_correct(bodylines, stat):
 
 
 def verify_body_and_save_signature(body, stat, logfile, msgno):
+    logging.debug(body)
     bodylines = extract_pgp_body(body)
     if bodylines is None:
         logging.warning("No body lines")
@@ -226,26 +233,29 @@ def imap_idle(imap, stat, repo, initial_head, logfile):
             logging.debug("IMAP IDLE unsuccessful")
             return False
         # Wait for new message
-        logging.debug("…")
-        line = imap.readline().strip()
-        logging.debug("IMAP IDLE → %s" % line)
-        if line == b'' or line.startswith(b'* BYE '):
-            logging.debug("IMAP IDLE ends False")
-            return False
-        if line.endswith(b' EXISTS'):
-            logging.debug("You have new mail!")
-            # Stop idling
-            imap.send(b'DONE\r\n')
-            if check_for_stamper_mail(imap, stat, logfile) is True:
+        while True:
+            logging.debug("…")
+            line = imap.readline().strip()
+            logging.debug("IMAP IDLE → %s" % line)
+            if line == b'' or line.startswith(b'* BYE '):
                 logging.debug("IMAP IDLE ends False")
                 return False
+            if re.match(r'^\* [0-9]+ EXISTS$', str(line, 'ASCII')):
+                logging.debug("You have new mail!")
+                # Stop idling
+                imap.send(b'DONE\r\n')
+                if check_for_stamper_mail(imap, stat, logfile) is True:
+                    logging.debug("IMAP IDLE ends False")
+                    return False
+                break # Restart IDLE command
+            # Otherwise: Seen untagged response we don't care for, continue idling
 
 
 def check_for_stamper_mail(imap, stat, logfile):
     logging.debug("IMAP SEARCH…")
     (typ, msgs) = imap.search(
         None,
-        'FROM', '"%s"' % zeitgitter.config.arg.external_pgp_timestamper_from,
+        'FROM', '"%s"' % zeitgitter.config.arg.stamper_from,
         'UNSEEN',
         'LARGER', str(stat.st_size),
         'SMALLER', str(stat.st_size + 16384))
@@ -283,17 +293,26 @@ def wait_for_receive(repo, initial_head, logfile):
         logging.debug("File is from %d" % stat.st_mtime)
     except FileNotFoundError:
         return False
-    (host, port) = split_host_port(zeitgitter.config.arg.imap_server, 143)
+    (host, port) = split_host_port(zeitgitter.config.arg.stamper_imap_server, 143)
     with IMAP4(host=host, port=port) as imap:
         imap.starttls()
-        imap.login(zeitgitter.config.arg.mail_username,
-                   zeitgitter.config.arg.mail_password)
+        imap.login(zeitgitter.config.arg.stamper_username,
+                   zeitgitter.config.arg.stamper_password)
         imap.select('INBOX')
         if (check_for_stamper_mail(imap, stat, logfile) == False
                 and still_same_head(repo, initial_head)):
             # No existing message found, wait for more incoming messages
             # and process them until definitely okay or giving up for good
-            imap_idle(imap, stat, repo, initial_head, logfile)
+            if 'IDLE' in imap.capabilities:
+                imap_idle(imap, stat, repo, initial_head, logfile)
+            else:
+                logging.warning("IMAP server does not support IDLE")
+                for i in range(10):
+                    time.sleep(60)
+                    if not still_same_head(repo, initial_head):
+                        return
+                    if check_for_stamper_mail(imap, stat, logfile):
+                        return
 
 
 def async_email_timestamp(logfile):

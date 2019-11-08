@@ -9,6 +9,8 @@ REPODIR		= ${ZEITGITTERHOME}/repo
 ETCDIR		= /etc
 SYSTEMDDIR	= ${ETCDIR}/systemd/system
 
+OWNER		= zeitgitter
+
 # Color
 ACT		= \033[7;34m
 INFO		= \033[7;32m
@@ -17,7 +19,8 @@ NORM		= \033[0m
 # Tests
 DAEMONTEMP	:= $(shell mktemp -d)
 KEYID		= 353DFEC512FA47C7
-KEYHOME		= ${CURDIR}/zeitgitter/tests/gnupg/
+KEYHOME		= ${DAEMONTEMP}/gnupg/
+KEYHOMEIN	= ${CURDIR}/zeitgitter/tests/gnupg/
 DAEMONPARAMS	= \
 	--keyid ${KEYID} \
 	--own-url https://hagrid.snakeoil \
@@ -42,19 +45,23 @@ install: install-presetup install-files install-postsetup
 install-docker: install-files-docker
 
 install-presetup:
-	if ! groups zeitgitter > /dev/null 2>&1; then \
-		adduser --system --disabled-password --disabled-login --group --home ${ZEITGITTERHOME} --gecos "Independent GIT Timestamper" zeitgitter; \
+	if ! groups ${OWNER} > /dev/null 2>&1; then \
+		adduser --system --disabled-password --disabled-login --group \
+			--home ${ZEITGITTERHOME} \
+			--gecos "Independent GIT Timestamper" ${OWNER}; \
 	fi
 
 install-files-docker:
 	mkdir -p ${PYMODDIR}
-	install -t / zeitgitterd.py docker/dockgitter.sh
+	install -t / zeitgitterd.py docker/zeitgitter/dockgitter.sh
 	install -t ${PYMODDIR} zeitgitter/*.py
 	py3compile ${PYMODDIR}/*.py
 	install -d ${WEBDIR}
 	install -m 644 -t ${WEBDIR} zeitgitter/web/*
 	install -d ${REPODIR}
-	install -m 600 sample-zeitgitter.conf ${ETCDIR}/zeitgitter.conf
+# Activate DOCKER_ACTIVATE_LINE lines
+	sed -e '/DOCKER_ACTIVATE_LINE/s/^[#; ]*//' \
+		< sample-zeitgitter.conf > /etc/zeitgitter.conf
 
 install-files:
 	mkdir -p ${PYMODDIR}
@@ -62,16 +69,16 @@ install-files:
 	install -t ${PYMODDIR} zeitgitter/*.py
 	py3compile ${PYMODDIR}/*.py
 	if [ ! -d ${WEBDIR} ]; then \
-		install -o zeitgitter -d ${WEBDIR}; \
-		install -o zeitgitter -m 644 -t ${WEBDIR} zeitgitter/web/*; \
+		install -o ${OWNER} -d ${WEBDIR}; \
+		install -o ${OWNER} -m 644 -t ${WEBDIR} zeitgitter/web/*; \
 	else \
 		echo "${INFO}* Not updating ${WEBDIR}${NORM}"; \
 	fi
 	if grep -q _ZEITGITTER_ ${WEBDIR}/*; then echo "${ACT}* Please adapt ${WEBDIR} to your needs${NORM}"; fi
-	install -d -o zeitgitter ${REPODIR}
+	install -d -o ${OWNER} ${REPODIR}
 # /etc/zeitgitter.conf contains passwords, so restrict access
 	if [ ! -f ${ETCDIR}/zeitgitter.conf ]; then \
-		install -o zeitgitter -m 600 sample-zeitgitter.conf ${ETCDIR}/zeitgitter.conf; \
+		install -o ${OWNER} -m 600 sample-zeitgitter.conf ${ETCDIR}/zeitgitter.conf; \
 		echo "${ACT}* Customize ${ETCDIR}/zeitgitter.conf${NORM}"; \
 	else \
 		echo "${INFO}* Not updating ${ETCDIR}/zeitgitter.conf${NORM}"; \
@@ -113,7 +120,7 @@ system-tests: prepare-tmp-git kill-daemon
 ## Wait for daemon to be ready
 	sleep 0.5
 ## Run tests with daemon
-	@d=`mktemp -d`; for i in tests/*; do echo; echo ===== $$i $$d; $$i $$d || exit 1; done; echo ===== Cleanup; ${RM} -r $$d
+	@d=`mktemp -d`; for i in tests/[0-9][0-9]-*; do echo; echo ===== $$i $$d; $$i $$d || exit 1; done; echo ===== Cleanup; ${RM} -r $$d
 ## Cleanup
 	${RM} -r ${DAEMONTEMP}
 	killall zeitgitterd.py
@@ -123,6 +130,7 @@ kill-daemon:
 
 prepare-tmp-git:
 	git init ${DAEMONTEMP}
+	cp -rp ${KEYHOMEIN} ${KEYHOME}
 	chmod 700 ${KEYHOME}
 # Avoid "gpg: WARNING: unsafe permissions on homedir"
 	gpg --export -a ${KEYID} > ${DAEMONTEMP}/pubkey.asc

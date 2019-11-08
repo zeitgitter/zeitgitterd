@@ -18,16 +18,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Support Docker
 - More detailed debug support (see `--debug-level`)
 - Minimal support for HTTP `HEAD` requests
+- Can use IMAP servers without `IDLE` support (are there still any out there?)
 
 ## Fixed
+- Correctly handles IMAP `IDLE` responses other than `EXISTS` (especially
+  Dovecot's `* OK still here`)
+- End line in stamper mails may now also be in last line.
 
 ## Changed
 - Split into client (git-timestamp) and server (zeitgitterd).
 - Calculate a default for `--gnupg-home` to allow `--number-of-gpg-agents` > 1
-- `--email-address` is now deprecated; please use `--mail-address` instead
 - Commit log message includes timestamp as well to improve readability for
   `git blame` etc.
 - Log message timestamps (including "Found uncommitted data") now say "UTC"
+- Renamed all PGP Digital Timestamper related parameters to a common
+  `--stamper-` prefix (the old names are still accepted, but deprecated)
+- Mail tests now include a (local) configuration file for the site secrets.
 
 
 # 0.9.2 - 2019-05-10
