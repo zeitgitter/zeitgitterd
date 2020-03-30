@@ -255,6 +255,7 @@ def check_for_stamper_mail(imap, stat, logfile):
     logging.debug("IMAP SEARCH…")
     (typ, msgs) = imap.search(
         None,
+        # See `--no-dovecot-bug-workaround`:
         'FROM', '"%s"' % zeitgitter.config.arg.stamper_from,
         'UNSEEN',
         'LARGER', str(stat.st_size),

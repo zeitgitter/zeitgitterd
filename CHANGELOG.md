@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - More detailed debug support (see `--debug-level`)
 - Minimal support for HTTP `HEAD` requests
 - Can use IMAP servers without `IDLE` support (are there still any out there?)
+- Work around a bug in some(?) Dovecot mail servers which cannot match the
+  last character of a mail domain. I.e., `mailer@itconsult.co.uk` does not
+  match the `From: Stamper <mailer@itconsult.co.uk>` header in IMAP SEARCH,
+  but `mailer@itconsult.co.u` (note the missing `k`!) does match the header.
+  This can be turned off via `--no-dovecot-bug-workaround`.
 
 ## Fixed
 - Correctly handles IMAP `IDLE` responses other than `EXISTS` (especially
