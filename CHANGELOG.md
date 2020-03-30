@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Correctly handles IMAP `IDLE` responses other than `EXISTS` (especially
   Dovecot's `* OK still here`)
 - End line in stamper mails may now also be in last line.
+- Not receiving a stamper mail in time does no longer raise an exception
 
 ## Changed
 - Split into client (git-timestamp) and server (zeitgitterd).

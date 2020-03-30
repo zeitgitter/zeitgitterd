@@ -283,7 +283,7 @@ def still_same_head(repo, initial_head):
         return True
     else:
         logging.warning("No valid email answer before next commit (%s->%s)"
-                % initial_head.target.hex, repo.head.target.hex)
+                % (initial_head.target.hex, repo.head.target.hex))
         return False
 
 
