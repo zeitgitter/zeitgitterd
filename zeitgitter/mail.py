@@ -252,14 +252,13 @@ def imap_idle(imap, stat, repo, initial_head, logfile):
 
 
 def check_for_stamper_mail(imap, stat, logfile):
-    logging.debug("IMAP SEARCH…")
-    (typ, msgs) = imap.search(
-        None,
-        # See `--no-dovecot-bug-workaround`:
-        'FROM', '"%s"' % zeitgitter.config.arg.stamper_from,
+    # See `--no-dovecot-bug-workaround`:
+    query = ('FROM', '"%s"' % zeitgitter.config.arg.stamper_from,
         'UNSEEN',
         'LARGER', str(stat.st_size),
         'SMALLER', str(stat.st_size + 16384))
+    logging.debug("IMAP SEARCH" + (' '.join(query)))
+    (typ, msgs) = imap.search(None, *query)
     logging.info("IMAP SEARCH → %s, %s" % (typ, msgs))
     if len(msgs) == 1 and len(msgs[0]) > 0:
         mseq = msgs[0].replace(b' ', b',')
