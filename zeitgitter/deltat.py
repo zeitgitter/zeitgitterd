@@ -2,8 +2,10 @@
 #
 # deltat.py — Parse a time duration
 #
-# License unknown, based on work by virhilo and Peter on Stackoverflow
-# Modified by Marcel Waldvogel
+# License unknown, based on work by virhilo and Peter on StackOverflow
+# (see https://stackoverflow.com/a/51916936/2445204).
+# Modified by Marcel Waldvogel.
+# According to Peter, "any license is fine". Marcel concurs.
 #
 
 import re
