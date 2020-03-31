@@ -257,7 +257,7 @@ def check_for_stamper_mail(imap, stat, logfile):
         'UNSEEN',
         'LARGER', str(stat.st_size),
         'SMALLER', str(stat.st_size + 16384))
-    logging.debug("IMAP SEARCH" + (' '.join(query)))
+    logging.debug("IMAP SEARCH " + (' '.join(query)))
     (typ, msgs) = imap.search(None, *query)
     logging.info("IMAP SEARCH → %s, %s" % (typ, msgs))
     if len(msgs) == 1 and len(msgs[0]) > 0:
