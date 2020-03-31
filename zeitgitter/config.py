@@ -235,6 +235,6 @@ def get_args(args=None, config_file_contents=None):
                 " <branch>=<url> arguments")
 
     if not arg.no_dovecot_bug_workaround:
-        arg.stamper_from = arg.stamper_from[:1] # See help text
+        arg.stamper_from = arg.stamper_from[:-1] # See help text
 
     return arg
