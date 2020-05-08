@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Renamed all PGP Digital Timestamper related parameters to a common
   `--stamper-` prefix (the old names are still accepted, but deprecated)
 - Mail tests now include a (local) configuration file for the site secrets.
+- Maintainer affiliation
 
 
 # 0.9.2 - 2019-05-10

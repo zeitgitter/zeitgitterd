@@ -23,7 +23,7 @@ setuptools.setup(
     name="zeitgitterd",
     version=extract_version('zeitgitter/version.py'),
     author="Marcel Waldvogel",
-    author_email="marcel.waldvogel@uni-konstanz.de",
+    author_email="marcel.waldvogel@trifence.ch",
     description="Zeitgitter timestamping server",
     long_description=long_description,
     long_description_content_type="text/markdown",
