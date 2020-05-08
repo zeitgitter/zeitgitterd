@@ -14,3 +14,4 @@
 * Visualize the timestamping graph.
   - Allow the selection of trusted timestampers.
   - Show how much leeway the other, possibly untrusted, timestampers have.
+* Resume scanning for pending stamper responses after restart

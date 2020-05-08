@@ -1,8 +1,8 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/)
-and this project adheres to [Semantic Versioning](http://semver.org/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/)
+and this project adheres to [Semantic Versioning](https://semver.org/).
 
 # 0.9.2+ - [Unreleased]
 ## Added
@@ -19,11 +19,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - More detailed debug support (see `--debug-level`)
 - Minimal support for HTTP `HEAD` requests
 - Can use IMAP servers without `IDLE` support (are there still any out there?)
+- Work around a bug in some(?) Dovecot mail servers which cannot match the
+  last character of a mail domain. I.e., `mailer@itconsult.co.uk` does not
+  match the `From: Stamper <mailer@itconsult.co.uk>` header in IMAP SEARCH,
+  but `mailer@itconsult.co.u` (note the missing `k`!) does match the header.
+  This can be turned off via `--no-dovecot-bug-workaround`.
 
 ## Fixed
 - Correctly handles IMAP `IDLE` responses other than `EXISTS` (especially
   Dovecot's `* OK still here`)
 - End line in stamper mails may now also be in last line.
+- Not receiving a stamper mail in time does no longer raise an exception
 
 ## Changed
 - Split into client (git-timestamp) and server (zeitgitterd).
