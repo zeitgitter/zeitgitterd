@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-# 0.9.2+ - [Unreleased]
+# 0.9.3 - 2020-05-08
 ## Added
 - Allow dots in tag names, as long as they are not next to each other
   (i.e., `..` is not allowed)
@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `--stamper-` prefix (the old names are still accepted, but deprecated)
 - Mail tests now include a (local) configuration file for the site secrets.
 - Maintainer affiliation
+- Release on PyPI
 
 
 # 0.9.2 - 2019-05-10
