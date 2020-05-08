@@ -2,7 +2,7 @@
 #
 # zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
-# Copyright (C) 2019 Marcel Waldvogel
+# Copyright (C) 2019,2020 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -252,13 +252,13 @@ def imap_idle(imap, stat, repo, initial_head, logfile):
 
 
 def check_for_stamper_mail(imap, stat, logfile):
-    logging.debug("IMAP SEARCH…")
-    (typ, msgs) = imap.search(
-        None,
-        'FROM', '"%s"' % zeitgitter.config.arg.stamper_from,
+    # See `--no-dovecot-bug-workaround`:
+    query = ('FROM', '"%s"' % zeitgitter.config.arg.stamper_from,
         'UNSEEN',
         'LARGER', str(stat.st_size),
         'SMALLER', str(stat.st_size + 16384))
+    logging.debug("IMAP SEARCH " + (' '.join(query)))
+    (typ, msgs) = imap.search(None, *query)
     logging.info("IMAP SEARCH → %s, %s" % (typ, msgs))
     if len(msgs) == 1 and len(msgs[0]) > 0:
         mseq = msgs[0].replace(b' ', b',')
@@ -283,7 +283,7 @@ def still_same_head(repo, initial_head):
         return True
     else:
         logging.warning("No valid email answer before next commit (%s->%s)"
-                % initial_head.target.hex, repo.head.target.hex)
+                % (initial_head.target.hex, repo.head.target.hex))
         return False
 
 

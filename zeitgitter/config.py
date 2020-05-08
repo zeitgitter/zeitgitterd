@@ -2,7 +2,7 @@
 #
 # zeitgitter — Independent GIT Timestamping, HTTPS server
 #
-# Copyright (C) 2019 Marcel Waldvogel
+# Copyright (C) 2019,2020 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -172,6 +172,12 @@ def get_args(args=None, config_file_contents=None):
                             (default from `--stamper-own-address`)""")
     parser.add_argument('--stamper-password', '--mail-password',
                         help="password to use for IMAP and SMTP")
+    parser.add_argument('--no-dovecot-bug-workaround', action='store_true',
+                        help="""Some Dovecot mail server seem unable to match
+                            the last char of an email address in an IMAP
+                            SEARCH, so this cuts off the last char from
+                            `stamper-from`. Should not impact other mail
+                            servers.""")
 
     arg = parser.parse_args(args=args, config_file_contents=config_file_contents)
 
@@ -227,5 +233,8 @@ def get_args(args=None, config_file_contents=None):
         if not '=' in i:
             sys.exit("--upstream-timestamp requires (space-separated list of)"
                 " <branch>=<url> arguments")
+
+    if not arg.no_dovecot_bug_workaround:
+        arg.stamper_from = arg.stamper_from[:-1] # See help text
 
     return arg
