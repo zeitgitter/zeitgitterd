@@ -17,8 +17,8 @@ git add hello.txt
 git commit -m "First commit"
 
 export ZEITGITTER_FAKE_TIME=1551155115
-$ts --tag hello-timestamp --server http://localhost:8080
-$ts --branch demo-timestamps --server http://localhost:8080
+$ts --tag hello-timestamp --server http://localhost:15178
+$ts --branch demo-timestamps --server http://localhost:15178
 git tag -v hello-timestamp 2>&1 | grep 'gpg: Good signature'
 git verify-commit demo-timestamps 2>&1 | grep 'gpg: Good signature'
 git diff demo-timestamps
@@ -26,8 +26,8 @@ git diff demo-timestamps
 echo Second file > second.txt
 git add second.txt
 git commit -m "Second commit"
-$ts --tag second-timestamp --server http://localhost:8080
-$ts --branch demo-timestamps --server http://localhost:8080
+$ts --tag second-timestamp --server http://localhost:15178
+$ts --branch demo-timestamps --server http://localhost:15178
 git tag -v second-timestamp 2>&1 | grep 'gpg: Good signature'
 git verify-commit demo-timestamps 2>&1 | grep 'gpg: Good signature'
 git diff demo-timestamps

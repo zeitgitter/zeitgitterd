@@ -2,7 +2,7 @@
 d=$1
 shift
 wget --no-verbose -O $d/10-public-key-server.asc  --content-on-error "$@" \
-  'http://localhost:8080/?request=get-public-key-v1'
+  'http://localhost:15178/?request=get-public-key-v1'
 cat > $d/10-public-key-verify.asc << EOF
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
