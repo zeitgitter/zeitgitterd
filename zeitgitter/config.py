@@ -52,10 +52,9 @@ def get_args(args=None, config_file_contents=None):
                         is_config_file=True,
                         help="config file path")
     parser.add_argument('--debug-level',
-                        default=0,
-                        help="""Specify debug output. 0, 1, 2 mean WARNING,
-                            INFO, DEBUG, respectively. Names can also be
-                            specified. Debug levels for specific loggers
+                        default='INFO',
+                        help="""Specify debug output: WARN,
+                            INFO, DEBUG. Debug levels for specific loggers
                             can also be specified using 'name=level'.
                             Example: `DEBUG,gnupg=INFO` sets the default
                             debug level to DEBUG, except for `gnupg`.""")
