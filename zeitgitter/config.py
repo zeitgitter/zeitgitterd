@@ -53,8 +53,8 @@ def get_args(args=None, config_file_contents=None):
                         help="config file path")
     parser.add_argument('--debug-level',
                         default='INFO',
-                        help="""Specify debug output: WARN,
-                            INFO, DEBUG. Debug levels for specific loggers
+                        help="""amount of debug output: WARN, INFO,
+                            or DEBUG. Debug levels for specific loggers
                             can also be specified using 'name=level'.
                             Example: `DEBUG,gnupg=INFO` sets the default
                             debug level to DEBUG, except for `gnupg`.""")
@@ -116,7 +116,7 @@ def get_args(args=None, config_file_contents=None):
 
     # Stamping
     parser.add_argument('--commit-interval',
-                        default='4h',
+                        default='1h',
                         help="how often to commit")
     parser.add_argument('--commit-offset',
                         help="""when to commit within that interval; e.g. after
