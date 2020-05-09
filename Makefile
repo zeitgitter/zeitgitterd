@@ -29,7 +29,8 @@ DAEMONPARAMS	= \
 	--commit-interval 1m \
 	--commit-offset 30s \
 	--repository ${DAEMONTEMP} \
-	--upstream-timestamp stupid-timestamps=http://127.0.0.1:8080
+  --listen-port 15178 \
+	--upstream-timestamp stupid-timestamps=http://127.0.0.1:15178
 
 # For `gpg` and `git commit -S`
 export GNUPGHOME= ${KEYHOME}
