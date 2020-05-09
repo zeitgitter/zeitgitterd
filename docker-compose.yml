@@ -1,0 +1,14 @@
+version: "2"
+
+services:
+  zeitgitter:
+    restart: unless-stopped
+    image: zeitgitter/zeitgitter
+    build: ./zeitgitter
+    container_name: zeitgitter
+    env_file:
+      - "server.env"
+    ports:
+      - 15177:15177
+    volumes:
+      - ./persistent-data:/persistent-data

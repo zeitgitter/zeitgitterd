@@ -43,7 +43,6 @@ all:
 # ----- Installing
 
 install: install-presetup install-files install-postsetup
-install-docker: install-files-docker
 
 install-presetup:
 	if ! groups ${OWNER} > /dev/null 2>&1; then \
@@ -51,18 +50,6 @@ install-presetup:
 			--home ${ZEITGITTERHOME} \
 			--gecos "Independent GIT Timestamper" ${OWNER}; \
 	fi
-
-install-files-docker:
-	mkdir -p ${PYMODDIR}
-	install -t / zeitgitterd.py docker/zeitgitter/dockgitter.sh
-	install -t ${PYMODDIR} zeitgitter/*.py
-	py3compile ${PYMODDIR}/*.py
-	install -d ${WEBDIR}
-	install -m 644 -t ${WEBDIR} zeitgitter/web/*
-	install -d ${REPODIR}
-# Activate DOCKER_ACTIVATE_LINE lines
-	sed -e '/DOCKER_ACTIVATE_LINE/s/^[#; ]*//' \
-		< sample-zeitgitter.conf > /etc/zeitgitter.conf
 
 install-files:
 	mkdir -p ${PYMODDIR}
@@ -79,7 +66,7 @@ install-files:
 	install -d -o ${OWNER} ${REPODIR}
 # /etc/zeitgitter.conf contains passwords, so restrict access
 	if [ ! -f ${ETCDIR}/zeitgitter.conf ]; then \
-		install -o ${OWNER} -m 600 sample-zeitgitter.conf ${ETCDIR}/zeitgitter.conf; \
+		install -o ${OWNER} -m 600 zeitgitter/sample.conf ${ETCDIR}/zeitgitter.conf; \
 		echo "${ACT}* Customize ${ETCDIR}/zeitgitter.conf${NORM}"; \
 	else \
 		echo "${INFO}* Not updating ${ETCDIR}/zeitgitter.conf${NORM}"; \

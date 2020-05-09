@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Default port is now 15177 (as has been for systemd); tests use 15178
 - Default debug level is now INFO. Numeric debug levels are now deprecated.
 - Default commit interval has been set to 1h
+- Simplified Docker setup/usage. Now created from pypi images.
+- Docker is now the recommended usage platform.
 
 
 # 0.9.3 - 2020-05-08
