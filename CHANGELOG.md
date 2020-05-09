@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-# 0.9.3+ - [Unreleased]
+# 0.9.4 - 2020-05-09
 ## Added
 - Support for data in binary packages
 
