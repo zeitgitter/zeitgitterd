@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - README for the Docker file
 
 ## Fixed
+- Web files again included in wheel
 
 ## Changed
 
