@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 # 0.9.3+ - [Unreleased]
 ## Added
+- Support for data in binary packages
 
 ## Fixed
 
