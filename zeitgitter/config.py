@@ -28,12 +28,22 @@ import os
 import sys
 import random
 
-from zeitgitter import moddir
 import zeitgitter.deltat
 import zeitgitter.version
 
 
 logging = _logging.getLogger('config')
+
+def print_sample_config():
+    from zeitgitter import moddir
+    from pathlib import Path
+    try:
+        with Path(moddir(), 'sample.conf').open(mode='r') as f:
+            print(f.read())
+    except IOError:
+        import importlib.resources
+        print(importlib.resources.read_text('zeitgitter', 'sample.conf'))
+    sys.exit(0)
 
 
 def get_args(args=None, config_file_contents=None):
@@ -51,11 +61,14 @@ def get_args(args=None, config_file_contents=None):
     parser.add_argument('--config-file', '-c',
                         is_config_file=True,
                         help="config file path")
+    parser.add_argument('--print-sample-config',
+                        action='store_true',
+                        help="""output sample configuration file from package
+                            and exit""")
     parser.add_argument('--debug-level',
-                        default=0,
-                        help="""Specify debug output. 0, 1, 2 mean WARNING,
-                            INFO, DEBUG, respectively. Names can also be
-                            specified. Debug levels for specific loggers
+                        default='INFO',
+                        help="""amount of debug output: WARN, INFO,
+                            or DEBUG. Debug levels for specific loggers
                             can also be specified using 'name=level'.
                             Example: `DEBUG,gnupg=INFO` sets the default
                             debug level to DEBUG, except for `gnupg`.""")
@@ -67,33 +80,28 @@ def get_args(args=None, config_file_contents=None):
                         help="""the PGP key ID to timestamp with, creating
                             this key first if necessary.""")
     parser.add_argument('--own-url',
-                        required = True,
-                        help="the URL of this service")
+                        help="the URL of this service (REQUIRED)")
     parser.add_argument('--domain',
                         help="the domain name, for HTML substitution and SMTP greeting. "
                              "Defaults to host part of --own-url")
     parser.add_argument('--country',
-                        required = True,
                         help="the jurisdiction this falls under,"
-                            " for HTML substitution")
+                            " for HTML substitution (REQUIRED)")
     parser.add_argument('--owner',
-                        required = True,
                         help="owner and operator of this instance,"
-                        " for HTML substitution")
+                        " for HTML substitution (REQUIRED)")
     parser.add_argument('--contact',
-                        required = True,
                         help="contact for this instance,"
-                        " for HTML substitution")
+                        " for HTML substitution (REQUIRED)")
 
     # Server
     parser.add_argument('--webroot',
-                        default=moddir('web'),
-                        help="path to the webroot (default: module directory+'/web'")
+                        help="path to the webroot (fallback: in-module files)")
     parser.add_argument('--listen-address',
                         default='127.0.0.1',  # Still not all machines support ::1
                         help="IP address to listen on")
     parser.add_argument('--listen-port',
-                        default=8080, type=int,
+                        default=15177, type=int,
                         help="port number to listen on")
 
     # GnuPG
@@ -117,7 +125,7 @@ def get_args(args=None, config_file_contents=None):
 
     # Stamping
     parser.add_argument('--commit-interval',
-                        default='4h',
+                        default='1h',
                         help="how often to commit")
     parser.add_argument('--commit-offset',
                         help="""when to commit within that interval; e.g. after
@@ -180,6 +188,25 @@ def get_args(args=None, config_file_contents=None):
                             servers.""")
 
     arg = parser.parse_args(args=args, config_file_contents=config_file_contents)
+
+    if arg.print_sample_config:
+        print_sample_config()
+        sys.exit(0)
+
+    # To be able to support `--print-sample-config`, we need to handle
+    # `required` attributes ourselves
+    missing = []
+    if arg.owner is None:
+        missing.append("--owner")
+    if arg.contact is None:
+        missing.append("--contact")
+    if arg.country is None:
+        missing.append("--country")
+    if arg.own_url is None:
+        missing.append("--own-url")
+    if len(missing):
+        parser.print_help()
+        sys.exit("Required arguments missing: " + ", ".join(missing))
 
     _logging.basicConfig()
     for level in str(arg.debug_level).split(','):

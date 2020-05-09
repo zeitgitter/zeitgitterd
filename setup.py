@@ -32,8 +32,9 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=['pygit2', 'python-gnupg', 'configargparse', 'requests',
         'setuptools', 'git-timestamp'],
-    include_package_data=True,
-    python_requires='>=3.4',
+#    package_data={'zeitgitter': ['sample.conf', '*.{html,css,svg}']},
+    data_files=[('zeitgitter', ['zeitgitter/sample.conf', 'zeitgitter/web/contact.html', 'zeitgitter/web/index.html', 'zeitgitter/web/privacy.html', 'zeitgitter/web/tos.html', 'zeitgitter/web/zeitgitter.css', 'zeitgitter/web/zeitgitter.svg'])],
+    python_requires='>=3.7',
     entry_points={
         'console_scripts': [
             'zeitgitterd=zeitgitter.server:run',

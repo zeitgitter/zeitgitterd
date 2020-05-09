@@ -66,6 +66,7 @@ There are currently two options for installation:
 
 ## Server Documentation
 
-- [Server installation](server/Install.md)
+- [Docker server (recommended)](doc/Docker.md)
+- [Native server (deprecated)](doc/Install.md)
 - [How the server works](doc/ServerOperation.md)
 - [The server's state machine](doc/StateMachine.md)

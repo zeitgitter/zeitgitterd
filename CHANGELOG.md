@@ -4,7 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-# 0.9.2+ - [Unreleased]
+
+# 0.9.4 - 2020-05-09
+## Added
+- Support for data in binary packages
+
+## Fixed
+
+## Changed
+- Default port is now 15177 (as has been for systemd); tests use 15178
+- Default debug level is now INFO. Numeric debug levels are now deprecated.
+- Default commit interval has been set to 1h
+- Simplified Docker setup/usage. Now created from pypi images.
+- Docker is now the recommended usage platform.
+
+
+# 0.9.3 - 2020-05-08
 ## Added
 - Allow dots in tag names, as long as they are not next to each other
   (i.e., `..` is not allowed)
@@ -41,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `--stamper-` prefix (the old names are still accepted, but deprecated)
 - Mail tests now include a (local) configuration file for the site secrets.
 - Maintainer affiliation
+- Release on PyPI
 
 
 # 0.9.2 - 2019-05-10
@@ -90,6 +106,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Made some error messages more consistent
 - `--tag` overrides `--branch`. This allows to store a default branch in
   `git config`, yet timestamp a tag when necessary.
+
 
 # 0.9.0 - 2019-04-04
 Initial public release

@@ -22,6 +22,7 @@
 
 
 import cgi
+import importlib.resources
 import logging as _logging
 import os
 import re
@@ -32,6 +33,7 @@ import urllib
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
+from zeitgitter import moddir
 import zeitgitter.commit
 import zeitgitter.config
 import zeitgitter.stamper
@@ -70,9 +72,14 @@ class SocketActivationHTTPServer(SocketActivationMixin, ThreadingHTTPServer):
 class FlatFileRequestHandler(BaseHTTPRequestHandler):
     def send_file(self, content_type, filename, replace={}):
         try:
-            f = Path(zeitgitter.config.arg.webroot, filename).open(mode='rb')
-            contents = f.read()
-            f.close()
+            webroot = zeitgitter.config.arg.webroot
+            if webroot is None:
+                webroot = moddir('web')
+            if webroot and os.path.isdir(webroot):
+                with Path(webroot, filename).open(mode='rb') as f:
+                    contents = f.read()
+            else:
+                contents = importlib.resources.read_binary('zeitgitter', filename)
             for k, v in replace.items():
                 contents = contents.replace(k, v)
             self.send_response(200)

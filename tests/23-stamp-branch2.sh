@@ -3,7 +3,7 @@ d=$1
 shift
 wget --no-verbose -O $d/23-sign-branch2-server.asc --content-on-error "$@" \
   --post-data='request=stamp-branch-v1&commit=5555555555555555555555555555555555555555&tree=6666666666666666666666666666666666666666' \
-  'http://localhost:8080/'
+  'http://localhost:15178/'
 cat > $d/23-sign-branch2-verify.asc << EOF
 tree 6666666666666666666666666666666666666666
 parent 5555555555555555555555555555555555555555
