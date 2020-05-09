@@ -93,7 +93,7 @@ def get_args(args=None, config_file_contents=None):
                         default='127.0.0.1',  # Still not all machines support ::1
                         help="IP address to listen on")
     parser.add_argument('--listen-port',
-                        default=8080, type=int,
+                        default=15177, type=int,
                         help="port number to listen on")
 
     # GnuPG
