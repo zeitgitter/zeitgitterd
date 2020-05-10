@@ -129,3 +129,21 @@ run-test-daemon: prepare-tmp-git kill-daemon
 	./zeitgitterd.py ${DAEMONPARAMS}
 run-test-daemon-fake-time: prepare-tmp-git kill-daemon
 	ZEITGITTER_FAKE_TIME=1551155115 ./zeitgitterd.py ${DAEMONPARAMS}
+
+# Create multi-platform docker image. If you have native systems around, using
+# them will be much more efficient at build time. See e.g.
+# https://docs.docker.com/docker-for-mac/multi-arch/
+docker-multiarch: qemu buildx docker-multiarch-builder
+	docker buildx build --pull --load --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6 zeitgitter
+.PHONY: qemu buildx docker-multiarch-builder
+qemu:	/proc/sys/fs/binfmt_misc/qemu-m68k
+/proc/sys/fs/binfmt_misc/qemu-m68k: # Just one of the many files created
+	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+buildx: ${HOME}/.docker/cli-plugins/docker-buildx
+${HOME}/.docker/cli-plugins/docker-buildx:
+	@echo
+	@echo "*** Please install 'docker buildx'. See https://github.com/docker/buildx#installing"
+	@echo
+	@exit 1
+docker-multiarch-builder:
+	if ! docker buildx ls | grep -w docker-multiarch > /dev/null; then docker buildx create --name docker-multiarch && docker buildx inspect --builder docker-multiarch --bootstrap; fi

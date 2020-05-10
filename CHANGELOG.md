@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 # 0.9.4+ - [Unreleased]
 ## Added
 - README for the Docker file
+- Support for ARM and ARM64 docker images
 
 ## Fixed
 - Web files again included in wheel
