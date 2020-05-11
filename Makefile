@@ -134,7 +134,7 @@ run-test-daemon-fake-time: prepare-tmp-git kill-daemon
 # them will be much more efficient at build time. See e.g.
 # https://docs.docker.com/docker-for-mac/multi-arch/
 docker-multiarch: qemu buildx docker-multiarch-builder
-	docker buildx build --pull --push --platform linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6 zeitgitter
+	docker buildx build --pull --push --platform linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6 `sed -n -e 's,^VERSION = .\(\([0-9].[0-9]\).[0-9]\).$$,-t zeitgitter/zeitgitter:\1 -t zeitgitter/zeitgitter:\2,p' zeitgitter/version.py` -t zeitgitter/zeitgitter:latest zeitgitter
 .PHONY: qemu buildx docker-multiarch-builder
 qemu:	/proc/sys/fs/binfmt_misc/qemu-m68k
 /proc/sys/fs/binfmt_misc/qemu-m68k: # Just one of the many files created
