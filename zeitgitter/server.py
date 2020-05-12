@@ -294,20 +294,13 @@ def finish_setup(arg):
 def run():
     zeitgitter.config.get_args()
     finish_setup(zeitgitter.config.arg)
-    ### TODO: Stop if --check-and-setup-only is specified
-    ### This option also logs to stderr with debug
-    ### Be verbose in finish_setup()
     zeitgitter.commit.run()
     httpd = SocketActivationHTTPServer(
         (zeitgitter.config.arg.listen_address, zeitgitter.config.arg.listen_port),
         StamperRequestHandler)
-    # ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    # httpd.socket = ssl.wrap_socket(httpd.socket,
-    #        keyfile='cert/key.pem',
-    #        certfile='cert/cert.pem', server_side=True)
     logging.info("Start serving")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        pass
+        logging.info("Received Ctrl-C, shutting down...")
     httpd.server_close()
