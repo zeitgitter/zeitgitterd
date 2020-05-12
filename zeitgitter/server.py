@@ -302,6 +302,13 @@ def run():
         StamperRequestHandler)
     logging.info("Start serving")
     ensure_stamper(start_multi_threaded=True)
+    # Try to resume a waiting for a PGP Timestamping Server reply, if any
+    if zeitgitter.config.arg.stamper_own_address:
+        repo = zeitgitter.config.arg.repository
+        preserve = Path(repo, 'hashes.stamp')
+        if preserve.exists():
+            logging.info("possibly resuming cross-timestamping by mail")
+            zeitgitter.mail.async_email_timestamp(preserve)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
