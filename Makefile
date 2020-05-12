@@ -22,6 +22,7 @@ KEYID		= 353DFEC512FA47C7
 KEYHOME		= ${DAEMONTEMP}/gnupg
 KEYHOMEIN	= ${CURDIR}/zeitgitter/tests/gnupg/
 DAEMONPARAMS	= \
+	--number-of-gpg-agents=3 \
 	--keyid ${KEYID} \
 	--own-url https://hagrid.snakeoil \
 	--owner '?' --contact '?' --country '?' \
