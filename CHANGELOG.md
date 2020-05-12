@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## Added
 - README for the Docker file
 - Support for ARM and ARM64 docker images
+- Documented support for multiple debug classes
 
 ## Fixed
 - Web files again included in wheel
