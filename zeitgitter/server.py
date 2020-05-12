@@ -138,10 +138,12 @@ stamper = None
 public_key = None
 
 
-def ensure_stamper():
+def ensure_stamper(start_multi_threaded=False):
     global stamper
     if stamper is None:
         stamper = zeitgitter.stamper.Stamper()
+    if start_multi_threaded:
+        stamper.start_multi_threaded()
 
 
 class StamperRequestHandler(FlatFileRequestHandler):
@@ -299,6 +301,7 @@ def run():
         (zeitgitter.config.arg.listen_address, zeitgitter.config.arg.listen_port),
         StamperRequestHandler)
     logging.info("Start serving")
+    ensure_stamper(start_multi_threaded=True)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## Changed
 - Reduced logging for PGP Timestamping Server mail handling
 - Updated gnupg config documentation
+- Newer GnuPG versions seem to ignore the symlink trick, now copying for real
 
 
 # 0.9.4 - 2020-05-09

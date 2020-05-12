@@ -22,6 +22,7 @@
 
 import logging as _logging
 import os
+import shutil
 import sys
 import re
 import threading
@@ -75,7 +76,10 @@ def get_keyid(keyid, domain, gnupg_home):
           "domain-to-email" is `domain` with its first dot is replaced by an @.
        3. Else fail.
     Design decision: The key is only created if the next start would chose that
-    key (this obviates the need to monkey-patch the config file)."""
+    key (this obviates the need to monkey-patch the config file).
+
+    All these operations must be done before round-robin operations (and
+    copying the "original" GnuPG "home" directory) start."""
     gpg = gnupg.GPG(gnupghome=gnupg_home)
     if keyid is not None:
         keyinfo = gpg.list_keys(secret=True, keys=keyid)
@@ -113,6 +117,7 @@ class Stamper:
         self.url = zeitgitter.config.arg.own_url
         self.keyid = zeitgitter.config.arg.keyid
         self.gpgs = [gnupg.GPG(gnupghome=zeitgitter.config.arg.gnupg_home)]
+        self.max_threads = 1 # Start single-threaded
         self.keyinfo = self.gpg().list_keys(True, keys=self.keyid)
         if len(self.keyinfo) == 0:
             raise ValueError("No keys found")
@@ -120,18 +125,31 @@ class Stamper:
         self.pubkey = self.gpg().export_keys(self.keyid)
         self.extra_delay = None
 
+    def start_multi_threaded(self):
+        self.max_threads = zeitgitter.config.arg.number_of_gpg_agents
+
     def gpg(self):
         """Return the next GnuPG object, in round robin order.
         Create one, if less than `number-of-gpg-agents` are available."""
         with self.gpg_serialize:
-            if (len(self.gpgs) < zeitgitter.config.arg.number_of_gpg_agents):
+            if len(self.gpgs) < self.max_threads:
                 home = Path('%s-%d' % (zeitgitter.config.arg.gnupg_home, len(self.gpgs)))
-                # Create symlink if needed; to trick an additional gpg-agent
+                # Create copy if needed; to trick an additional gpg-agent
                 # being started for the same directory
-                try:
-                    s = home.lstat()
-                except FileNotFoundError:
-                    home.symlink_to(zeitgitter.config.arg.gnupg_home)
+                if home.exists():
+                    if home.is_symlink():
+                        logging.info("Creating GnuPG key copy %s→%s"
+                            ", replacing old symlink"
+                            % (zeitgitter.config.arg.gnupg_home, home))
+                        home.unlink()
+                        # Ignore sockets (must) and backups (may) on copy
+                        shutil.copytree(zeitgitter.config.arg.gnupg_home,
+                            home, ignore=shutil.ignore_patterns("S.*", "*~"))
+                else:
+                    logging.info("Creating GnuPG key copy %s→%s"
+                            % (zeitgitter.config.arg.gnupg_home, home))
+                    shutil.copytree(zeitgitter.config.arg.gnupg_home,
+                        home, ignore=shutil.ignore_patterns("S.*", "*~"))
                 nextgpg = gnupg.GPG(gnupghome=home.as_posix())
                 self.gpgs.append(nextgpg)
                 logging.debug("Returning new %r (gnupghome=%s)" % (nextgpg, nextgpg.gnupghome))
