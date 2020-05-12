@@ -74,8 +74,8 @@ def get_keyid(keyid, domain, gnupg_home):
           which is not "zeitgitter", "igitt", or "*stamp*"; and
           "domain-to-email" is `domain` with its first dot is replaced by an @.
        3. Else fail.
-    The key is only created if the next start would chose that key
-    (this obviates the need to monkey-patch the config file)."""
+    Design decision: The key is only created if the next start would chose that
+    key (this obviates the need to monkey-patch the config file)."""
     gpg = gnupg.GPG(gnupghome=gnupg_home)
     if keyid is not None:
         keyinfo = gpg.list_keys(secret=True, keys=keyid)
@@ -134,6 +134,7 @@ class Stamper:
                     home.symlink_to(zeitgitter.config.arg.gnupg_home)
                 nextgpg = gnupg.GPG(gnupghome=home.as_posix())
                 self.gpgs.append(nextgpg)
+                logging.debug("Returning new %r (gnupghome=%s)" % (nextgpg, nextgpg.gnupghome))
                 return nextgpg
             else:
                 # Rotate list left and return element wrapped around (if the list
@@ -141,6 +142,7 @@ class Stamper:
                 nextgpg = self.gpgs[0]
                 self.gpgs = self.gpgs[1:]
                 self.gpgs.append(nextgpg)
+                logging.debug("Returning old %r (gnupghome=%s)" % (nextgpg, nextgpg.gnupghome))
                 return nextgpg
 
     def sig_time(self):
