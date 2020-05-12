@@ -67,9 +67,12 @@ def get_args(args=None, config_file_contents=None):
                             and exit""")
     parser.add_argument('--debug-level',
                         default='INFO',
-                        help="""amount of debug output: WARN, INFO,
-                            or DEBUG. Debug levels for specific loggers
-                            can also be specified using 'name=level'.
+                        help="""amount of debug output: WARN, INFO, or DEBUG.
+                            Debug levels for specific loggers can also be
+                            specified using 'name=level'. Valid logger names:
+                            `config`, `server`, `stamper`, `commit` (incl.
+                            requesting cross-timestamps), `gnupg`, `mail`
+                            (interfacing with PGP Timestamping Server).
                             Example: `DEBUG,gnupg=INFO` sets the default
                             debug level to DEBUG, except for `gnupg`.""")
     parser.add_argument('--version',

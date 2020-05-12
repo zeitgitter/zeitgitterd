@@ -1,9 +1,12 @@
-FROM python:3.8
+FROM python:3.7
 # gnupg1/gpg1 steps are for interfacing with the PGP Timestamping Service only
 # python3-pygit2 explicit install is required for ARMv6 only
 RUN apt update && apt upgrade -y && apt install -y gnupg1 libgit2-dev python3-pygit2 && rm -rf /var/lib/apt/lists
 # Somehow, in the ARM docker builds, PYTHON does not know about the system install path
 ENV PYTHONPATH=/usr/lib/python3/dist-packages
+# Verify that OS packages, Python version and Python package can interoperate
+# (apt libgit2+python3-pygit2 with Python interpreter, pip pygit2)
+RUN python3 -c "import pygit2"
 RUN pip3 install zeitgitterd
 ENV HOME=/persistent-data
 # Store outside of the volume

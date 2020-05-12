@@ -163,7 +163,6 @@ def body_signature_correct(bodylines, stat):
 
 
 def verify_body_and_save_signature(body, stat, logfile, msgno):
-    logging.debug(body)
     bodylines = extract_pgp_body(body)
     if bodylines is None:
         logging.warning("No body lines")
@@ -177,7 +176,8 @@ def verify_body_and_save_signature(body, stat, logfile, msgno):
         (before, after) = res
         logging.debug("before %d, after %d" % (before, after))
         if before > 20 or after > 20:
-            logging.warning("Before/after wrong")
+            logging.warning("Too many lines added by the PGP Timestamping Server"
+                " before (%d)/after (%d) our contents" % (before, after))
             return False
 
     if not body_signature_correct(bodylines, stat):
@@ -224,28 +224,23 @@ def body_contains_file(bodylines, logfile):
 
 def imap_idle(imap, stat, repo, initial_head, logfile):
     while still_same_head(repo, initial_head):
-        logging.debug("IMAP IDLE")
         imap.send(b'%s IDLE\r\n' % (imap._new_tag()))
         logging.info("IMAP waiting for IDLE response")
         line = imap.readline().strip()
         logging.debug("IMAP IDLE → %s" % line)
         if line != b'+ idling':
-            logging.debug("IMAP IDLE unsuccessful")
+            logging.info("IMAP IDLE unsuccessful")
             return False
         # Wait for new message
         while True:
-            logging.debug("…")
             line = imap.readline().strip()
-            logging.debug("IMAP IDLE → %s" % line)
             if line == b'' or line.startswith(b'* BYE '):
-                logging.debug("IMAP IDLE ends False")
                 return False
             if re.match(r'^\* [0-9]+ EXISTS$', str(line, 'ASCII')):
-                logging.debug("You have new mail!")
+                logging.info("You have new mail!")
                 # Stop idling
                 imap.send(b'DONE\r\n')
                 if check_for_stamper_mail(imap, stat, logfile) is True:
-                    logging.debug("IMAP IDLE ends False")
                     return False
                 break # Restart IDLE command
             # Otherwise: Seen untagged response we don't care for, continue idling
@@ -262,7 +257,6 @@ def check_for_stamper_mail(imap, stat, logfile):
     logging.info("IMAP SEARCH → %s, %s" % (typ, msgs))
     if len(msgs) == 1 and len(msgs[0]) > 0:
         mseq = msgs[0].replace(b' ', b',')
-        logging.debug(mseq)
         (typ, contents) = imap.fetch(mseq, 'BODY[TEXT]')
         logging.debug("IMAP FETCH → %s (%d)" % (typ, len(contents)))
         remaining_msgids = mseq.split(b',')
@@ -330,8 +324,5 @@ def async_email_timestamp(logfile):
     with logfile.open('a') as f:
         f.write(append)
     contents = contents + append
-    logging.debug("Send contents (%d bytes)", len(contents))
     send(contents)
-    logging.debug("Contents sent")
     res = wait_for_receive(repo, head, logfile)
-    logging.debug("Contents received %r" % res)
