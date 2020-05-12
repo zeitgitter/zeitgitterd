@@ -13,11 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## Fixed
 - Web files again included in wheel
+- `async_email_timestamp()` now really waits in a new thread for the mail reply
 
 ## Changed
 - Reduced logging for PGP Timestamping Server mail handling
 - Updated gnupg config documentation
 - Newer GnuPG versions seem to ignore the symlink trick, now copying for real
+- Restarting the server tries to resume a pending `async_email_timestamp()`
+  waiting for the reply mail
 
 
 # 0.9.4 - 2020-05-09
