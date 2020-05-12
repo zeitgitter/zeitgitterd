@@ -1,6 +1,5 @@
 # Open design issues
 
-* Interoperate with the email-based PGP Digital Timestamper.
 * Allow encrypted secret keys, such that the data on disk is useless.  
   This will require a new HTTPS request which can be used to set the
   passphrase to a restarted instance.

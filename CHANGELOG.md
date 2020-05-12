@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Web files again included in wheel
 
 ## Changed
+- Reduced logging for PGP Timestamping Server mail handling
 
 
 # 0.9.4 - 2020-05-09
