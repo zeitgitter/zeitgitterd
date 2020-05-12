@@ -19,7 +19,7 @@ NORM		= \033[0m
 # Tests
 DAEMONTEMP	:= $(shell mktemp -d)
 KEYID		= 353DFEC512FA47C7
-KEYHOME		= ${DAEMONTEMP}/gnupg/
+KEYHOME		= ${DAEMONTEMP}/gnupg
 KEYHOMEIN	= ${CURDIR}/zeitgitter/tests/gnupg/
 DAEMONPARAMS	= \
 	--keyid ${KEYID} \
@@ -29,7 +29,7 @@ DAEMONPARAMS	= \
 	--commit-interval 1m \
 	--commit-offset 30s \
 	--repository ${DAEMONTEMP} \
-  --listen-port 15178 \
+	--listen-port 15178 \
 	--upstream-timestamp stupid-timestamps=http://127.0.0.1:15178
 
 # For `gpg` and `git commit -S`
