@@ -25,6 +25,7 @@ import os
 import pygit2 as git
 import re
 import subprocess
+import threading
 import time
 
 from datetime import datetime, timedelta
@@ -309,7 +310,8 @@ def wait_for_receive(repo, initial_head, logfile):
                         return
 
 
-def async_email_timestamp(logfile):
+def async_email_timestamp(logfile, resume=False):
+    """If called with `resume=True`, tries to resume waiting for the mail"""
     repo = git.Repository(zeitgitter.config.arg.repository)
     if repo.head_is_unborn:
         logging.error("Cannot timestamp by email in repository without commits")
@@ -320,9 +322,12 @@ def async_email_timestamp(logfile):
     if contents == "":
         logging.info("Not trying to timestamp empty log")
         return
-    append = '\ngit commit: %s\n' % head.target.hex
-    with logfile.open('a') as f:
-        f.write(append)
-    contents = contents + append
-    send(contents)
-    res = wait_for_receive(repo, head, logfile)
+    if not (resume or '\ngit commit: ' in contents):
+        append = '\ngit commit: %s\n' % head.target.hex
+        with logfile.open('a') as f:
+            f.write(append)
+        contents = contents + append
+    if not resume:
+        send(contents)
+    threading.Thread(target=wait_for_receive, args=(repo, head, logfile),
+        daemon=True).start()
