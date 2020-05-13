@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-# 0.9.4+ - [Unreleased]
+# 0.9.5 - 2020-05-13
 ## Added
 - README for the Docker file
 - Support for ARM and ARM64 docker images
