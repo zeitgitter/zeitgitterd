@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## Added
 
 ## Fixed
+- Data loss can occur (and did in fact occur on `gitta.zeitgitter.net`) if
+  `git` is not installed, due to `FileNotFoundError` signalling both harmless
+  events (whether a file tested for presence exists) and important events
+  (`git` cannot be executed, as it cannot be found). This resulted in
+  destructive file operations being performed, as it was wrongly believed that
+  the data was already recorded persistently in `git`. This has been fixed.
+  :warning: Please refrain from using Docker image versions 1.0.0 or 0.9.6, and
+  do update to 1.0.1 also for non-Docker instances, as they will fail more
+  harmlessly (i.e., just lengthen the interval until `git` is present (again),
+  resulting in precision loss from cross-timestamping, instead of with data
+  loss).
 - `git` included in Docker image
 
 ## Changed
