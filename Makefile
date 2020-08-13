@@ -160,9 +160,9 @@ buildx: ${BUILDXDETECT}
 ${BUILDXDETECT}:
 	@echo
 # Output of `uname -m` is too different 
-	@echo "*** 'docker buildx' missing. Install binary for this machine's architecture"
-	@echo "*** from https://github.com/docker/buildx/releases/latest"
-	@echo "*** to ~/.docker/cli-plugins/docker-buildx"
+	@echo '*** `docker buildx` missing. Install binary for this machine architecture'
+	@echo '*** from `https://github.com/docker/buildx/releases/latest`'
+	@echo '*** to `~/.docker/cli-plugins/docker-buildx` and `chmod +x` it.'
 	@echo
 	@exit 1
 
