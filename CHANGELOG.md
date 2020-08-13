@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   resulting in precision loss from cross-timestamping, instead of with data
   loss).
 - `git` included in Docker image
+- Recovering from dangling repositories
 
 ## Changed
 
