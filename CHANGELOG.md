@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+# 0.9.5+ - [Unreleased]
+## Added
+
+## Fixed
+
+## Changed
+- Commit/tag message now starts with :watch:; this is not only useful for projects
+  following [gitmoji](https://gitmoji.carloscuesta.me/) style, but also for
+  visually distinguishing timestamps from regular commits/tags
+- Base Docker image on `debian:buster`, as
+  [`python:*` is on purpose not meant to be used with local system
+  packages](https://github.com/docker-library/python/issues/482). However,
+  `pygit2` is impractical to install without relying on system packages.
+
+
 # 0.9.5 - 2020-05-13
 ## Added
 - README for the Docker file
