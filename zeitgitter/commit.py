@@ -56,7 +56,7 @@ def commit_to_git(repo, log, preserve=None, msg="Newly timestamped commits"):
                    cwd=repo, env=env, check=True)
     # Mark as processed; use only while locked!
     if preserve is None:
-        log.unlink(log)
+        log.unlink()
     else:
         log.rename(preserve)
         with preserve.open('r') as p:
