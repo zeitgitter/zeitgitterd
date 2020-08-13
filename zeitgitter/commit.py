@@ -56,7 +56,7 @@ def commit_to_git(repo, log, preserve=None, msg="Newly timestamped commits"):
                    cwd=repo, env=env, check=True)
     # Mark as processed; use only while locked!
     if preserve is None:
-        log.unlink(log)
+        log.unlink()
     else:
         log.rename(preserve)
         with preserve.open('r') as p:
@@ -77,7 +77,9 @@ def commit_dangling(repo, log):
     if stat is not None:
         d = datetime.datetime.utcfromtimestamp(stat.st_mtime)
         dstr = d.strftime('%Y-%m-%d %H:%M:%S UTC')
-        commit_to_git(repo, log,
+        # Do not preserve for PGP Timestamper, as another commit will follow
+        # immediately
+        commit_to_git(repo, log, None,
                       "Found uncommitted data from " + dstr)
 
 
