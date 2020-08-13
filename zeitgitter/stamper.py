@@ -225,7 +225,7 @@ type commit
 tag %s
 tagger %s %d +0000
 
-%s tag timestamp
+:watch: %s tag timestamp
 """ % (commit, tagname, self.fullid, now,
        self.url)
 
@@ -259,7 +259,7 @@ committer %s %d +0000
 """ % (tree, parent, commit, self.fullid, now, self.fullid, now)
 
             commitobj2 = """
-%s branch timestamp %s
+:watch: %s branch timestamp %s
 """ % (self.url, isonow)
 
             sig = self.limited_sign(now, commit, commitobj1 + commitobj2)
