@@ -48,12 +48,12 @@ serialize = threading.Lock()
 
 def commit_to_git(repo, log, preserve=None, msg="Newly timestamped commits"):
     subprocess.run(['git', 'add', log.as_posix()],
-                   cwd=repo).check_returncode()
+                   cwd=repo, check=True)
     env = os.environ.copy()
     env['GNUPGHOME'] = zeitgitter.config.arg.gnupg_home
     subprocess.run(['git', 'commit', '-m', msg, '--allow-empty',
                     '--gpg-sign=' + zeitgitter.config.arg.keyid],
-                   cwd=repo, env=env).check_returncode()
+                   cwd=repo, env=env, check=True)
     # Mark as processed; use only while locked!
     if preserve is None:
         log.unlink(log)
@@ -66,14 +66,19 @@ def commit_to_git(repo, log, preserve=None, msg="Newly timestamped commits"):
 
 def commit_dangling(repo, log):
     """If there is still a hashes.log hanging around, commit it now"""
+    # `subprocess.run(['git', …], …)` (called from `commit_to_git()`) may also
+    # raise FileNotFoundError. This, we do not want to be hidden by the `pass`.
+    # Therefore, this weird construct.
+    stat = None
     try:
         stat = log.stat()
+    except FileNotFoundError:
+        pass
+    if stat is not None:
         d = datetime.datetime.utcfromtimestamp(stat.st_mtime)
         dstr = d.strftime('%Y-%m-%d %H:%M:%S UTC')
         commit_to_git(repo, log,
                       "Found uncommitted data from " + dstr)
-    except FileNotFoundError:
-        pass
 
 
 def rotate_log_file(tmp, log):
@@ -114,8 +119,13 @@ def do_commit():
         preserve = Path(repo, 'hashes.stamp')
         with serialize:
             commit_dangling(repo, log)
+            # See comment in `commit_dangling`
+            stat = None
             try:
                 stat = tmp.stat()
+            except FileNotFoundError:
+                logging.info("Nothing to rotate")
+            if stat is not None:
                 rotate_log_file(tmp, log)
                 d = datetime.datetime.utcfromtimestamp(stat.st_mtime)
                 dstr = d.strftime('%Y-%m-%d %H:%M:%S UTC')
@@ -123,8 +133,6 @@ def do_commit():
                         "Newly timestamped commits up to " + dstr)
                 with tmp.open(mode='ab'):
                     pass  # Recreate hashes.work
-            except FileNotFoundError:
-                logging.info("Nothing to rotate")
         repositories = zeitgitter.config.arg.push_repository
         branches = zeitgitter.config.arg.push_branch
         for r in zeitgitter.config.arg.upstream_timestamp:
