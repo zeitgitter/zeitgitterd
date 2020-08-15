@@ -3,7 +3,7 @@ version: "2"
 services:
   zeitgitter-dev:
     restart: unless-stopped
-    image: zeitgitter/zeitgitter-dev
+    image: zeitgitter-dev
     build: ./zeitgitter-dev
     container_name: zeitgitter-dev
     env_file:
