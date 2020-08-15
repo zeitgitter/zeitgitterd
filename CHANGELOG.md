@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 # 1.0.2 - 2020-08-15
 ## Added
+- Allow testing docker images without having to publish to PyPI and DockerHub.
+  This will allow better testing in the future before releasing. (If you wonder
+  why this Changelog does not say anything about v1.0.1, this is why.)
 
 ## Fixed
 - Data loss can occur (and did in fact occur on `gitta.zeitgitter.net`) if

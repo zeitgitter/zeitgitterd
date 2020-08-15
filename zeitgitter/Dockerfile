@@ -10,10 +10,18 @@ RUN apt update && \
 # (apt libgit2+python3-pygit2 with Python interpreter, pip pygit2)
 RUN python3 -c "import pygit2"
 
-RUN pip3 install zeitgitterd
+# For development docker builds, install from local package instead from PyPI.
+# For this, `##DEVONLY##` strings at the start of the line will be removed for
+# the dev # build Dockerfile, whereas lines ending in `##PRODONLY##` will be
+# deleted.
+RUN pip3 install zeitgitterd ##PRODONLY##
+##DEVONLY## COPY zeitgitterd-*.whl /root/
+##DEVONLY## RUN pip3 install /root/zeitgitterd-*.whl
 
 # Ensure SSH keys also survive an update
-RUN usermod --home /persistent-data root
+# `usermod --home /persistent-data root` refuses, as there are running procs
+RUN sed 's,:/root:,:/persistent-data:,' < /etc/passwd > /etc/passwd+ && \
+    mv /etc/passwd+ /etc/passwd
 
 # Store outside of the volume (as it will most likely be mounted over) and copy
 # only at first start
