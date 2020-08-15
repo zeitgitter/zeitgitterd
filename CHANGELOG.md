@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-# 1.0.1 - 2020-08-13
+# 1.0.2 - 2020-08-15
 ## Added
 
 ## Fixed
@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Recovering from dangling repositories
 
 ## Changed
+- A commit will be created after creating the timestamping repository and
+  adding `pubkey.asc` to it, so that cross-timestamping can start then.
+  Otherwise, cross-timestamping would result in error messages until the first
+  external timestamping request arrives.
 
 
 # 1.0.0 - 2020-08-13

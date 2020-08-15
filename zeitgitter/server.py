@@ -291,6 +291,8 @@ def finish_setup(arg):
             f.write(stamper.get_public_key())
         subprocess.run(['git', 'add', 'pubkey.asc'],
                 cwd=repo, check=True)
+        subprocess.run(['git', 'commit', '-m', 'Started timestamping'],
+                cwd=repo, check=True)
 
 
 def run():
