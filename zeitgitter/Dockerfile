@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:buster-slim
 
 # gnupg1/gpg1 steps are for interfacing with the PGP Timestamping Service only.
 # Explicit python3-pygit2 install is required for ARMv6 only.
