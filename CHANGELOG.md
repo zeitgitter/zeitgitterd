@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+# 1.0.2+ - [Unreleased]
+## Added
+
+## Fixed
+
+## Changed
+- Docker image is now based on `debian:buster-slim`. As the same number of
+  packages (171) has to be added on top of it, starting with the smaller image
+  is preferable. (See [#0.9.6---2020-08-13](v0.9.6 below) for why not using one
+  of the `python` base images.)
+
+
 # 1.0.2 - 2020-08-15
 ## Added
 - Allow testing docker images without having to publish to PyPI and DockerHub.
