@@ -176,6 +176,7 @@ docker-multiarch-builder: qemu buildx
 
 # Create a docker image from the current tree
 docker-dev:python-package
+	${RM} -rf zeitgitter-dev
 	mkdir -p zeitgitter-dev persistent-data-dev
 	cp dist/zeitgitterd-*.whl zeitgitter-dev
 	for i in Dockerfile sample.conf stamper.asc; do \
