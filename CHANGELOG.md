@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## Added
 
 ## Fixed
+- Code typo on failed key creation
 
 ## Changed
 - Docker image is now based on `debian:buster-slim`. As the same number of
