@@ -1,72 +1,51 @@
-# `zeitgitter` — Independent `git` Timestamper
+# `autoblockchainify` — Turn a directory into a git-based Blockchain
 
-## Timestamping: Why?
+`git` is probably the oldest and most widely used Blockchain with the largest
+user base and toolset, even though most people think of `git` as a source code
+control system. To learn more, see
+[GitBlockchainTimestamping.md](./GitBlockchainTimestamping.md).
 
-Being able to provide evidence that **you had some piece of information at a
-given time** and **it has not changed since** are important in many aspects of
-personal, academic, or corporate life.
+## How does `autoblockchainify` work?
 
-It can help provide evidence
-- that you had some idea already at a given time,
-- that you already had a piece of code, or
-- that you knew about a document at a given time.
+* Frequently (default: every 10 minutes), the directory tree is checked for
+  changes. If there are changes, they are commited to `git` and timestamped
+  using Zeitgitter.
+* If no changes have been made in a larger period (default: 1 hour), a commit
+  is forced and Zeitgitter-timestamped, as an immediate evidence of no changes.
+* If at the time of commit the last timestamp using the mail-based *PGP Digital
+  Timestamping Service* is older than this larger period (again: 1 hour by
+  default) and the mail interface has been configured, a timestamp will be
+  requested there.
+* All timestamps requested from the Zeitgitter network will be regularily
+  cross-timestamped within the Zeitgitter network and with the *PGP Digital
+  Timestamping Service* as well as several other Blockchain-based timestamping
+  services.
 
-Timestamping does not assure *authorship* of the idea, code, or document. It
-only provides evidence to the *existence* at a given point in time. Depending
-on the context, authorship might be implied, at least weakly.
+## What do I need to configure?
 
-## `zeitgitter` for Timestamping
+If you are happy with the default configuration, nothing. This default
+configuration includes:
+* A commit and Zeitgitter timestamp every 10 minutes, if there have been
+  changes.
+* A commit and Zeitgitter timestamp every hour, even if there have been no
+  changes.
 
-`zeitgitter` consists of two components:
+If you would like to change the above intervals, or if you would like the
+following additional features, do change `autoblockchainify.conf` in the
+working directory or set the `AUTOBLOCKCHAINIFY_*` environment variables:
+* Additional, direct timestamping against the *PGP Digital Timestamping
+  Service* by mail; or
+* Pushing to a remote repository for backup and/or publication purposes on
+  every change.
+After changes to the configuration, you need to restart `autoblockchainify` (or
+the Docker container) to have changes picked up.
 
-1. A timestamping client, which can add a timestamp as a digital signature to
-   an existing `git` repository. Existing `git` mechanisms can then be used
-   to distribute these timestamps (stored in commits or tags) or keep them
-   private.
-2. A timestamping server, which supports timestamping `git` repositories and
-   stores its history of commits timestamped in a `git` repository as well.
-   Anybody can operate such a timestamping server, but using an independent
-   timestamper provides strongest evidence, as collusion is less likely.
-   - Publication of the timestamps history; as well as
-   - getting cross-timestamps of other independent timestampers on your
-     timestamp history
-   both provide mechanisms to assure that timestamping has not been done
-   retroactively ("backstamping").
+If you would like to exclude files from inclusion in the `git` repository (and
+therefore the Blockchain, the timestamps, and the remote repositories):
+* Modify `.gitignore` in the working directory.
 
-The timestamping client is called `git timestamp` and allows to issue
-timestamped, signed tags or commits.
+## How do I run it?
 
-To simplify deployment, we provide a free timestamping server at
-[https://gitta.zeitgitter.ch](https://gitta.zeitgitter.ch). It is able to provide several
-million timestamps per day. However, if you or your organization plan to issue
-more than a hundred timestamps per day, please consider installing and using
-your own timestamping server and have it being cross-timestamped with other
-servers.
-
-## Setting up your own timestamping server
-
-Having your own timestamping server provides several benefits:
-
-* The number of timestamps you request, their commit ID, as well as
-  the times at which they are stamped, remain you business alone.
-* You can request as many timestamps as you like.
-* If you like, you can provide a service to the community as well,
-  by timestamping other servers in turn. This strengthens the
-  overall trust of these timestamps.
-
-There are currently two options for installation:
-* [Running a Zeitgitter timestamper in Docker](docker/README.md) (recommended; only requires setting four variables)
-* [Traditional install on a Linux server](doc/Install.md) (more work)
-
-## General Documentation
-
-- [Timestamping: Why and how?](doc/Timestamping.md)
-- [Protocol description](doc/Protocol.md)
-- [Discussion of the use of (weak) cryptography](doc/Cryptography.md)
-
-## Server Documentation
-
-- [Docker server (recommended)](doc/Docker.md)
-- [Native server (deprecated)](doc/Install.md)
-- [How the server works](doc/ServerOperation.md)
-- [The server's state machine](doc/StateMachine.md)
+The preferred way is to run a Docker image using `docker-compose` and point the
+`/blockchain` directory tothe directory you want be automatically archived to
+your Blockchain. See the files `docker-compose.yml` and `sample.env`.

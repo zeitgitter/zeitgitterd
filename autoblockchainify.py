@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 #
-# zeitgitter — Independent GIT Timestamping, HTTPS server
+# autoblockchainify — Automatically turn a directory into a git-based Blockchain
+# (with the help of Zeitgitter timestamps and the PGP timestamping server)
 #
-# Copyright (C) 2019 Marcel Waldvogel
+# Copyright (C) 2019,2020 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -24,6 +25,6 @@
 
 import sys
 sys.path.append('/usr/local/lib/python')
-from zeitgitter import server
+from autoblockchainify import daemon
 
-server.run()
+daemon.run()
