@@ -54,7 +54,7 @@ def create_key(gpg, keyid):
     gki = '%no-protection\n' + gki
     key = gpg.gen_key(gki)
     if key.fingerprint is None:
-        system.exit("Cannot create PGP key for %s: %s" % (keyid, key.stderr))
+        sys.exit("Cannot create PGP key for %s: %s" % (keyid, key.stderr))
     logging.info("Created PGP key %s" % key.fingerprint)
     return key.fingerprint
 
