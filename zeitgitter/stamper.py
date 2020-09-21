@@ -22,17 +22,17 @@
 
 import logging as _logging
 import os
+import re
 import shutil
 import sys
-import re
 import threading
 import time
 from pathlib import Path
 
 import gnupg
+
 import zeitgitter.commit
 import zeitgitter.config
-
 
 logging = _logging.getLogger('stamper')
 
@@ -49,7 +49,7 @@ def create_key(gpg, keyid):
     name, mail = keyid.split(' <')
     mail = mail[:-1]
     gki = gpg.gen_key_input(name_real=name, name_email=mail,
-            key_type='eddsa', key_curve='Ed25519', key_usage='sign')
+                            key_type='eddsa', key_curve='Ed25519', key_usage='sign')
     # Force to not ask (non-existant) user for passphrase
     gki = '%no-protection\n' + gki
     key = gpg.gen_key(gki)
@@ -86,15 +86,15 @@ def get_keyid(keyid, domain, gnupg_home):
         if len(keyinfo) == 1:
             return keyinfo[0]['keyid']
         elif re.match("^[A-Z][A-Za-z0-9 ]+ <[-_a-z0-9.]+@[-a-z0-9.]+>$",
-                keyid) and len(keyinfo) == 0:
+                      keyid) and len(keyinfo) == 0:
             return create_key(gpg, keyid)
         else:
             if len(keyinfo) > 0:
                 sys.exit("Too many secret keys matching key '%s'" % keyid)
             else:
                 sys.exit("No secret keys match keyid '%s', "
-                    "use the form 'Description <email>' if zeitgitterd "
-                    "should create one automatically with that name" % keyid)
+                         "use the form 'Description <email>' if zeitgitterd "
+                         "should create one automatically with that name" % keyid)
     else:
         keyinfo = gpg.list_keys(secret=True)
         if len(keyinfo) == 1:
@@ -103,7 +103,7 @@ def get_keyid(keyid, domain, gnupg_home):
             nick = get_nick(domain)
             maildomain = domain.replace('.', '@', 1)
             return create_key(gpg, "%s Timestamping Service <%s>"
-                    % (nick.capitalize(), maildomain))
+                              % (nick.capitalize(), maildomain))
         else:
             sys.exit("Please specify a keyid in the configuration file")
 
@@ -117,7 +117,7 @@ class Stamper:
         self.url = zeitgitter.config.arg.own_url
         self.keyid = zeitgitter.config.arg.keyid
         self.gpgs = [gnupg.GPG(gnupghome=zeitgitter.config.arg.gnupg_home)]
-        self.max_threads = 1 # Start single-threaded
+        self.max_threads = 1  # Start single-threaded
         self.keyinfo = self.gpg().list_keys(True, keys=self.keyid)
         if len(self.keyinfo) == 0:
             raise ValueError("No keys found")
@@ -139,17 +139,17 @@ class Stamper:
                 if home.exists():
                     if home.is_symlink():
                         logging.info("Creating GnuPG key copy %s→%s"
-                            ", replacing old symlink"
-                            % (zeitgitter.config.arg.gnupg_home, home))
+                                     ", replacing old symlink"
+                                     % (zeitgitter.config.arg.gnupg_home, home))
                         home.unlink()
                         # Ignore sockets (must) and backups (may) on copy
                         shutil.copytree(zeitgitter.config.arg.gnupg_home,
-                            home, ignore=shutil.ignore_patterns("S.*", "*~"))
+                                        home, ignore=shutil.ignore_patterns("S.*", "*~"))
                 else:
                     logging.info("Creating GnuPG key copy %s→%s"
-                            % (zeitgitter.config.arg.gnupg_home, home))
+                                 % (zeitgitter.config.arg.gnupg_home, home))
                     shutil.copytree(zeitgitter.config.arg.gnupg_home,
-                        home, ignore=shutil.ignore_patterns("S.*", "*~"))
+                                    home, ignore=shutil.ignore_patterns("S.*", "*~"))
                 nextgpg = gnupg.GPG(gnupghome=home.as_posix())
                 self.gpgs.append(nextgpg)
                 logging.debug("Returning new %r (gnupghome=%s)" % (nextgpg, nextgpg.gnupghome))

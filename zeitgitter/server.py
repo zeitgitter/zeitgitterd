@@ -33,12 +33,11 @@ import urllib
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-from zeitgitter import moddir
 import zeitgitter.commit
 import zeitgitter.config
 import zeitgitter.stamper
 import zeitgitter.version
-
+from zeitgitter import moddir
 
 logging = _logging.getLogger('server')
 
@@ -107,15 +106,16 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(explain)
 
     def do_GET(self):
-        subst = {b'ZEITGITTER_DOMAIN':  bytes(zeitgitter.config.arg.domain,  'UTF-8'),
-                 b'ZEITGITTER_OWNER':   bytes(zeitgitter.config.arg.owner,   'UTF-8'),
+        subst = {b'ZEITGITTER_DOMAIN': bytes(zeitgitter.config.arg.domain, 'UTF-8'),
+                 b'ZEITGITTER_OWNER': bytes(zeitgitter.config.arg.owner, 'UTF-8'),
                  b'ZEITGITTER_CONTACT': bytes(zeitgitter.config.arg.contact, 'UTF-8'),
                  b'ZEITGITTER_COUNTRY': bytes(zeitgitter.config.arg.country, 'UTF-8')}
 
         if self.path == '/':
-                self.send_file('text/html', 'index.html', replace=subst)
+            self.send_file('text/html', 'index.html', replace=subst)
         else:
-            match = re.match('^/([a-z0-9][-_.a-z0-9]*).(html|css|js|png|jpe?g|svg)$', self.path, re.IGNORECASE)
+            match = re.match('^/([a-z0-9][-_.a-z0-9]*).(html|css|js|png|jpe?g|svg)$',
+                             self.path, re.IGNORECASE)
             mimemap = {
                 'html': 'text/html',
                 'css': 'text/css',
@@ -126,7 +126,8 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
                 'jpeg': 'image/jpeg'}
             if match and match.group(2) in mimemap:
                 if match.group(2) == 'html':
-                    self.send_file(mimemap[match.group(2)], self.path[1:], replace=subst)
+                    self.send_file(mimemap[match.group(2)], self.path[1:],
+                                   replace=subst)
                 else:
                     self.send_file(mimemap[match.group(2)], self.path[1:])
             else:
@@ -181,10 +182,12 @@ class StamperRequestHandler(FlatFileRequestHandler):
                   and 'commit' in params and 'tree' in params):
                 if 'parent' in params:
                     return stamper.stamp_branch(params['commit'][0],
-                                                params['parent'][0], params['tree'][0])
+                                                params['parent'][0],
+                                                params['tree'][0])
                 else:
                     return stamper.stamp_branch(params['commit'][0],
-                                                None, params['tree'][0])
+                                                None,
+                                                params['tree'][0])
         else:
             return 406
 
@@ -264,7 +267,7 @@ def finish_setup(arg):
     # 1. Determine or create key, if possible
     #    (Not yet ready to use global stamper)
     arg.keyid = zeitgitter.stamper.get_keyid(arg.keyid,
-                    arg.domain, arg.gnupg_home)
+                                             arg.domain, arg.gnupg_home)
     # Now, we're ready
     ensure_stamper()
 
@@ -277,9 +280,9 @@ def finish_setup(arg):
         subprocess.run(['git', 'init'], cwd=repo, check=True)
         (name, mail) = stamper.fullid[:-1].split(' <')
         subprocess.run(['git', 'config', 'user.name', name],
-                cwd=repo, check=True)
+                       cwd=repo, check=True)
         subprocess.run(['git', 'config', 'user.email', mail],
-                cwd=repo, check=True)
+                       cwd=repo, check=True)
 
     # 3. Create initial files in repo, when needed
     #    (`hashes.work` will be created on demand).
@@ -290,9 +293,9 @@ def finish_setup(arg):
         with pubkey.open('w') as f:
             f.write(stamper.get_public_key())
         subprocess.run(['git', 'add', 'pubkey.asc'],
-                cwd=repo, check=True)
+                       cwd=repo, check=True)
         subprocess.run(['git', 'commit', '-m', 'Started timestamping'],
-                cwd=repo, check=True)
+                       cwd=repo, check=True)
 
 
 def run():
@@ -300,7 +303,8 @@ def run():
     finish_setup(zeitgitter.config.arg)
     zeitgitter.commit.run()
     httpd = SocketActivationHTTPServer(
-        (zeitgitter.config.arg.listen_address, zeitgitter.config.arg.listen_port),
+        (zeitgitter.config.arg.listen_address,
+         zeitgitter.config.arg.listen_port),
         StamperRequestHandler)
     logging.info("Start serving")
     ensure_stamper(start_multi_threaded=True)

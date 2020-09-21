@@ -22,21 +22,22 @@
 
 import logging as _logging
 import os
-import pygit2 as git
 import re
 import subprocess
 import threading
 import time
-
 from datetime import datetime, timedelta
 from imaplib import IMAP4
 from pathlib import Path
 from smtplib import SMTP
 from time import gmtime, strftime
 
+import pygit2 as git
+
 import zeitgitter.config
 
 logging = _logging.getLogger('mail')
+
 
 def split_host_port(host, default_port):
     if ':' in host:
@@ -104,7 +105,8 @@ def save_signature(bodylines):
     res = subprocess.run(['git', 'add', ascfile], cwd=repo)
     if res.returncode != 0:
         logging.warning("git add %s in %s failed: %d"
-                % (ascfile, repo, res.returncode))
+                        % (ascfile, repo, res.returncode))
+
 
 def maybe_decode(str):
     """Decode, if it is not `None`"""
@@ -112,6 +114,7 @@ def maybe_decode(str):
         return str
     else:
         return str.decode('ASCII')
+
 
 def body_signature_correct(bodylines, stat):
     body = '\n'.join(bodylines)
@@ -152,13 +155,13 @@ def body_signature_correct(bodylines, stat):
         return False
     if sigtime > datetime.utcnow() + timedelta(seconds=30):
         logging.warning("Signature time %s lies more than 30 seconds in the future"
-                     % sigtime)
+                        % sigtime)
         return False
     modtime = datetime.utcfromtimestamp(stat.st_mtime)
     if sigtime < modtime - timedelta(seconds=30):
         logging.warning("Signature time %s is more than 30 seconds before\n"
-                     "file modification time %s"
-                     % (sigtime, modtime))
+                        "file modification time %s"
+                        % (sigtime, modtime))
         return False
     return True
 
@@ -178,7 +181,7 @@ def verify_body_and_save_signature(body, stat, logfile, msgno):
         logging.debug("before %d, after %d" % (before, after))
         if before > 20 or after > 20:
             logging.warning("Too many lines added by the PGP Timestamping Server"
-                " before (%d)/after (%d) our contents" % (before, after))
+                            " before (%d)/after (%d) our contents" % (before, after))
             return False
 
     if not body_signature_correct(bodylines, stat):
@@ -243,16 +246,16 @@ def imap_idle(imap, stat, repo, initial_head, logfile):
                 imap.send(b'DONE\r\n')
                 if check_for_stamper_mail(imap, stat, logfile) is True:
                     return False
-                break # Restart IDLE command
+                break  # Restart IDLE command
             # Otherwise: Seen untagged response we don't care for, continue idling
 
 
 def check_for_stamper_mail(imap, stat, logfile):
     # See `--no-dovecot-bug-workaround`:
     query = ('FROM', '"%s"' % zeitgitter.config.arg.stamper_from,
-        'UNSEEN',
-        'LARGER', str(stat.st_size),
-        'SMALLER', str(stat.st_size + 16384))
+             'UNSEEN',
+             'LARGER', str(stat.st_size),
+             'SMALLER', str(stat.st_size + 16384))
     logging.debug("IMAP SEARCH " + (' '.join(query)))
     (typ, msgs) = imap.search(None, *query)
     logging.info("IMAP SEARCH → %s, %s" % (typ, msgs))
@@ -278,7 +281,7 @@ def still_same_head(repo, initial_head):
         return True
     else:
         logging.warning("No valid email answer before next commit (%s->%s)"
-                % (initial_head.target.hex, repo.head.target.hex))
+                        % (initial_head.target.hex, repo.head.target.hex))
         return False
 
 
@@ -330,4 +333,4 @@ def async_email_timestamp(logfile, resume=False):
     if not resume:
         send(contents)
     threading.Thread(target=wait_for_receive, args=(repo, head, logfile),
-        daemon=True).start()
+                     daemon=True).start()
