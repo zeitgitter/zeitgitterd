@@ -20,23 +20,23 @@ with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="zeitgitterd",
+    name="autoblockchainify",
     version=extract_version('zeitgitter/version.py'),
     author="Marcel Waldvogel",
     author_email="marcel.waldvogel@trifence.ch",
-    description="Zeitgitter timestamping server",
+    description="Turn a directory into a git-based Blockchain",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://gitlab.com/zeitgitter/zeitgitterd",
+    url="https://gitlab.com/zeitgitter/autoblockchainify",
     license='AGPLv3',
     packages=setuptools.find_packages(),
-    install_requires=['pygit2', 'python-gnupg', 'configargparse', 'requests',
+    install_requires=['pygit2', 'configargparse',
         'setuptools', 'git-timestamp'],
-    package_data={'zeitgitter': ['sample.conf', 'web/*']},
+    package_data={'autoblockchainify': ['sample.conf', 'web/*']},
     python_requires='>=3.7',
     entry_points={
         'console_scripts': [
-            'zeitgitterd=zeitgitter.server:run',
+            'zeitgitterd=autoblockchainify.daemon:run',
         ],
     },
     classifiers=[

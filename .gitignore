@@ -3,7 +3,7 @@ build
 dist
 *.egg-info
 # Locally modified copy of sample.env:
-server.env
+autoblockchainify.env
 dev.env
-zeitgitter-dev/
-persistent-data-dev/
+autoblockchainify-dev/
+blockchain-dev/
