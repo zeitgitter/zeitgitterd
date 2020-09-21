@@ -1,15 +1,12 @@
 version: "2"
 
 services:
-  zeitgitter-dev:
+  autoblockchainify-dev:
     restart: unless-stopped
-    image: zeitgitter-dev
-    build: ./zeitgitter-dev
-    container_name: zeitgitter-dev
+    image: zeitgitter/autoblockchainify-dev
+    build: ./autoblockchainify-dev
+    container_name: autoblockchainify-dev
     env_file:
-      - "server.env"
       - "dev.env"
-    ports:
-      - 15176:15177
     volumes:
-      - ./persistent-data-dev:/persistent-data
+      - ./blockchain-dev:/blockchain

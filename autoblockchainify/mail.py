@@ -22,21 +22,22 @@
 
 import logging as _logging
 import os
-import pygit2 as git
 import re
 import subprocess
 import threading
 import time
-
 from datetime import datetime, timedelta
 from imaplib import IMAP4
 from pathlib import Path
 from smtplib import SMTP
 from time import gmtime, strftime
 
-import zeitgitter.config
+import pygit2 as git
+
+import autoblockchainify.config
 
 logging = _logging.getLogger('mail')
+
 
 def split_host_port(host, default_port):
     if ':' in host:
@@ -50,15 +51,14 @@ def send(body, subject='Stamping request', to=None):
     # Does not work in unittests if assigned in function header
     # (are bound too early? At load time instead of at call time?)
     if to is None:
-        to = zeitgitter.config.arg.stamper_to
-    logging.debug('SMTP server %s' % zeitgitter.config.arg.stamper_smtp_server)
-    (host, port) = split_host_port(zeitgitter.config.arg.stamper_smtp_server, 587)
-    with SMTP(host, port=port,
-              local_hostname=zeitgitter.config.arg.domain) as smtp:
+        to = autoblockchainify.config.arg.stamper_to
+    logging.debug('SMTP server %s' % autoblockchainify.config.arg.stamper_smtp_server)
+    (host, port) = split_host_port(autoblockchainify.config.arg.stamper_smtp_server, 587)
+    with SMTP(host, port=port) as smtp:
         smtp.starttls()
-        smtp.login(zeitgitter.config.arg.stamper_username,
-                   zeitgitter.config.arg.stamper_password)
-        frm = zeitgitter.config.arg.stamper_own_address
+        smtp.login(autoblockchainify.config.arg.stamper_username,
+                   autoblockchainify.config.arg.stamper_password)
+        frm = autoblockchainify.config.arg.stamper_own_address
         date = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
         msg = """From: %s
 To: %s
@@ -96,22 +96,22 @@ def extract_pgp_body(body):
     return lines[start:end + 1]
 
 
-def save_signature(bodylines):
-    repo = zeitgitter.config.arg.repository
-    ascfile = Path(repo, 'hashes.asc')
+def save_signature(bodylines, logfile):
+    repo = autoblockchainify.config.arg.repository
+    ascfile = Path(repo, 'pgp-timestamp.sig')
     with ascfile.open(mode='w') as f:
         f.write('\n'.join(bodylines) + '\n')
-    res = subprocess.run(['git', 'add', ascfile], cwd=repo)
-    if res.returncode != 0:
-        logging.warning("git add %s in %s failed: %d"
-                % (ascfile, repo, res.returncode))
+        # Change will be picked up by next check for directory modification
+    logfile.unlink()  # Mark as reply received, no need for resumption
 
-def maybe_decode(str):
+
+def maybe_decode(s):
     """Decode, if it is not `None`"""
-    if str is None:
-        return str
+    if s is None:
+        return s
     else:
-        return str.decode('ASCII')
+        return s.decode('ASCII')
+
 
 def body_signature_correct(bodylines, stat):
     body = '\n'.join(bodylines)
@@ -128,18 +128,17 @@ def body_signature_correct(bodylines, stat):
                          env=env, input=body.encode('ASCII'),
                          stderr=subprocess.PIPE)
     stderr = maybe_decode(res.stderr)
-    stdout = maybe_decode(res.stdout)
     logging.debug(stderr)
     if res.returncode != 0:
         logging.warning("gpg1 return code %d (%r)" % (res.returncode, stderr))
         return False
-    if not '\ngpg: Good signature' in stderr:
+    if '\ngpg: Good signature' not in stderr:
         logging.warning("Not good signature (%r)" % stderr)
         return False
     if not stderr.startswith('gpg: Signature made '):
         logging.warning("Signature not made (%r)" % stderr)
         return False
-    if not ((' key ID %s\n' % zeitgitter.config.arg.stamper_keyid)
+    if not ((' key ID %s\n' % autoblockchainify.config.arg.stamper_keyid)
             in stderr):
         logging.warning("Wrong KeyID (%r)" % stderr)
         return False
@@ -152,13 +151,13 @@ def body_signature_correct(bodylines, stat):
         return False
     if sigtime > datetime.utcnow() + timedelta(seconds=30):
         logging.warning("Signature time %s lies more than 30 seconds in the future"
-                     % sigtime)
+                        % sigtime)
         return False
     modtime = datetime.utcfromtimestamp(stat.st_mtime)
     if sigtime < modtime - timedelta(seconds=30):
         logging.warning("Signature time %s is more than 30 seconds before\n"
-                     "file modification time %s"
-                     % (sigtime, modtime))
+                        "file modification time %s"
+                        % (sigtime, modtime))
         return False
     return True
 
@@ -178,14 +177,14 @@ def verify_body_and_save_signature(body, stat, logfile, msgno):
         logging.debug("before %d, after %d" % (before, after))
         if before > 20 or after > 20:
             logging.warning("Too many lines added by the PGP Timestamping Server"
-                " before (%d)/after (%d) our contents" % (before, after))
+                            " before (%d)/after (%d) our contents" % (before, after))
             return False
 
     if not body_signature_correct(bodylines, stat):
         logging.warning("Body signature incorrect")
         return False
 
-    save_signature(bodylines)
+    save_signature(bodylines, logfile)
     return True
 
 
@@ -205,8 +204,8 @@ def body_contains_file(bodylines, logfile):
                 return None
         # Now should be contiguous
         i += 1
-        for l in f:
-            if bodylines[i] != l.rstrip():
+        for line in f:
+            if bodylines[i] != line.rstrip():
                 return None
             i += 1
         # Now there should only be empty lines and a PGP signature
@@ -223,8 +222,17 @@ def body_contains_file(bodylines, logfile):
         return (linesbefore, linesafter)
 
 
-def imap_idle(imap, stat, repo, initial_head, logfile):
-    while still_same_head(repo, initial_head):
+def file_unchanged(stat, logfile):
+    try:
+        cur_stat = logfile.stat()
+        return (cur_stat.st_mtime == stat.st_mtime
+                and cur_stat.st_ino == stat.st_ino)
+    except FileNotFoundError:
+        return False
+
+
+def imap_idle(imap, stat, logfile):
+    while True:
         imap.send(b'%s IDLE\r\n' % (imap._new_tag()))
         logging.info("IMAP waiting for IDLE response")
         line = imap.readline().strip()
@@ -233,26 +241,29 @@ def imap_idle(imap, stat, repo, initial_head, logfile):
             logging.info("IMAP IDLE unsuccessful")
             return False
         # Wait for new message
-        while True:
+        while file_unchanged(stat, logfile):
             line = imap.readline().strip()
             if line == b'' or line.startswith(b'* BYE '):
                 return False
-            if re.match(r'^\* [0-9]+ EXISTS$', str(line, 'ASCII')):
-                logging.info("You have new mail!")
+            match = re.match(r'^\* ([0-9]+) EXISTS$', str(line, 'ASCII'))
+            if match:
+                logging.info("You have new mail %s!"
+                             % match.group(1).encode('ASCII'))
                 # Stop idling
                 imap.send(b'DONE\r\n')
                 if check_for_stamper_mail(imap, stat, logfile) is True:
                     return False
-                break # Restart IDLE command
-            # Otherwise: Seen untagged response we don't care for, continue idling
+                break  # Restart IDLE command
+            # Otherwise: Uninteresting untagged response, continue idling
+        logging.error("Next mail sent, giving up waiting on now-old reply")
 
 
 def check_for_stamper_mail(imap, stat, logfile):
     # See `--no-dovecot-bug-workaround`:
-    query = ('FROM', '"%s"' % zeitgitter.config.arg.stamper_from,
-        'UNSEEN',
-        'LARGER', str(stat.st_size),
-        'SMALLER', str(stat.st_size + 16384))
+    query = ('FROM', '"%s"' % autoblockchainify.config.arg.stamper_from,
+             'UNSEEN',
+             'LARGER', str(stat.st_size),
+             'SMALLER', str(stat.st_size + 16384))
     logging.debug("IMAP SEARCH " + (' '.join(query)))
     (typ, msgs) = imap.search(None, *query)
     logging.info("IMAP SEARCH → %s, %s" % (typ, msgs))
@@ -273,61 +284,54 @@ def check_for_stamper_mail(imap, stat, logfile):
     return False
 
 
-def still_same_head(repo, initial_head):
-    if repo.head.target.hex == initial_head.target.hex:
-        return True
-    else:
-        logging.warning("No valid email answer before next commit (%s->%s)"
-                % (initial_head.target.hex, repo.head.target.hex))
-        return False
-
-
-def wait_for_receive(repo, initial_head, logfile):
-    try:
-        stat = logfile.stat()
-        logging.debug("File is from %d" % stat.st_mtime)
-    except FileNotFoundError:
-        return False
-    (host, port) = split_host_port(zeitgitter.config.arg.stamper_imap_server, 143)
+def wait_for_receive(logfile):
+    stat = logfile.stat()  # Should always succeed
+    logging.debug("Timestamp revision file is from %d" % stat.st_mtime)
+    (host, port) = split_host_port(autoblockchainify.config.arg.stamper_imap_server, 143)
     with IMAP4(host=host, port=port) as imap:
         imap.starttls()
-        imap.login(zeitgitter.config.arg.stamper_username,
-                   zeitgitter.config.arg.stamper_password)
+        imap.login(autoblockchainify.config.arg.stamper_username,
+                   autoblockchainify.config.arg.stamper_password)
         imap.select('INBOX')
-        if (check_for_stamper_mail(imap, stat, logfile) == False
-                and still_same_head(repo, initial_head)):
+        if not check_for_stamper_mail(imap, stat, logfile):
             # No existing message found, wait for more incoming messages
             # and process them until definitely okay or giving up for good
             if 'IDLE' in imap.capabilities:
-                imap_idle(imap, stat, repo, initial_head, logfile)
+                imap_idle(imap, stat, logfile)
             else:
                 logging.warning("IMAP server does not support IDLE")
+                # Poll every minute, for 10 minutes
                 for i in range(10):
                     time.sleep(60)
-                    if not still_same_head(repo, initial_head):
-                        return
                     if check_for_stamper_mail(imap, stat, logfile):
                         return
+                logging.error("No response received, giving up")
 
 
-def async_email_timestamp(logfile, resume=False):
+def async_email_timestamp(resume=False):
     """If called with `resume=True`, tries to resume waiting for the mail"""
-    repo = git.Repository(zeitgitter.config.arg.repository)
+    path = autoblockchainify.config.arg.repository
+    repo = git.Repository(path)
+    head = repo.head
+    logfile = Path(path, 'pgp-timestamp.tmp')
     if repo.head_is_unborn:
         logging.error("Cannot timestamp by email in repository without commits")
         return
-    head = repo.head
-    with logfile.open() as f:
-        contents = f.read()
-    if contents == "":
-        logging.info("Not trying to timestamp empty log")
-        return
-    if not (resume or '\ngit commit: ' in contents):
-        append = '\ngit commit: %s\n' % head.target.hex
-        with logfile.open('a') as f:
-            f.write(append)
-        contents = contents + append
-    if not resume:
-        send(contents)
-    threading.Thread(target=wait_for_receive, args=(repo, head, logfile),
-        daemon=True).start()
+    if resume:
+        if not logfile.is_file():
+            logging.info("Not resuming mail timestamp: No pending mail reply")
+            return
+        with logfile.open() as f:
+            contents = f.read()
+        if len(contents) < 40:
+            logging.info("Not resuming mail timestamp: No revision info")
+            return
+    else:  # Fresh request
+        new_rev = ("Timestamp requested for\ngit commit %s\nat %s\n" %
+                   (head.target.hex,
+                    strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())))
+        with logfile.open('w') as f:
+            f.write(new_rev)
+        send(new_rev)
+    threading.Thread(target=wait_for_receive, args=(logfile,),
+                     daemon=True).start()

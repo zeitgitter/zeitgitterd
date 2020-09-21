@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# zeitgitterd — Independent GIT Timestamping, HTTPS server
+# autoblockchainify — Turn a directory into a GIT Blockchain
 #
 # Copyright (C) 2019,2020 Marcel Waldvogel
 #
