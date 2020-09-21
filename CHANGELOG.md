@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 # 1.0.2+ - [Unreleased]
 ## Added
+- On restart, tries to resume waiting for a mail response from PGP Digital
+  Timestamping Service (was added some versions ago, but never documented)
 
 ## Fixed
 - Code typo on failed key creation
