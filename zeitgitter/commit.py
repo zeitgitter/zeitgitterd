@@ -36,7 +36,6 @@ import zeitgitter.config
 import zeitgitter.mail
 import zeitgitter.stamper
 
-
 logging = _logging.getLogger('commit')
 
 # To serialize all commit-related operations
@@ -132,17 +131,17 @@ def do_commit():
                 d = datetime.datetime.utcfromtimestamp(stat.st_mtime)
                 dstr = d.strftime('%Y-%m-%d %H:%M:%S UTC')
                 commit_to_git(repo, log, preserve,
-                        "Newly timestamped commits up to " + dstr)
+                              "Newly timestamped commits up to " + dstr)
                 with tmp.open(mode='ab'):
                     pass  # Recreate hashes.work
         repositories = zeitgitter.config.arg.push_repository
         branches = zeitgitter.config.arg.push_branch
         for r in zeitgitter.config.arg.upstream_timestamp:
-            logging.info("Cross-timestamping %s" % r);
+            logging.info("Cross-timestamping %s" % r)
             (branch, server) = r.split('=', 1)
             cross_timestamp(repo, branch, server)
         for r in repositories:
-            logging.info("Pushing upstream to %s" % r);
+            logging.info("Pushing upstream to %s" % r)
             push_upstream(repo, r, branches)
 
         if zeitgitter.config.arg.stamper_own_address:
@@ -151,7 +150,7 @@ def do_commit():
         logging.info("do_commit done")
     except Exception as e:
         logging.error("Unhandled exception in do_commit() thread: %s: %s" %
-                (e, ''.join(traceback.format_tb(sys.exc_info()[2]))))
+                      (e, ''.join(traceback.format_tb(sys.exc_info()[2]))))
 
 
 def wait_until():

@@ -21,18 +21,19 @@
 # Configuration handling
 
 import argparse
-import configargparse
 import datetime
 import logging as _logging
 import os
-import sys
 import random
+import sys
+
+import configargparse
 
 import zeitgitter.deltat
 import zeitgitter.version
 
-
 logging = _logging.getLogger('config')
+
 
 def print_sample_config():
     from zeitgitter import moddir
@@ -55,7 +56,7 @@ def get_args(args=None, config_file_contents=None):
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="zeitgitterd.py — The Independent git Timestamping server.",
         default_config_files=['/etc/zeitgitter.conf',
-            os.path.join(os.getenv('HOME'), 'zeitgitter.conf')])
+                              os.path.join(os.getenv('HOME'), 'zeitgitter.conf')])
 
     # General
     parser.add_argument('--config-file', '-c',
@@ -89,13 +90,13 @@ def get_args(args=None, config_file_contents=None):
                              "Defaults to host part of --own-url")
     parser.add_argument('--country',
                         help="the jurisdiction this falls under,"
-                            " for HTML substitution (REQUIRED)")
+                             " for HTML substitution (REQUIRED)")
     parser.add_argument('--owner',
                         help="owner and operator of this instance,"
-                        " for HTML substitution (REQUIRED)")
+                             " for HTML substitution (REQUIRED)")
     parser.add_argument('--contact',
                         help="contact for this instance,"
-                        " for HTML substitution (REQUIRED)")
+                             " for HTML substitution (REQUIRED)")
 
     # Server
     parser.add_argument('--webroot',
@@ -122,7 +123,7 @@ def get_args(args=None, config_file_contents=None):
                         help="number of gpg-agents to run")
     parser.add_argument('--gnupg-home',
                         default=os.getenv('GNUPGHOME',
-                            os.getenv('HOME', '/var/lib/zeitgitter') + '/.gnupg'),
+                                          os.getenv('HOME', '/var/lib/zeitgitter') + '/.gnupg'),
                         help="""GnuPG Home Dir to use (default from $GNUPGHOME
                             or $HOME/.gnupg or /var/lib/zeitgitter/.gnupg)""")
 
@@ -143,10 +144,10 @@ def get_args(args=None, config_file_contents=None):
                             $HOME/repo or /var/lib/zeitgitter/repo)""")
     parser.add_argument('--upstream-timestamp',
                         default=
-                          'diversity-timestamps=https://diversity.zeitgitter.net'
-                          ' gitta-timestamps=https://gitta.zeitgitter.net',
+                        'diversity-timestamps=https://diversity.zeitgitter.net'
+                        ' gitta-timestamps=https://gitta.zeitgitter.net',
                         help="any number of <branch>=<URL> tuples of upstream"
-                        " Zeitgitter timestampers")
+                             " Zeitgitter timestampers")
 
     # Pushing
     parser.add_argument('--push-repository',
@@ -216,7 +217,7 @@ def get_args(args=None, config_file_contents=None):
         if '=' in level:
             (logger, lvl) = level.split('=', 1)
         else:
-            logger = None # Root logger
+            logger = None  # Root logger
             lvl = level
         try:
             lvl = int(lvl)
@@ -262,9 +263,9 @@ def get_args(args=None, config_file_contents=None):
     for i in arg.upstream_timestamp:
         if not '=' in i:
             sys.exit("--upstream-timestamp requires (space-separated list of)"
-                " <branch>=<url> arguments")
+                     " <branch>=<url> arguments")
 
     if not arg.no_dovecot_bug_workaround:
-        arg.stamper_from = arg.stamper_from[:-1] # See help text
+        arg.stamper_from = arg.stamper_from[:-1]  # See help text
 
     return arg
