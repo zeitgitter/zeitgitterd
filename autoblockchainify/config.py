@@ -78,6 +78,7 @@ def get_args(args=None, config_file_contents=None):
                             restart.""")
     parser.add_argument('--force-after-intervals',
                         type=int,
+                        default=6,
                         help="""After how many intervals to force a commit (and
                             request a timestamp by email, if configured).""")
     parser.add_argument('--repository',
@@ -181,11 +182,11 @@ def get_args(args=None, config_file_contents=None):
         sys.exit("--commit-offset must be less than --commit-interval")
 
     # Work around ConfigArgParse list bugs by implementing lists ourselves
-    arg.upstream_timestamp = arg.upstream_timestamp.split()
+    arg.zeitgitter_servers = arg.zeitgitter_servers.split()
     arg.push_repository = arg.push_repository.split()
     arg.push_branch = arg.push_branch.split()
 
-    for i in arg.upstream_timestamp:
+    for i in arg.zeitgitter_servers:
         if not '=' in i:
             sys.exit("--upstream-timestamp requires (space-separated list of)"
                 " <branch>=<url> arguments")

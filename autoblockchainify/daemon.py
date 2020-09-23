@@ -21,14 +21,10 @@
 # Set up the daemon
 
 
-import importlib.resources
 import logging as _logging
-import os
-import re
 import subprocess
 from pathlib import Path
 
-from autoblockchainify import moddir
 import autoblockchainify.commit
 import autoblockchainify.config
 import autoblockchainify.version
@@ -42,13 +38,14 @@ def finish_setup(arg):
     repo = autoblockchainify.config.arg.repository
     Path(repo).mkdir(parents=True, exist_ok=True)
     if not Path(repo, '.git').is_dir():
-        logging.info("Initializing new repo with user info")
         subprocess.run(['git', 'init'], cwd=repo, check=True)
-        (name, mail) = arg.identity.split(' <')
-        subprocess.run(['git', 'config', 'user.name', name],
-                cwd=repo, check=True)
-        subprocess.run(['git', 'config', 'user.email', mail[:-1]],
-                cwd=repo, check=True)
+        if arg.identity is not None:
+            logging.info("Initializing new repo with user info")
+            (name, mail) = arg.identity.split(' <')
+            subprocess.run(['git', 'config', 'user.name', name],
+                    cwd=repo, check=True)
+            subprocess.run(['git', 'config', 'user.email', mail[:-1]],
+                    cwd=repo, check=True)
 
 
 def run():

@@ -21,7 +21,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name="autoblockchainify",
-    version=extract_version('zeitgitter/version.py'),
+    version=extract_version('autoblockchainify/version.py'),
     author="Marcel Waldvogel",
     author_email="marcel.waldvogel@trifence.ch",
     description="Turn a directory into a git-based Blockchain",
@@ -36,7 +36,7 @@ setuptools.setup(
     python_requires='>=3.7',
     entry_points={
         'console_scripts': [
-            'zeitgitterd=autoblockchainify.daemon:run',
+            'autoblockchainify=autoblockchainify.daemon:run',
         ],
     },
     classifiers=[
