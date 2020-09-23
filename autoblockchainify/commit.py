@@ -22,17 +22,16 @@
 
 import datetime
 import logging as _logging
-import os
 import subprocess
 import sys
 import threading
 import time
 import traceback
-from pathlib import Path
+
+import pygit2 as git
 
 import autoblockchainify.config
 import autoblockchainify.mail
-
 
 logging = _logging.getLogger('commit')
 
@@ -70,7 +69,7 @@ def commit_current_state(repo):
     subprocess.run(['git', 'add', '.'],
                    cwd=repo, check=True)
     subprocess.run(['git', 'commit', '--allow-empty',
-                    ":link: Autoblockchainify data as of " + nowstr],
+                    '-m', ":link: Autoblockchainify data as of " + nowstr],
                    cwd=repo, check=True)
 
 
@@ -78,10 +77,11 @@ def head_older_than(repo, duration):
     """Check whether the last commit is older than `duration`.
     Unborn HEAD is *NOT* considered to be older; as a result,
     the first commit will be done only after the first change."""
-    if repo.head_is_unborn:
+    r = git.Repository(repo)
+    if r.head_is_unborn:
         return False
     now = time.time()
-    if repo.head.peel().commit_time + duration < now:
+    if r.head.peel().commit_time + duration < now:
         return True
 
 
@@ -111,7 +111,7 @@ def do_commit():
             # 2. Timestamp using Zeitgitter
             repositories = autoblockchainify.config.arg.push_repository
             branches = autoblockchainify.config.arg.push_branch
-            for r in autoblockchainify.config.arg.upstream_timestamp:
+            for r in autoblockchainify.config.arg.zeitgitter_servers:
                 logging.info("Cross-timestamping %s" % r)
                 (branch, server) = r.split('=', 1)
                 cross_timestamp(repo, branch, server)

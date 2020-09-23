@@ -1,92 +1,19 @@
-# Installation
-PREFIX		= /usr/local
-SBINDIR		= ${PREFIX}/sbin
-LIBDIR		= ${PREFIX}/lib
-PYMODDIR	= ${LIBDIR}/python/zeitgitter
-ZEITGITTERHOME	= /var/lib/zeitgitter
-WEBDIR		= ${PYMODDIR}/web
-REPODIR		= ${ZEITGITTERHOME}/repo
-ETCDIR		= /etc
-SYSTEMDDIR	= ${ETCDIR}/systemd/system
-
-OWNER		= zeitgitter
-
-# Color
-ACT		= \033[7;34m
-INFO		= \033[7;32m
-NORM		= \033[0m
-
 # Tests
 DAEMONTEMP	:= $(shell mktemp -d)
-KEYID		= 353DFEC512FA47C7
-KEYHOME		= ${DAEMONTEMP}/gnupg
-KEYHOMEIN	= ${CURDIR}/zeitgitter/tests/gnupg/
 DAEMONPARAMS	= \
-	--number-of-gpg-agents=3 \
-	--keyid ${KEYID} \
-	--own-url https://hagrid.snakeoil \
-	--owner '?' --contact '?' --country '?' \
-	--gnupg-home ${KEYHOME} \
 	--commit-interval 1m \
 	--commit-offset 30s \
-	--repository ${DAEMONTEMP} \
-	--listen-port 15178 \
-	--upstream-timestamp stupid-timestamps=http://127.0.0.1:15178
+	--force-after-intervals 10 \
+	--repository ${DAEMONTEMP}
+# To check that environment variables are also consulted
+DAEMONENV	= AUTOBLOCKCHAINIFY_IDENTITY="Test User <test@user.example>"
 
-# For `gpg` and `git commit -S`
-export GNUPGHOME= ${KEYHOME}
-# For tests
-export DAEMONREPO=${DAEMONTEMP}
 
 all:
-	@echo 'Nothing needs to be done for "all"; use "install", "apt", or "test" instead'
+	@echo 'Nothing needs to be done for "all"'
+	@echo 'Use "apt", "python-package", "docker-dev", or "test" instead'
 
 # ----- Installing
-
-install: install-presetup install-files install-postsetup
-
-install-presetup:
-	if ! groups ${OWNER} > /dev/null 2>&1; then \
-		adduser --system --disabled-password --disabled-login --group \
-			--home ${ZEITGITTERHOME} \
-			--gecos "Independent GIT Timestamper" ${OWNER}; \
-	fi
-
-install-files:
-	mkdir -p ${PYMODDIR}
-	install -t ${SBINDIR} zeitgitterd.py
-	install -t ${PYMODDIR} zeitgitter/*.py
-	py3compile ${PYMODDIR}/*.py
-	if [ ! -d ${WEBDIR} ]; then \
-		install -o ${OWNER} -d ${WEBDIR}; \
-		install -o ${OWNER} -m 644 -t ${WEBDIR} zeitgitter/web/*; \
-	else \
-		echo "${INFO}* Not updating ${WEBDIR}${NORM}"; \
-	fi
-	if grep -q _ZEITGITTER_ ${WEBDIR}/*; then echo "${ACT}* Please adapt ${WEBDIR} to your needs${NORM}"; fi
-	install -d -o ${OWNER} ${REPODIR}
-# /etc/zeitgitter.conf contains passwords, so restrict access
-	if [ ! -f ${ETCDIR}/zeitgitter.conf ]; then \
-		install -o ${OWNER} -m 600 zeitgitter/sample.conf ${ETCDIR}/zeitgitter.conf; \
-		echo "${ACT}* Customize ${ETCDIR}/zeitgitter.conf${NORM}"; \
-	else \
-		echo "${INFO}* Not updating ${ETCDIR}/zeitgitter.conf${NORM}"; \
-	fi
-
-install-postsetup:
-	if [ ! -f ${SYSTEMDDIR}/zeitgitter.socket ]; then \
-		install -m 644 -t ${SYSTEMDDIR} systemd/*; \
-		systemctl daemon-reload; \
-	else \
-		echo "${INFO}* Not updating ${SYSTEMDDIR}/zeitgitter.*${NORM}"; \
-	fi
-	if [ ! -d ${ZEITGITTERHOME}/.gnupg ]; then \
-		systemctl enable zeitgitter.service zeitgitter.socket; \
-		echo "${ACT}* Please create an OpenPGP key, see ../doc/Cryptography.md${NORM}"; \
-	else \
-		systemctl restart zeitgitter.service; \
-	fi
-
 
 apt:
 	apt install git python3-pygit2 python3-gnupg python3-configargparse python3-nose
@@ -105,33 +32,22 @@ test tests:	unit-tests system-tests
 unit-tests:
 	nosetests3
 
-system-tests: prepare-tmp-git kill-daemon
-## Start daemon
-	ZEITGITTER_FAKE_TIME=1551155115 ./zeitgitterd.py ${DAEMONPARAMS} &
+system-tests: kill-daemon
+## Start daemon; check whether environment variables are consulted
+	${DAEMONENV} ./autoblockchainify.py ${DAEMONPARAMS} &
 ## Wait for daemon to be ready
 	sleep 0.5
 ## Run tests with daemon
-	@d=`mktemp -d`; for i in tests/[0-9][0-9]-*; do echo; echo ===== $$i $$d; $$i $$d || exit 1; done; echo ===== Cleanup; ${RM} -r $$d
+	@for i in tests/[0-9][0-9]-*; do echo; echo ===== $$i ${DAEMONTEMP}; $$i ${DAEMONTEMP} || exit 1; done
 ## Cleanup
-	${RM} -r ${DAEMONTEMP}
-	killall zeitgitterd.py
+#	${RM} -r ${DAEMONTEMP}
+	killall autoblockchainify.py
 
 kill-daemon:
-	-killall zeitgitterd.py 2>/dev/null; exit 0
+	-killall autoblockchainify.py 2>/dev/null; exit 0
 
-prepare-tmp-git:
-	git init ${DAEMONTEMP}
-	cp -rp ${KEYHOMEIN} ${KEYHOME}
-	chmod 700 ${KEYHOME}
-# Avoid "gpg: WARNING: unsafe permissions on homedir"
-	gpg --export -a ${KEYID} > ${DAEMONTEMP}/pubkey.asc
-	cd ${DAEMONTEMP} && git add pubkey.asc
-	cd ${DAEMONTEMP} && git commit -S${KEYID} -m "Start timestamping"
-
-run-test-daemon: prepare-tmp-git kill-daemon
-	./zeitgitterd.py ${DAEMONPARAMS}
-run-test-daemon-fake-time: prepare-tmp-git kill-daemon
-	ZEITGITTER_FAKE_TIME=1551155115 ./zeitgitterd.py ${DAEMONPARAMS}
+run-test-daemon: kill-daemon
+	./autoblockchainify.py ${DAEMONPARAMS}
 
 ##################################
 #
@@ -143,8 +59,8 @@ BUILDXDETECT = ${HOME}/.docker/cli-plugins/docker-buildx
 QEMUDETECT = /proc/sys/fs/binfmt_misc/qemu-m68k
 # For version x.y.z, output "-t …:x.y -t …:x.y.z";
 # for anything else, output nothing
-BASETAG     = zeitgitter/zeitgitter
-VERSIONTAGS = $(shell sed -n -e 's,^VERSION = .\(\([0-9].[0-9]\).[0-9]\).$$,-t ${BASETAG}:\1 -t ${BASETAG}:\2,p' zeitgitter/version.py)
+BASETAG     = zeitgitter/autoblockchainify
+VERSIONTAGS = $(shell sed -n -e 's,^VERSION = .\(\([0-9].[0-9]\).[0-9]\).$$,-t ${BASETAG}:\1 -t ${BASETAG}:\2,p' autoblockchainify/version.py)
 # debian:buster-slim also supports
 # linux/arm64/v8,linux/mips64le,linux/ppc64le,linux/s390x. If there is demand,
 # I'll happily add them to the default build.
@@ -179,17 +95,17 @@ docker-multiarch-builder: qemu buildx
 
 # Create a docker image from the current tree
 docker-dev:python-package
-	${RM} -rf zeitgitter-dev
-	mkdir -p zeitgitter-dev persistent-data-dev
-	cp dist/zeitgitterd-*.whl zeitgitter-dev
-	for i in Dockerfile sample.conf stamper.asc; do \
+	${RM} -rf autoblockchainify-dev
+	mkdir -p autoblockchainify-dev blockchain-dev
+	cp dist/autoblockchainify-*.whl autoblockchainify-dev
+	for i in Dockerfile; do \
 		(echo "### THIS FILE WAS AUTOGENERATED, CHANGES WILL BE LOST ###" && \
 		sed -e 's/^##DEVONLY## *//' -e '/##PRODONLY##$$/d' \
-		< zeitgitter/$$i ) > zeitgitter-dev/$$i; done
-	for i in run-zeitgitterd.sh health.sh; do \
+		< autoblockchainify/$$i ) > autoblockchainify-dev/$$i; done
+	for i in run-autoblockchainify.sh health.sh; do \
 		(head -1 zeitgitter/$$i && \
 		echo "### THIS FILE WAS AUTOGENERATED, CHANGES WILL BE LOST ###" && \
 		sed -e 's/^##DEVONLY## *//' -e '/##PRODONLY##$$/d' \
-		< zeitgitter/$$i ) > zeitgitter-dev/$$i && \
-		chmod +x zeitgitter-dev/$$i; done
-	sudo docker build zeitgitter-dev
+		< autoblockchainify/$$i ) > autoblockchainify-dev/$$i && \
+		chmod +x autoblockchainify-dev/$$i; done
+	sudo docker build autoblockchainify-dev
