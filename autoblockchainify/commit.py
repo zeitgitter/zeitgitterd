@@ -124,7 +124,7 @@ def do_commit():
             # 4. Timestamp by mail (asynchronous)
             if autoblockchainify.config.arg.stamper_own_address:
                 logging.info("cross-timestamping by mail")
-                autoblockchainify.mail.async_email_timestamp(preserve)
+                autoblockchainify.mail.async_email_timestamp()
 
             logging.info("do_commit done")
     except Exception as e:

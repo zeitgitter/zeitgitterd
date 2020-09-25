@@ -1,0 +1,12 @@
+version: "2"
+
+services:
+  autoblockchainify-dev:
+    restart: unless-stopped
+    image: zeitgitter/autoblockchainify-dev
+    build: ./autoblockchainify-dev
+    container_name: autoblockchainify-dev
+    env_file:
+      - "dev.env"
+    volumes:
+      - ./blockchain-dev:/blockchain

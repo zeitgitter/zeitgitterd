@@ -2,43 +2,31 @@
 # Docker healthcheck
 
 # Have there been commits at all?
-if [ ! -f /persistent-data/repo/.git/refs/heads/master ]
-then
+if [ ! -f /blockchain/.git/refs/heads/master ]; then
   exit 0
 fi
 
 # At least one commit to the master branch and each timestamp branch every ~hour
 cd /blockchain/.git/refs/heads
-if [ x`find . -name master -mmin -65 -print | wc -l` = x0 ]
-then
-  echo "No master commit in past ~hour"
+if [ x`find . -name master -mmin -65 -print | wc -l` = x0 ]; then
+  echo "No master commit in past ~hour" >&2
   exit 1
 fi
 
-if [ -f *-timestamps ]
-then
-  for i in *-timestamps; \
-  do
-    if [ x`find . -name $i -mmin -65 -print | wc -l` = x0 ]
-    then
-      echo "No $i in past ~hour"
-      exit 1
-    fi
-  done
-fi
+for i in `git branch -list '*-timestamps'`; do
+  if [ x`git log "$i@{65 minutes ago}..$i" | wc -l` = x0 ]; then
+    echo "No $i in past ~hour" >&2
+    exit 1
+  fi
+done
 
 # PGP Timestamper update?
 cd /blockchain
-if [ -f hashes.stamp ]
+if [ -f pgp-timestamp.asc ]
 then
-  if [ x`find . -name hashes.stamp -mmin -65 -print | wc -l` = x0 ]
-  then
-    echo "No PGP timestamper query in the past ~hour"
-    exit 1
-  fi
   if [ x`find . -name hashes.asc -mmin -90 -print | wc -l` = x0 ]
   then
-    echo "No PGP timestamper reply in the past 1.5 hours"
+    echo "No PGP timestamper reply in the past 1.5 hours" >&2
     exit 1
   fi
 fi

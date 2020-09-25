@@ -29,7 +29,6 @@ import autoblockchainify.commit
 import autoblockchainify.config
 import autoblockchainify.version
 
-
 logging = _logging.getLogger('daemon')
 
 
@@ -39,13 +38,17 @@ def finish_setup(arg):
     Path(repo).mkdir(parents=True, exist_ok=True)
     if not Path(repo, '.git').is_dir():
         subprocess.run(['git', 'init'], cwd=repo, check=True)
-        if arg.identity is not None:
-            logging.info("Initializing new repo with user info")
-            (name, mail) = arg.identity.split(' <')
-            subprocess.run(['git', 'config', 'user.name', name],
-                    cwd=repo, check=True)
-            subprocess.run(['git', 'config', 'user.email', mail[:-1]],
-                    cwd=repo, check=True)
+        # Default identity is forced onto new repositories only;
+        # otherwise, the default is not to change the user settings.
+        if arg.identity is None:
+            arg.identity = 'Autoblockchainify <autoblockchainify@localhost>'
+    if arg.identity is not None:
+        logging.info("Initializing new repo with user info")
+        (name, mail) = arg.identity.split(' <')
+        subprocess.run(['git', 'config', 'user.name', name],
+                       cwd=repo, check=True)
+        subprocess.run(['git', 'config', 'user.email', mail[:-1]],
+                       cwd=repo, check=True)
 
 
 def run():
@@ -54,8 +57,6 @@ def run():
     # Try to resume waiting for a PGP Timestamping Server reply, if any
     if autoblockchainify.config.arg.stamper_own_address:
         repo = autoblockchainify.config.arg.repository
-        preserve = Path(repo, 'hashes.stamp')
-        if preserve.exists():
-            logging.info("possibly resuming cross-timestamping by mail")
-            autoblockchainify.mail.async_email_timestamp(preserve)
+        logging.info("possibly resuming cross-timestamping by mail")
+        autoblockchainify.mail.async_email_timestamp(resume=True)
     autoblockchainify.commit.loop()
