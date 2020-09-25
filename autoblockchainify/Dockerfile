@@ -27,5 +27,5 @@ RUN rm /tmp/stamper.asc
 COPY health.sh /
 
 # Runtime settings
-ENTRYPOINT ["autoblockchainify"]
+CMD ["autoblockchainify", "--repository", "/blockchain"]
 HEALTHCHECK --timeout=3s CMD ["/health.sh"]

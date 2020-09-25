@@ -63,8 +63,14 @@ def get_args(args=None, config_file_contents=None):
                         action='version', version=autoblockchainify.version.VERSION)
 
     # Identity
+    # Default is applied in daemon.py:finish_setup()
     parser.add_argument('--identity',
-                        help="'Full Name <email@address>' for tagging GIT commits")
+                        help="""'Full Name <email@address>' for tagging
+                        GIT commits.
+                        Default (will only be applied to new repositories):
+                        'Autoblockchainify <autoblockchainify@localhost>'.
+                        An explicit value (non-default) will always update
+                        the current GIT config.""")
 
     # Stamping
     parser.add_argument('--commit-interval',
@@ -82,10 +88,8 @@ def get_args(args=None, config_file_contents=None):
                         help="""After how many intervals to force a commit (and
                             request a timestamp by email, if configured).""")
     parser.add_argument('--repository',
-                        default=os.path.join(
-                            os.getenv('HOME', '/var/lib/zeitgitter'), 'repo'),
-                        help="""path to the GIT repository (default from
-                            $HOME/repo or /var/lib/zeitgitter/repo)""")
+                        default='.',
+                        help="""path to the GIT repository (default '.')""")
     parser.add_argument('--zeitgitter-servers',
                         default=
                             'diversity-timestamps=https://diversity.zeitgitter.net'

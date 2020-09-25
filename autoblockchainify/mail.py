@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-# zeitgitterd — Independent GIT Timestamping, HTTPS server
+# autoblockchainify — Turn a directory into a GIT Blockchain
 #
 # Copyright (C) 2019,2020 Marcel Waldvogel
 #
@@ -98,7 +98,7 @@ def extract_pgp_body(body):
 
 def save_signature(bodylines):
     repo = autoblockchainify.config.arg.repository
-    ascfile = Path(repo, 'hashes.asc')
+    ascfile = Path(repo, 'pgp-timestamp.asc')
     with ascfile.open(mode='w') as f:
         f.write('\n'.join(bodylines) + '\n')
     res = subprocess.run(['git', 'add', ascfile], cwd=repo)
@@ -300,11 +300,11 @@ def wait_for_receive(repo, initial_head, contents):
                         return
 
 
-def async_email_timestamp(logfile, resume=False):
+def async_email_timestamp(resume=False):
     """If called with `resume=True`, tries to resume waiting for the mail"""
     repo = git.Repository(autoblockchainify.config.arg.repository)
     if repo.head_is_unborn:
-        logging.error("Cannot timestamp by email in repository without commits")
+        logging.warning("Cannot timestamp by email in repository without commits")
         return
     head = repo.head
     contents = head.target.hex + '\n'
