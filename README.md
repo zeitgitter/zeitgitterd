@@ -47,5 +47,5 @@ therefore the Blockchain, the timestamps, and the remote repositories):
 ## How do I run it?
 
 The preferred way is to run a Docker image using `docker-compose` and point the
-`/blockchain` directory tothe directory you want be automatically archived to
+`/blockchain` directory to the directory you want be automatically archived to
 your Blockchain. See the files `docker-compose.yml` and `sample.env`.
