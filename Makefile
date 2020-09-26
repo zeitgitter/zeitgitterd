@@ -73,7 +73,8 @@ docker-multiarch: qemu buildx docker-multiarch-builder
 
 qemu:	${QEMUDETECT}
 ${QEMUDETECT}:
-	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+	docker pull multiarch/qemu-user-static
+	docker run --privileged multiarch/qemu-user-static --reset -p yes
 
 buildx: ${BUILDXDETECT}
 ${BUILDXDETECT}:
