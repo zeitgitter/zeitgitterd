@@ -222,6 +222,15 @@ def body_contains_file(bodylines, logfile):
         return (linesbefore, linesafter)
 
 
+def file_unchanged(stat, logfile):
+    try:
+        cur_stat = logfile.stat()
+        return (cur_stat.st_mtime == stat.st_mtime
+                and cur_stat.st_ino == stat.st_ino)
+    except FileNotFoundError:
+        return False
+
+
 def imap_idle(imap, stat, logfile):
     while True:
         imap.send(b'%s IDLE\r\n' % (imap._new_tag()))
@@ -232,19 +241,21 @@ def imap_idle(imap, stat, logfile):
             logging.info("IMAP IDLE unsuccessful")
             return False
         # Wait for new message
-        while True:
+        while file_unchanged(stat, logfile):
             line = imap.readline().strip()
             if line == b'' or line.startswith(b'* BYE '):
                 return False
             match = re.match(r'^\* ([0-9]+) EXISTS$', str(line, 'ASCII'))
             if match:
-                logging.info("You have new mail %s!" % match.group(1))
+                logging.info("You have new mail %s!"
+                             % match.group(1).encode('ASCII'))
                 # Stop idling
                 imap.send(b'DONE\r\n')
                 if check_for_stamper_mail(imap, stat, logfile) is True:
                     return False
                 break  # Restart IDLE command
-            # Otherwise: Seen untagged response we don't care for, continue idling
+            # Otherwise: Uninteresting untagged response, continue idling
+        logging.error("Next mail sent, giving up waiting on now-old reply")
 
 
 def check_for_stamper_mail(imap, stat, logfile):
@@ -316,7 +327,9 @@ def async_email_timestamp(resume=False):
             logging.info("Not resuming mail timestamp: No revision info")
             return
     else:  # Fresh request
-        new_rev = head.target.hex + '\n'
+        new_rev = ("Timestamp requested for\ngit commit %s\nat %s\n" %
+                   (head.target.hex,
+                    strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())))
         with logfile.open('w') as f:
             f.write(new_rev)
         send(new_rev)
