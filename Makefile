@@ -35,8 +35,6 @@ unit-tests:
 system-tests: kill-daemon
 ## Start daemon; check whether environment variables are consulted
 	${DAEMONENV} ./autoblockchainify.py ${DAEMONPARAMS} &
-## Wait for daemon to be ready
-	sleep 0.5
 ## Run tests with daemon
 	@for i in tests/[0-9][0-9]-*; do echo; echo ===== $$i ${DAEMONTEMP}; $$i ${DAEMONTEMP} || exit 1; done
 ## Cleanup
@@ -94,7 +92,10 @@ docker-multiarch-builder: qemu buildx
 	fi
 
 # Create a docker image from the current tree
-docker-dev:python-package
+docker-dev:gen-docker-dev
+	sudo docker build autoblockchainify-dev
+
+gen-docker-dev:python-package
 	${RM} -rf autoblockchainify-dev
 	mkdir -p autoblockchainify-dev blockchain-dev
 	cp autoblockchainify/stamper.asc dist/autoblockchainify-*.whl autoblockchainify-dev
@@ -108,4 +109,3 @@ docker-dev:python-package
 		sed -e 's/^##DEVONLY## *//' -e '/##PRODONLY##$$/d' \
 		< autoblockchainify/$$i ) > autoblockchainify-dev/$$i && \
 		chmod +x autoblockchainify-dev/$$i; done
-	sudo docker build autoblockchainify-dev

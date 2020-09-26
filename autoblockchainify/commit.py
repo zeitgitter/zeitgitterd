@@ -80,8 +80,8 @@ def head_older_than(repo, duration):
     r = git.Repository(repo)
     if r.head_is_unborn:
         return False
-    now = time.time()
-    if r.head.peel().commit_time + duration < now:
+    now = datetime.datetime.utcnow()
+    if datetime.datetime.utcfromtimestamp(r.head.peel().commit_time) + duration < now:
         return True
 
 

@@ -42,6 +42,10 @@ def finish_setup(arg):
         # otherwise, the default is not to change the user settings.
         if arg.identity is None:
             arg.identity = 'Autoblockchainify <autoblockchainify@localhost>'
+        # Ignore 'pgp-timestamper.rev'
+        if not Path(repo, '.gitignore').is_file():
+            with open(Path(repo, '.gitignore'), 'a') as ignore:
+                ignore.write('pgp-timestamp.tmp\n')
     if arg.identity is not None:
         logging.info("Initializing new repo with user info")
         (name, mail) = arg.identity.split(' <')

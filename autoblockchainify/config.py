@@ -42,8 +42,8 @@ def get_args(args=None, config_file_contents=None):
         auto_env_var_prefix="autoblockchainify_",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="autoblockchainify — Turn any directory into a GIT Blockchain.",
-        default_config_files=['/etc/zeitgitter.conf',
-            os.path.join(os.getenv('HOME'), 'zeitgitter.conf')])
+        default_config_files=['/etc/autoblockchainify.conf',
+            os.path.join(os.getenv('HOME'), 'autoblockchainify.conf')])
 
     # General
     parser.add_argument('--config-file', '-c',
@@ -198,4 +198,5 @@ def get_args(args=None, config_file_contents=None):
     if not arg.no_dovecot_bug_workaround:
         arg.stamper_from = arg.stamper_from[:-1] # See help text
 
+    logging.debug("Settings applied: %s" % str(arg))
     return arg
