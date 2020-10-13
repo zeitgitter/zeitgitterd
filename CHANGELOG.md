@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - On restart, tries to resume waiting for a mail response from PGP Digital
   Timestamping Service (was added some versions ago, but never documented)
 - New `tools/zeitgitter-repo-health.sh` allows to probe whether the repo has
-  seen the expected updates.
+  seen the expected updates. Optionally skip fetches.
 
 ## Fixed
 - Code typo on failed key creation
