@@ -1,7 +1,9 @@
 #!/bin/bash
-# Check for healthiness of the repository.
+# Check for healthiness of the repository by checking for updates of a branch
+# in general or of a specific file in the branch.
+#
 # Usage:
-#   check-repo-healthy.sh <repo-dir> <repo-url> <branch> <max-age>
+#   check-repo-healthy.sh <repo-dir> <repo-url> <branch> <max-age> [file]
 # - repo-dir: The directory to check the repository out in.
 # - repo-url: The URL to pull from.
 #             Will only be used if <repo-dir> does not yet exist.
@@ -12,6 +14,8 @@
 #             Use branch names such as "origin/master" instead of "master".
 # - max-age:  The maximum age of the most recent commit in <branch>.
 #             Use "5 minutes ago" etc. (requires quotes)
+# - file:     If used, will check whether the specified file has been updated.
+#             MAY NOT CONTAIN SPACES or other shell metacharacters!
 #
 # Make sure the current user has read access to the repository. This means that
 # - the remote repository needs to be public,
@@ -33,6 +37,12 @@
 #	- \
 #	origin/diversity-timestamps \
 #	"1 hour ago"
+#   # Check whether the PGP Digitial Timestamp was updated
+#   ./check-repo-healthy.sh /tmp/github-gitta \
+#	- \
+#	origin/diversity-timestamps \
+#	"1 hour ago" \
+#	hashes.asc
 
 mkdir -p "$1"
 cd "$1" || exit 2
@@ -50,7 +60,7 @@ else
 fi
 
 # Check whether there have been updates in the specified time window
-if [[ $(git log --since "$4" "$3" | wc -l) -ne 0 ]]; then
+if [[ $(git log --since "$4" "$3" $5 | wc -l) -ne 0 ]]; then
   # At least one log entry in the time frame
   exit 0
 else
