@@ -3,7 +3,7 @@
 # in general or of a specific file in the branch.
 #
 # Usage:
-#   check-repo-healthy.sh <repo-dir> <repo-url> <branch> <max-age> [file]
+#   check-repo-healthy.sh <repo-dir> <repo-url> <branch> <max-age> [file [exit-code]]
 # - repo-dir: The directory to check the repository out in.
 # - repo-url: The URL to pull from.
 #             Will only be used if <repo-dir> does not yet exist.
@@ -15,7 +15,8 @@
 # - max-age:  The maximum age of the most recent commit in <branch>.
 #             Use "5 minutes ago" etc. (requires quotes)
 # - file:     If used, will check whether the specified file has been updated.
-#             MAY NOT CONTAIN SPACES or other shell metacharacters!
+# - exit-code:If the file has not been modified, fail with the given exit code
+#             instead of 2.
 #
 # Make sure the current user has read access to the repository. This means that
 # - the remote repository needs to be public,
@@ -24,7 +25,7 @@
 #
 # Exit code (compatible with [Vigil](https://github.com/valeriansaliou/vigil#how-can-i-create-script-probes)):
 # - 0: Healthy
-# - 1: Sick (not used right now)
+# - 1: Sick
 # - >=2: Dead
 #
 # Example:
@@ -37,12 +38,14 @@
 #	- \
 #	origin/diversity-timestamps \
 #	"1 hour ago"
-#   # Check whether the PGP Digitial Timestamp was updated
+#   # Check whether the PGP Digitial Timestamp was updated.
+#   # This is only a soft fail, because it may be outside our control.
 #   ./check-repo-healthy.sh /tmp/github-gitta \
 #	- \
 #	origin/diversity-timestamps \
 #	"1 hour ago" \
-#	hashes.asc
+#	hashes.asc \
+#       1
 
 mkdir -p "$1"
 cd "$1" || exit 2
@@ -60,10 +63,24 @@ else
 fi
 
 # Check whether there have been updates in the specified time window
-if [[ $(git log --since "$4" "$3" $5 | wc -l) -ne 0 ]]; then
-  # At least one log entry in the time frame
-  exit 0
-else
-  echo "No commit to $repo $3 since $4" >&2
-  exit 2
+if [[ -z "$5" ]]; then
+  if [[ $(git log --since "$4" "$3" | wc -l) -ne 0 ]]; then
+    # At least one log entry in the time frame, good!
+    exit 0
+  else
+    echo "No commit to $repo $3 since $4" >&2
+    exit 2
+  fi
+else # File modification test
+  if [[ $(git log --since "$4" "$3" "$5" | wc -l) -ne 0 ]]; then
+    # At least one log entry in the time frame, good!
+    exit 0
+  else
+    echo "No modification to $5 in $repo $3 since $4" >&2
+    if [[ -z "$6" ]]; then
+      exit 2
+    else
+      exit "$6"
+    fi
+  fi
 fi
