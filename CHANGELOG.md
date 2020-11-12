@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - New `tools/zeitgitter-repo-health.sh` allows to probe whether the repo has
   seen the expected updates. Optionally, skip fetches or test for specific
   files to have been modified and return a specific exit code.
+- Document choice/change of PGP key ID (and name)
 
 ## Fixed
 - Code typo on failed key creation
