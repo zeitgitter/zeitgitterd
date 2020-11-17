@@ -2,12 +2,12 @@
 # Docker healthcheck
 
 # Web server responsive?
-if ! wget --no-verbose -O /dev/null 'http://localhost:15177/'
+if ! wget --quiet -O /dev/null 'http://localhost:15177/'
 then
   echo "Cannot retrieve web page"
   exit 1
 fi
-if ! wget --no-verbose -O /dev/null 'http://localhost:15177/?request=get-public-key-v1'
+if ! wget --quiet -O /dev/null 'http://localhost:15177/?request=get-public-key-v1'
 then
   echo "Cannot retrieve public key"
   exit 1
