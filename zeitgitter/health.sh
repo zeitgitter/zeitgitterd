@@ -27,17 +27,14 @@ then
   exit 1
 fi
 
-if [ -f *-timestamps ]
-then
-  for i in *-timestamps; \
-  do
-    if [ x`find . -name $i -mmin -65 -print | wc -l` = x0 ]
-    then
-      echo "No $i in past ~hour"
-      exit 1
-    fi
-  done
-fi
+for i in *-timestamps
+do
+  if [ -e "$i" -a x`find . -name $i -mmin -65 -print | wc -l` = x0 ]
+  then
+    echo "No $i in past ~hour"
+    exit 1
+  fi
+done
 
 # PGP Timestamper update?
 cd /persistent-data/repo
