@@ -3,7 +3,7 @@
 # in general or of a specific file in the branch.
 #
 # Usage:
-#   check-repo-healthy.sh <repo-dir> <repo-url> <branch> <max-age> [file [exit-code]]
+#   check-repo-health.sh <repo-dir> <repo-url> <branch> <max-age> [file [exit-code]]
 # - repo-dir: The directory to check the repository out in.
 # - repo-url: The URL to pull from.
 #             Will only be used if <repo-dir> does not yet exist.

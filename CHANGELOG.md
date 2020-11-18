@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 # 1.0.2+ - [Unreleased]
 ## Added
+- More documentation on the setup and retirement of a timestamping server
+  (especially in `doc/Docker.md`).
 - On restart, tries to resume waiting for a mail response from PGP Digital
   Timestamping Service (was added some versions ago, but never documented)
 - New `tools/zeitgitter-repo-health.sh` allows to probe whether the repo has
   seen the expected updates. Optionally, skip fetches or test for specific
-  files to have been modified and return a specific exit code.
+  files to have been modified and return a specific exit code. This is
+  independent from the Docker health checks and can be run on a monitoring
+  machine.
 - Document choice/change of PGP key ID (and name)
 
 ## Fixed
