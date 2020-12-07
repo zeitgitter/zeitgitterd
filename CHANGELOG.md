@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Document choice/change of PGP key ID (and name)
 - Timespans may also indicate the number of weeks now (e.g.,
   "1w 2d 8h 40m 3.5s")
+- Add support to push all branches using `push_branch=*` (see also *Changes*
+  below)
 
 ## Fixed
 - Code typo on failed key creation

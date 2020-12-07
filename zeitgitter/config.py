@@ -260,9 +260,10 @@ def get_args(args=None, config_file_contents=None):
     # and working around the problem that values cannot start with `-`.
     arg.upstream_timestamp = arg.upstream_timestamp.split()
     arg.push_repository = arg.push_repository.split()
-    arg.push_branch = arg.push_branch.split()
     if arg.push_branch == '*':
-        arg.push_branch = '--all'
+        arg.push_branch = ['--all']
+    else:
+        arg.push_branch = arg.push_branch.split()
 
     for i in arg.upstream_timestamp:
         if not '=' in i:

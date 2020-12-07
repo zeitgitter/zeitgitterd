@@ -91,7 +91,7 @@ def push_upstream(repo, to, branches):
     ret = subprocess.run(['git', 'push', to] + branches,
                          cwd=repo)
     if ret.returncode != 0:
-        logging.error("'git push %s %s' failed" % (to, branches))
+        logging.error("'git push %s %s' failed" % (to, ' '.join(branches)))
 
 
 def cross_timestamp(repo, branch, server):
