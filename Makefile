@@ -109,7 +109,7 @@ system-tests: prepare-tmp-git kill-daemon
 ## Start daemon
 	ZEITGITTER_FAKE_TIME=1551155115 ./zeitgitterd.py ${DAEMONPARAMS} &
 ## Wait for daemon to be ready
-	sleep 0.5
+	sleep 1
 ## Run tests with daemon
 	@d=`mktemp -d`; for i in tests/[0-9][0-9]-*; do echo; echo ===== $$i $$d; $$i $$d || exit 1; done; echo ===== Cleanup; ${RM} -r $$d
 ## Cleanup
