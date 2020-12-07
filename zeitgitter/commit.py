@@ -94,13 +94,22 @@ def push_upstream(repo, to, branches):
         logging.error("'git push %s %s' failed" % (to, ' '.join(branches)))
 
 
-def cross_timestamp(repo, branch, server):
-    ret = subprocess.run(['git', 'timestamp',
-                          '--branch', branch, '--server', server],
-                         cwd=repo)
+def cross_timestamp(repo, options, delete_fake_time=False):
+    # Servers specified by servername only always use wallclock for the
+    # timestamps. Servers specified as `branch=server` tuples will
+    # allow wallclock to be overridden by `ZEITGITTER_FAKE_TIME`.
+    # This is needed for testing only, so that both reproducible
+    # signatures can be generated (with ourselves as timestamper
+    # and `ZEITGITTER_FAKE_TIME`) as well as remote Zeitgitter
+    # servers can be used.
+    if delete_fake_time and 'ZEITGITTER_FAKE_TIME' in os.environ:
+        env = os.environ.copy()
+        del env['ZEITGITTER_FAKE_TIME']
+    else:
+        env = os.environ
+    ret = subprocess.run(['git', 'timestamp'] + options, cwd=repo, env=env)
     if ret.returncode != 0:
-        sys.stderr.write("git timestamp --branch %s --server %s failed"
-                         % (branch, server))
+        sys.stderr.write("git timestamp " + ' '.join(options) + " failed")
 
 
 def do_commit():
@@ -138,8 +147,11 @@ def do_commit():
         branches = zeitgitter.config.arg.push_branch
         for r in zeitgitter.config.arg.upstream_timestamp:
             logging.info("Cross-timestamping %s" % r)
-            (branch, server) = r.split('=', 1)
-            cross_timestamp(repo, branch, server)
+            if '=' in r:
+                (branch, server) = r.split('=', 1)
+                cross_timestamp(repo, ['--branch', branch, '--server', server])
+            else:
+                cross_timestamp(repo, ['--server', r], delete_fake_time=True)
         for r in repositories:
             logging.info("Pushing upstream to %s" % r)
             push_upstream(repo, r, branches)

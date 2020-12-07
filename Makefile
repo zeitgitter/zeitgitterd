@@ -31,7 +31,7 @@ DAEMONPARAMS	= \
 	--commit-offset 30s \
 	--repository ${DAEMONTEMP} \
 	--listen-port 15178 \
-	--upstream-timestamp stupid-timestamps=http://127.0.0.1:15178
+	--upstream-timestamp "stupid-timestamps=http://127.0.0.1:15178 gitta https://diversity.zeitgitter.net"
 
 # For `gpg` and `git commit -S`
 export GNUPGHOME= ${KEYHOME}

@@ -19,8 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Document choice/change of PGP key ID (and name)
 - Timespans may also indicate the number of weeks now (e.g.,
   "1w 2d 8h 40m 3.5s")
-- Add support to push all branches using `push_branch=*` (see also *Changes*
-  below)
+- Simplfied using multiple cross-timestampers:
+  * Add support to push all branches using `--push_branch=*`, saving the need
+    to list/update them all (see also *Changes* below)
+  * `--upstream-timestamp` no longer needs a branch name, if `git timestamp`
+    will determine it correctly. This leads to much shorter and more
+    maintainable lists of cross-timestamping servers.
 
 ## Fixed
 - Code typo on failed key creation
@@ -35,6 +39,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   of the `python` base images.)
 - Default for `--push-branch` is now `*`, meaning `--all` (which cannot be
   expressed in the config file)
+- `ZEITGITTER_FAKE_TIME` (needed only for tests) is removed from the
+  environment of `git timestamp` clients that connect to cross-timestamping
+  servers specified as server name only (as opposed to `branch=server` tuples)
+  to allow both testing against our local timeserver (which does not use wall
+  clock to achieve reproducible signatures) and against real-world timeservers
+  obeying wall clock.
 
 
 # 1.0.2 - 2020-08-15
