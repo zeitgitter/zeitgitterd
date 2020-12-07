@@ -2,7 +2,7 @@
 #
 # zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
-# Copyright (C) 2019 Marcel Waldvogel
+# Copyright (C) 2019,2020 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -138,12 +138,12 @@ type commit
 tag sample-timestamping-tag
 tagger Hagrid Snakeoil Timestomping Service <timestomping@hagrid.snakeoil> 1551155115 +0000
 
-https://hagrid.snakeoil tag timestamp
+:watch: https://hagrid.snakeoil tag timestamp
 -----BEGIN PGP SIGNATURE-----
 
 iF0EABECAB0WIQTKSvqybFiyCVmcgCU1Pf7FEvpHxwUCXHS/qwAKCRA1Pf7FEvpH
-x4NcAJ92bPgI8D7Qz0MH5WCTmCSw9ohNPwCfe0DEodj23WzTicziH/3INpnEzKk=
-=ekTn
+xz10AJ4iSQRbbKVPFSk2hhORPBe8mEkzhQCcCmz/GQwmv4ZwTWE6G0ltXJ5oZ+Y=
+=fFsz
 -----END PGP SIGNATURE-----
 """)
 
@@ -159,11 +159,11 @@ committer Hagrid Snakeoil Timestomping Service <timestomping@hagrid.snakeoil> 15
 gpgsig -----BEGIN PGP SIGNATURE-----
  
  iF0EABECAB0WIQTKSvqybFiyCVmcgCU1Pf7FEvpHxwUCXHS/qwAKCRA1Pf7FEvpH
- xyE2AJwLFob5fXtSJ/kt/o3H+ueKezt+UACeOuJYxrYDlFDykS528B4oJ5YzNvo=
- =sAaK
+ x017AJ0chjOGdSe1OuMa8PCuF/cP/bFHBQCeJuH81Wd6NinAIM699OJdMOiSM08=
+ =cmOj
  -----END PGP SIGNATURE-----
 
-https://hagrid.snakeoil branch timestamp 2019-02-26 04:25:15 UTC
+:watch: https://hagrid.snakeoil branch timestamp 2019-02-26 04:25:15 UTC
 """)
 
 
@@ -177,11 +177,11 @@ committer Hagrid Snakeoil Timestomping Service <timestomping@hagrid.snakeoil> 15
 gpgsig -----BEGIN PGP SIGNATURE-----
  
  iF0EABECAB0WIQTKSvqybFiyCVmcgCU1Pf7FEvpHxwUCXHS/qwAKCRA1Pf7FEvpH
- x/jRAJ0eUDsZAHp3xzxX2r6zoS65Z5ZzngCghatkz5MdU3qoS4QBvjQS7RwAqfE=
- =REbT
+ x7FWAJ4vY50YYkvvGlrJRUH55LpFEPFiEgCdHALRIo5ueyk4UNdFJul2c5Hys9M=
+ =aZZl
  -----END PGP SIGNATURE-----
 
-https://hagrid.snakeoil branch timestamp 2019-02-26 04:25:15 UTC
+:watch: https://hagrid.snakeoil branch timestamp 2019-02-26 04:25:15 UTC
 """)
 
 

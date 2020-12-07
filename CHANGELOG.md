@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Code typo on failed key creation
 - Docker health check failed due to missing `wget`
 - Docker health check now supports multiple cross-timestamping targets
+- Tests test against new commit string now
 
 ## Changed
 - Docker image is now based on `debian:buster-slim`. As the same number of

@@ -12,10 +12,10 @@ committer Hagrid Snakeoil Timestomping Service <timestomping@hagrid.snakeoil> 15
 gpgsig -----BEGIN PGP SIGNATURE-----
  
  iF0EABECAB0WIQTKSvqybFiyCVmcgCU1Pf7FEvpHxwUCXHS/qwAKCRA1Pf7FEvpH
- x60BAJ9f0xVkHTbeLS9mKH4QYGgETmFNSACdHIk0gfjAfLMG4h7IC4QVto7hpFk=
- =MuCU
+ x9nVAJ9kury7Jn2kgAviwDnNTV8+gtdxYQCdEhYt4nwot+jS1zCX+S5yaeYEmP0=
+ =PcnY
  -----END PGP SIGNATURE-----
 
-https://hagrid.snakeoil branch timestamp 2019-02-26 04:25:15 UTC
+:watch: https://hagrid.snakeoil branch timestamp 2019-02-26 04:25:15 UTC
 EOF
 diff $d/23-sign-branch2-*.asc

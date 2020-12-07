@@ -2,7 +2,7 @@
 #
 # zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
-# Copyright (C) 2019 Marcel Waldvogel
+# Copyright (C) 2019,2020 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -72,12 +72,12 @@ type commit
 tag sample-timestamping-tag
 tagger Hagrid Snakeoil Timestomping Service <timestomping@hagrid.snakeoil> 1551155115 +0000
 
-https://hagrid.snakeoil tag timestamp
+:watch: https://hagrid.snakeoil tag timestamp
 -----BEGIN PGP SIGNATURE-----
 
 iF0EABECAB0WIQTKSvqybFiyCVmcgCU1Pf7FEvpHxwUCXHS/qwAKCRA1Pf7FEvpH
-x4NcAJ92bPgI8D7Qz0MH5WCTmCSw9ohNPwCfe0DEodj23WzTicziH/3INpnEzKk=
-=ekTn
+xz10AJ4iSQRbbKVPFSk2hhORPBe8mEkzhQCcCmz/GQwmv4ZwTWE6G0ltXJ5oZ+Y=
+=fFsz
 -----END PGP SIGNATURE-----
 """)
 
