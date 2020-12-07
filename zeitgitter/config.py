@@ -155,8 +155,9 @@ def get_args(args=None, config_file_contents=None):
                         help="""Space-separated list of repositores to push to;
                             setting this enables automatic push""")
     parser.add_argument('--push-branch',
-                        default='',
-                        help="Space-separated list of branches to push")
+                        default='*',
+                        help="""Space-separated list of branches to push.
+                            `*` means all, as `--all` is eaten by ConfigArgParse""")
 
     # PGP Digital Timestamper interface
     parser.add_argument('--stamper-own-address', '--mail-address', '--email-address',
@@ -256,9 +257,12 @@ def get_args(args=None, config_file_contents=None):
         arg.domain = arg.own_url.replace('https://', '')
 
     # Work around ConfigArgParse list bugs by implementing lists ourselves
+    # and working around the problem that values cannot start with `-`.
     arg.upstream_timestamp = arg.upstream_timestamp.split()
     arg.push_repository = arg.push_repository.split()
     arg.push_branch = arg.push_branch.split()
+    if arg.push_branch == '*':
+        arg.push_branch = '--all'
 
     for i in arg.upstream_timestamp:
         if not '=' in i:
