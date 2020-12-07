@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-# 1.0.2+ - [Unreleased]
+# 1.0.3 - 2020-12-07
 ## Added
 - More documentation on the setup and retirement of a timestamping server
   (especially in `doc/Docker.md`).
