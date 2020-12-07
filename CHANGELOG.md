@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   independent from the Docker health checks and can be run on a monitoring
   machine.
 - Document choice/change of PGP key ID (and name)
+- Timespans may also indicate the number of weeks now (e.g.,
+  "1w 2d 8h 40m 3.5s")
 
 ## Fixed
 - Code typo on failed key creation
