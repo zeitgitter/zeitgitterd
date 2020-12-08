@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+# 1.0.3 - [unreleased]
+## Added
+- `--upstream-sleep` allows to sleep between upstream timestamps, e.g.
+  to ensure a consistent ordering of cross-timestamping events for each
+  commit.
+- Time intervals (such as "5m3.5s") may skip the seconds indication, `s`.
+  So `--upstream-sleep=0` is also valid.
+
+## Fixed
+
+## Changed
+
+
 # 1.0.3 - 2020-12-07
 ## Added
 - More documentation: (especially in `doc/Docker.md`).

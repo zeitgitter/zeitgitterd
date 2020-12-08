@@ -152,6 +152,7 @@ def do_commit():
                 cross_timestamp(repo, ['--branch', branch, '--server', server])
             else:
                 cross_timestamp(repo, ['--server', r], delete_fake_time=True)
+            time.sleep(zeitgitter.config.arg.upstream_sleep.total_seconds())
         for r in repositories:
             logging.info("Pushing upstream to %s" % r)
             push_upstream(repo, r, branches)
