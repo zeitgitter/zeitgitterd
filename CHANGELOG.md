@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 # 1.0.3 - 2020-12-07
 ## Added
-- More documentation on the setup and retirement of a timestamping server
-  (especially in `doc/Docker.md`).
+- More documentation: (especially in `doc/Docker.md`).
+  * Setup and retirement of a timestamping server
+  * Document choice/change of PGP key ID (and name)
 - On restart, tries to resume waiting for a mail response from PGP Digital
   Timestamping Service (was added some versions ago, but never documented)
 - New `tools/zeitgitter-repo-health.sh` allows to probe whether the repo has
@@ -16,21 +17,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   files to have been modified and return a specific exit code. This is
   independent from the Docker health checks and can be run on a monitoring
   machine.
-- Document choice/change of PGP key ID (and name)
 - Timespans may also indicate the number of weeks now (e.g.,
   "1w 2d 8h 40m 3.5s")
-- Simplfied using multiple cross-timestampers:
+- Simplified using multiple cross-timestampers:
   * Add support to push all branches using `--push_branch=*`, saving the need
     to list/update them all (see also *Changes* below)
   * `--upstream-timestamp` no longer needs a branch name, if `git timestamp`
     will determine it correctly. This leads to much shorter and more
-    maintainable lists of cross-timestamping servers.
+    maintainable lists of cross-timestamping servers (e.g.,
+    `gitta diversity some.other.server`).
 
 ## Fixed
 - Code typo on failed key creation
-- Docker health check failed due to missing `wget`
+- Docker health check failed due to missing `wget` package
 - Docker health check now supports multiple cross-timestamping targets
-- Tests test against new commit string now
+- Tests test against new commit string (and, therefore, signatures) now
 
 ## Changed
 - Docker image is now based on `debian:buster-slim`. As the same number of
