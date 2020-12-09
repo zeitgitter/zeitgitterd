@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## Fixed
 
 ## Changed
+- Version numbers of non-tagged versions now end in `.postX`, where `X` is the
+  number of commits since the tag (unless overridden by `FORCE_VERSION`
+  environment variable).
 
 
 # 1.0.3 - 2020-12-07
