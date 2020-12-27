@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-# 1.0.3 - [unreleased]
+# 1.0.3+ - [Unreleased]
 ## Added
 - `--upstream-sleep` allows to sleep between upstream timestamps, e.g.
   to ensure a consistent ordering of cross-timestamping events for each
@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Version numbers of non-tagged versions now end in `.postX`, where `X` is the
   number of commits since the tag (unless overridden by `FORCE_VERSION`
   environment variable).
+- Docker image slightly smaller
 
 
 # 1.0.3 - 2020-12-07
