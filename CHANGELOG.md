@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-# 1.0.3+ - [Unreleased]
+# 1.0.4 - 2020-03-05
 ## Added
 - `--upstream-sleep` allows to sleep between upstream timestamps, e.g.
   to ensure a consistent ordering of cross-timestamping events for each
