@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+# 1.0.5 - 2020-03-06
+## Added
+- Include an optional TLS termination proxy as part of the `docker-compose`
+  setup (requires setting `ZEITGITTER_DOMAIN` in addition to
+  `ZEITGITTER_OWN_URL` in `server.env`)
+
+## Fixed
+- Fixed Dockerfile for ARM64
+
+## Changed
+- Shrank docker image
+- No changes to source or PyPI versions (except the version number); only
+  Docker image is affected by the modifications leading up to v1.0.5
+
+
 # 1.0.4 - 2020-03-05
 ## Added
 - `--upstream-sleep` allows to sleep between upstream timestamps, e.g.

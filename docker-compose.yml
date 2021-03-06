@@ -7,8 +7,24 @@ services:
     build: ./zeitgitter
     container_name: zeitgitter
     env_file:
+      # Adapt from "sample.env"
       - "server.env"
     ports:
       - 15177:15177
     volumes:
       - ./persistent-data:/persistent-data
+  # Only if you do not already have a reverse proxy with TLS termination:
+  reverse-proxy:
+    restart: unless-stopped
+    image: steveltn/https-portal
+    env_file:
+      - "server.env" # For ZEITGITTER_DOMAIN
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Activate if desired:
+      # HSTS_MAX_AGE: "32000000; includeSubdomains; preload"
+      # Activate when ready for production Let's Encrypt certificates:
+      # STAGE: "production"
+      DOMAINS: "$ZEITGITTER_DOMAIN -> zeitgitter:15177"

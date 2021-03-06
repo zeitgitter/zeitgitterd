@@ -2,8 +2,9 @@ FROM debian:buster-slim
 
 # gnupg1/gpg1 steps are for interfacing with the PGP Timestamping Service only.
 # Explicit python3-pygit2 install is required for ARMv6 only.
+# Explicit dpkg install seens to be required for arm64 only.
 RUN apt update && \
-    apt install -y gnupg1 libgit2-dev python3-pygit2 python3-pip git wget && \
+    apt install -y --no-install-recommends gnupg gnupg1 libgit2-dev python3-pygit2 python3-pip python3-setuptools git wget dpkg ssh-client && \
     apt clean && \
     rm -rf /var/lib/apt/lists
 
@@ -15,7 +16,7 @@ RUN python3 -c "import pygit2"
 # For this, `##DEVONLY##` strings at the start of the line will be removed for
 # the dev # build Dockerfile, whereas lines ending in `##PRODONLY##` will be
 # deleted.
-RUN pip3 install zeitgitterd ##PRODONLY##
+RUN pip3 install "zeitgitterd>=1.0.4" ##PRODONLY##
 ##DEVONLY## COPY zeitgitterd-*.whl /root/
 ##DEVONLY## RUN pip3 install /root/zeitgitterd-*.whl
 
