@@ -1,11 +1,9 @@
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 # gnupg1/gpg1 steps are for interfacing with the PGP Timestamping Service only.
-# Explicit python3-pygit2 install is required for ARMv6 only.
-# Explicit dpkg install seens to be required for arm64 only.
 RUN apt update && \
     apt install -y --no-install-recommends gnupg gnupg1 libgit2-dev python3-pygit2 \
-	python3-pip python3-setuptools python3-wheel git wget dpkg ssh-client && \
+        python3-pip python3-setuptools python3-wheel git wget dpkg ssh-client && \
     apt clean && \
     rm -rf /var/lib/apt/lists
 
