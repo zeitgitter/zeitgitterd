@@ -5,7 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
-# 1.0.5 - 2020-03-06
+# 1.0.6 - 2021-11-04
+## Added
+
+## Fixed
+
+## Changed
+- Upgraded docker image to debian:bullseye-slim
+
+
+# 1.0.5 - 2021-03-06
 ## Added
 - Include an optional TLS termination proxy as part of the `docker-compose`
   setup (requires setting `ZEITGITTER_DOMAIN` in addition to
@@ -20,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   Docker image is affected by the modifications leading up to v1.0.5
 
 
-# 1.0.4 - 2020-03-05
+# 1.0.4 - 2021-03-05
 ## Added
 - `--upstream-sleep` allows to sleep between upstream timestamps, e.g.
   to ensure a consistent ordering of cross-timestamping events for each

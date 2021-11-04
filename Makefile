@@ -145,7 +145,7 @@ QEMUDETECT = /proc/sys/fs/binfmt_misc/qemu-m68k
 # for anything else, output nothing
 BASETAG     = zeitgitter/zeitgitter
 VERSIONTAGS = $(shell sed -n -e 's,^VERSION = .\(\([0-9].[0-9]\).[0-9]\).$$,-t ${BASETAG}:\1 -t ${BASETAG}:\2,p' zeitgitter/version.py)
-# debian:buster-slim also supports
+# debian:bullseye-slim also supports
 # linux/arm64/v8,linux/mips64le,linux/ppc64le,linux/s390x. If there is demand,
 # I'll happily add them to the default build.
 PLATFORMS  = linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
