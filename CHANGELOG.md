@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+# 1.0.6+ - [Unreleased]
+## Added
+- `robots.txt` and `sitemap.xml` (and the ability to serve TXT and XML files)
+
+## Fixed
+
+## Changed
+- Slightly changed explanatory web text and refreshed its appearance
+
+
 # 1.0.6 - 2021-11-04
 ## Added
 
