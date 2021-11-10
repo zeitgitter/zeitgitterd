@@ -118,6 +118,8 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
                              self.path, re.IGNORECASE)
             mimemap = {
                 'html': 'text/html',
+                'txt': 'text/plain',
+                'xml': 'text/xml',
                 'css': 'text/css',
                 'js': 'text/javascript',
                 'png': 'image/png',
