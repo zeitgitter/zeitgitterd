@@ -26,26 +26,32 @@
    MA 02110-1301, USA.
 -->
   <body>
+    <ul class="header">
+      <li>
+        <a href="./" class="active"><img src="zg-white.svg" /> Home</a>
+      </li>
+      <li><a href="tos.html">Terms of&nbsp;Service</a></li>
+      <li><a href="privacy.html">Privacy Policy</a></li>
+      <li><a href="contact.html">Contact Information</a></li>
+    </ul>
     <h1 class="top">Zeitgitter Server at ZEITGITTER_DOMAIN</h1>
     <p>
-      Zeitgitter or <b>Independent GIT Timestamping</b> is the foundation of a network of
-      timestamping services.
+      Zeitgitter is the foundation of a network of timestamping services operating on standard GIT
+      mechanisms.
     </p>
 
     <h2>Why timestamping?</h2>
     <p>
       Timestamping serves as evidence that you knew about a specific piece of information at a given
       time, and maybe even before. It can therefore be seen as a weak form of notarization for the
-      particular single document or document collection that was timestamped.
+      particular single document (or collection of documents) that was timestamped.
     </p>
-
     <p>
       Timestamping <b>does not</b> provide evidence that you also authored the information or you
       were authorized to know it.
     </p>
 
     <h2>Why timestamping with GIT and Zeitgitter?</h2>
-
     <p>Timestamping GIT repositories has the following advantages:</p>
     <ul>
       <li>No additional software is required to verify the timestamps.</li>
@@ -65,11 +71,21 @@
       </li>
       <li>
         The timestamping process results in a
-        <b>valid timestamped signature, which you can immediately store in your GIT repository.</b
-        ><br />(All the remaining mumbo-jumbo is just to ensure that timestampers are not
-        mis-issuing any backdated timestamps and that this can also be publicly audited at any
-        time.)
+        <b>valid timestamped signature, which you can immediately store in your GIT repository.</b>
       </li>
+    </ul>
+    <p class="intermezzo">
+      All the remaining mumbo-jumbo is just to ensure that timestampers are not mis-issuing any
+      backdated timestamps and that this can also be publicly audited at any time, to answer the
+      question:
+      <i></i>
+        <a
+          href="https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.46.8740&q=How%20to%20Time-Stamp%20a%20Digital%20Document"
+          >But who will guard the guards themselves?</a
+        >
+      </i>
+    </p>
+    <ul>
       <li>
         The audit log for the timestamps is a GIT repository as well, i.e., the input and the output
         formats are compatible. This follows the Unix component and <em>stdio</em> principle and
@@ -94,23 +110,10 @@
       </li>
     </ul>
 
-    <a href="https://zeitgitter.net"
-      ><table>
-        <tr>
-          <td width="30%"><img src="zeitgitter.svg" width="100%" /></td>
-          <td>
-            Learn more about timestamping, Zeitgitter, the Zeitgitter network, how to use it, and
-            how to join it.
-          </td>
-        </tr>
-      </table></a
-    >
-
-    <ul class="footer">
-      <li><a href="./" class="active">Zeitgitter Home</a></li>
-      <li><a href="tos.html">Terms of Service</a></li>
-      <li><a href="privacy.html">Privacy Policy</a></li>
-      <li><a href="contact.html">Contact Information</a></li>
-    </ul>
+		<div class="box">
+			<h2>Learning more</h2>
+			<p><a href="https://zeitgitter.net"><img src="zeitgitter.svg"></a></p>
+			<p>Learn more about timestamping, Zeitgitter, the Zeitgitter network, how to use it, and how to join it at <a href="https://zeitgitter.net">zeitgitter.net</a>.</p>
+		</div>
   </body>
 </html>

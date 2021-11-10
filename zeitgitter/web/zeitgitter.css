@@ -1,19 +1,31 @@
 /* General */
 html {
   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-  font-size: 150%;
+  font-size: 1.5rem;
+  margin-top: 0;
+}
+body {
+  margin-top: 0;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 h1,
 h2 {
-  background-color: #b9cad9;
+  color: #008dd2;
+  margin-bottom: -0.5rem;
 }
-h1 {
-  padding-top: 1.5em;
+h2 {
+  margin-top: -0rem;
 }
-p,
-li,
-table {
-  max-width: 40em;
+h1,
+h2,
+p {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+p.intermezzo {
+  color: #008dd2;
 }
 a:link,
 a:active,
@@ -23,36 +35,53 @@ a:hover {
 }
 
 /* Box */
-table {
-  background-color: #b9cad9;
-  border: solid #00519a 2px;
+.box {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  background-color: #d0f0ff;
+  border: solid #008dd2 2px;
+}
+.box img {
+  width: 100%;
 }
 
-/* Footer */
-ul.footer {
-  background-color: #444;
+/* Header */
+ul.header {
+  background-color: #005079;
   list-style-type: none;
+  display: flex;
+  width: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  position: fixed;
-  top: 0;
-  width: 100%;
 }
-ul.footer li {
-  float: left;
+ul.header li {
+  flex: 1 1 auto;
   border-right: 1px solid #bbb;
 }
-ul.footer li a {
+ul.header img {
+  margin-left: 0.5rem;
+  margin-top: -1.5em;
+  margin-bottom: -0.5em;
+  padding-right: 0.5em;
+  height: 2.5em;
+}
+ul.header li a {
   display: block;
   color: #fff;
   text-align: center;
-  padding: 1em 1em;
   text-decoration: none;
+  overflow-wrap: break-word;
+  overflow-y: none;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  margin-top: 0;
+  height: 3em;
+  line-height: 3em;
 }
-ul.footer li a:hover {
-  background-color: #000;
+ul.header li a.active {
+  background-color: #008dd2;
 }
-ul.footer li a.active {
-  background-color: #00519a;
+body ul.header li a:hover {
+  background-color: #00334c;
 }
