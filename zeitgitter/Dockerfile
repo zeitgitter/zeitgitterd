@@ -1,4 +1,12 @@
+# For development docker builds, install from local package instead from PyPI.
+# For this, `##DEVONLY##` strings at the start of the line will be removed for
+# the dev build Dockerfile, whereas lines ending in `##PRODONLY##` will be
+# deleted.
 FROM debian:bullseye-slim
+
+# The next line is hardcoded in Makefile as PRODONLY,
+# as ARG does not support comments
+ARG VERSIONMATCH=
 
 # gnupg1/gpg1 steps are for interfacing with the PGP Timestamping Service only.
 RUN apt update && \
@@ -11,11 +19,10 @@ RUN apt update && \
 # (apt libgit2+python3-pygit2 with Python interpreter, pip pygit2)
 RUN python3 -c "import pygit2"
 
-# For development docker builds, install from local package instead from PyPI.
-# For this, `##DEVONLY##` strings at the start of the line will be removed for
-# the dev # build Dockerfile, whereas lines ending in `##PRODONLY##` will be
-# deleted.
-RUN pip3 install zeitgitterd ##PRODONLY##
+# Provide `--build-arg VERSIONMATCH===0.9.4` or similar to ask
+# for a specific version (instead of `==`, also other comparison
+# operators could be used.
+RUN pip3 install zeitgitterd${VERSIONMATCH} ##PRODONLY##
 ##DEVONLY## COPY zeitgitterd-*.whl /root/
 ##DEVONLY## RUN pip3 install /root/zeitgitterd-*.whl
 
