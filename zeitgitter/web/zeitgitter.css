@@ -38,8 +38,13 @@ a:hover {
 .box {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
+  margin-bottom: 1rem;
+  padding-top: 0.5rem;
   background-color: #d0f0ff;
   border: solid #008dd2 2px;
+}
+.box p {
+  margin-bottom: 0.5rem;
 }
 .box img {
   width: 100%;
