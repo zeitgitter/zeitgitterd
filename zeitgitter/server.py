@@ -251,8 +251,11 @@ class StamperRequestHandler(FlatFileRequestHandler):
             super().do_GET()
 
     def send_response(self, code, message=None):
-        if code != 200 and 'method' in self and self.method == 'HEAD':
-            self.method = self.method + '+error'
+        try:
+            if code != 200 and self.method == 'HEAD':
+                self.method = self.method + '+error'
+        except AttributeError:
+            self.method = '[UNKNOWN]'
         super().send_response(code, message)
 
     def end_headers(self):
