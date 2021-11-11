@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and this 
 
 ## Added
 
+- Support for `favicon.ico` (served as `image/png`, as that is the most common type today)
+
 ## Fixed
 
 - The fix for malformed request made things work. Better fix.

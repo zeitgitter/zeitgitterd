@@ -115,29 +115,29 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
                  b'ZEITGITTER_COUNTRY': bytes(zeitgitter.config.arg.country, 'UTF-8')}
 
         if self.path == '/':
-            self.send_file('text/html', 'index.html', replace=subst)
-        else:
-            match = re.match(r'^/([a-z0-9][-_.a-z0-9]*)\.([a-z]*)$',
-                             self.path, re.IGNORECASE)
-            mimemap = {
-                'html': 'text/html',
-                'txt': 'text/plain',
-                'xml': 'text/xml',
-                'css': 'text/css',
-                'js': 'text/javascript',
-                'png': 'image/png',
-                'svg': 'image/svg+xml',
-                'jpg': 'image/jpeg',
-                'jpeg': 'image/jpeg'}
-            if match and match.group(2) in mimemap:
-                mime = mimemap[match.group(2)]
-                if mime.startswith('text/'):
-                    self.send_file(mime, self.path[1:], replace=subst)
-                else:
-                    self.send_file(mimemap[match.group(2)], self.path[1:])
+            self.path = '/index.html'
+        match = re.match(r'^/([a-z0-9][-_.a-z0-9]*)\.([a-z]*)$',
+                         self.path, re.IGNORECASE)
+        mimemap = {
+            'html': 'text/html',
+            'txt': 'text/plain',
+            'xml': 'text/xml',
+            'css': 'text/css',
+            'js': 'text/javascript',
+            'png': 'image/png',
+            'ico': 'image/png',
+            'svg': 'image/svg+xml',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg'}
+        if match and match.group(2) in mimemap:
+            mime = mimemap[match.group(2)]
+            if mime.startswith('text/'):
+                self.send_file(mime, self.path[1:], replace=subst)
             else:
-                self.send_bodyerr(406, "Illegal file name",
-                                  "<p>This type of file/path is not served here.</p>")
+                self.send_file(mime, self.path[1:])
+        else:
+            self.send_bodyerr(406, "Illegal file name",
+                              "<p>This type of file/path is not served here.</p>")
 
 
 stamper = None
