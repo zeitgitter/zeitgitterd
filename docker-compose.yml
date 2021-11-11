@@ -4,7 +4,7 @@ services:
   zeitgitter:
     restart: unless-stopped
     image: zeitgitter/zeitgitter
-    build: ./zeitgitter
+    #build: ./zeitgitter
     env_file:
       # Adapt from "sample.env"
       - "server.env"
