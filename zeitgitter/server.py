@@ -53,7 +53,8 @@ class SocketActivationMixin:
             if nfds == 1:
                 self.socket = socket.socket(fileno=3)
             else:
-                logging.error("Socket activation must provide exactly one socket (for now)\n")
+                logging.error(
+                    "Socket activation must provide exactly one socket (for now)\n")
                 exit(1)
         else:
             super().server_bind()
@@ -78,12 +79,14 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
                 with Path(webroot, filename).open(mode='rb') as f:
                     contents = f.read()
             else:
-                contents = importlib.resources.read_binary('zeitgitter', filename)
+                contents = importlib.resources.read_binary(
+                    'zeitgitter', filename)
             for k, v in replace.items():
                 contents = contents.replace(k, v)
             self.send_response(200)
             if content_type.startswith('text/'):
-                self.send_header('Content-Type', content_type + '; charset=UTF-8')
+                self.send_header(
+                    'Content-Type', content_type + '; charset=UTF-8')
             else:
                 self.send_header('Content-Type', content_type)
             self.send_header('Content-Length', len(contents))
@@ -127,9 +130,9 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
                 'jpg': 'image/jpeg',
                 'jpeg': 'image/jpeg'}
             if match and match.group(2) in mimemap:
-                if match.group(2) == 'html':
-                    self.send_file(mimemap[match.group(2)], self.path[1:],
-                                   replace=subst)
+                mime = mimemap[match.group(2)]
+                if mime.startswith('text/'):
+                    self.send_file(mime, self.path[1:], replace=subst)
                 else:
                     self.send_file(mimemap[match.group(2)], self.path[1:])
             else:
