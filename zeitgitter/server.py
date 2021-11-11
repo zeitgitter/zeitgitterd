@@ -251,7 +251,7 @@ class StamperRequestHandler(FlatFileRequestHandler):
             super().do_GET()
 
     def send_response(self, code, message=None):
-        if code != 200 and self.method == 'HEAD':
+        if code != 200 and 'method' in self and self.method == 'HEAD':
             self.method = self.method + '+error'
         super().send_response(code, message)
 
