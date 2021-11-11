@@ -24,6 +24,9 @@ p {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
 }
+p {
+  hyphens: auto;
+}
 p.intermezzo {
   color: #008dd2;
 }
