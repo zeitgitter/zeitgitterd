@@ -114,7 +114,7 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
         if self.path == '/':
             self.send_file('text/html', 'index.html', replace=subst)
         else:
-            match = re.match('^/([a-z0-9][-_.a-z0-9]*).(html|css|js|png|jpe?g|svg)$',
+            match = re.match('^/([a-z0-9][-_.a-z0-9]*).(html|css|txt|xml|js|png|jpe?g|svg)$',
                              self.path, re.IGNORECASE)
             mimemap = {
                 'html': 'text/html',
