@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+# 1.1.2+ - [Unreleased]
+
+## Added
+
+## Fixed
+
+- Handling IMAP and SMTP related errors (e.g., connection timed out), and
+  retrying, where appropriate
+
+## Changed
+
 # 1.1.2 - 2021-12-17
 
 ## Added

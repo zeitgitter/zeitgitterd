@@ -47,27 +47,66 @@ def split_host_port(host, default_port):
         return (host, default_port)
 
 
+nth_mail_being_sent = 0
+
+
 def send(body, subject='Stamping request', to=None):
+    global nth_mail_being_sent
     # Does not work in unittests if assigned in function header
     # (are bound too early? At load time instead of at call time?)
     if to is None:
         to = zeitgitter.config.arg.stamper_to
     logging.debug('SMTP server %s' % zeitgitter.config.arg.stamper_smtp_server)
     (host, port) = split_host_port(zeitgitter.config.arg.stamper_smtp_server, 587)
-    with SMTP(host, port=port,
-              local_hostname=zeitgitter.config.arg.domain) as smtp:
-        smtp.starttls()
-        smtp.login(zeitgitter.config.arg.stamper_username,
-                   zeitgitter.config.arg.stamper_password)
-        frm = zeitgitter.config.arg.stamper_own_address
-        date = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
-        msg = """From: %s
+    # Race conditions should not happen (and will eventually be recognized)
+    nth_mail_being_sent += 1
+    our_sending = nth_mail_being_sent
+    # Retry only until the next send request goes out
+    # Synchronous waiting, as we are called asynchronously to the stamping
+    # process and IMAP reception should start only after we succeed here
+    while nth_mail_being_sent == our_sending:
+        try:
+            with SMTP(host, port=port,
+                      local_hostname=zeitgitter.config.arg.domain) as smtp:
+                smtp.starttls()
+                smtp.login(zeitgitter.config.arg.stamper_username,
+                           zeitgitter.config.arg.stamper_password)
+                frm = zeitgitter.config.arg.stamper_own_address
+                date = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
+                msg = """From: %s
 To: %s
 Date: %s
 Subject: %s
 
 %s""" % (frm, to, date, subject, body)
-        smtp.sendmail(frm, to, msg)
+                smtp.sendmail(frm, to, msg)
+            return True  # Success, end loop
+        except ConnectionError as e:
+            logging.error(f"Error connecting to SMTP server"
+                          " {zeitgitter.config.arg.stamper_smtp_server}:"
+                          " {e.strerror}, will try again in 60 seconds")
+            logging.debug(e)
+            time.sleep(60)
+        except TimeoutError as e:
+            logging.error(f"Timeout connecting to SMTP server"
+                          " {zeitgitter.config.arg.stamper_smtp_server},"
+                          " will try again in 60 seconds")
+            logging.debug(e)
+            time.sleep(60)
+        except OSError as e:
+            logging.error(f"{e.strerror} talking to the SMTP server,"
+                          " will try again in 60 seconds")
+            logging.debug(e)
+            time.sleep(60)
+        except SMTP.Error as e:
+            logging.error(f"{str(e)} while talking to the SMTP server,"
+                          " will try again in 60 seconds")
+            logging.debug(e)
+            time.sleep(60)
+        except Exception as e:
+            logging.error(
+                "Unhandled exception, aborting SMTP receiving\n" + str(e))
+            return False
 
 
 def extract_pgp_body(body):
@@ -268,9 +307,11 @@ def check_for_stamper_mail(imap, stat, logfile):
             if m != b')':
                 msgid = remaining_msgids[0]
                 remaining_msgids = remaining_msgids[1:]
-                logging.debug("IMAP FETCH BODY (%s) → %s…" % (msgid, m[1][:20]))
+                logging.debug("IMAP FETCH BODY (%s) → %s…" %
+                              (msgid, m[1][:20]))
                 if verify_body_and_save_signature(m[1], stat, logfile, msgid):
-                    logging.info("Verify_body() succeeded; deleting %s" % msgid)
+                    logging.info(
+                        "Verify_body() succeeded; deleting %s" % msgid)
                     imap.store(msgid, '+FLAGS', '\\Deleted')
                     return True
     return False
@@ -286,38 +327,70 @@ def still_same_head(repo, initial_head):
 
 
 def wait_for_receive(repo, initial_head, logfile):
-    try:
-        stat = logfile.stat()
-        logging.debug("File is from %d" % stat.st_mtime)
-    except FileNotFoundError:
-        return False
-    (host, port) = split_host_port(zeitgitter.config.arg.stamper_imap_server, 143)
-    with IMAP4(host=host, port=port) as imap:
-        imap.starttls()
-        imap.login(zeitgitter.config.arg.stamper_username,
-                   zeitgitter.config.arg.stamper_password)
-        imap.select('INBOX')
-        if (check_for_stamper_mail(imap, stat, logfile) == False
-                and still_same_head(repo, initial_head)):
-            # No existing message found, wait for more incoming messages
-            # and process them until definitely okay or giving up for good
-            if 'IDLE' in imap.capabilities:
-                imap_idle(imap, stat, repo, initial_head, logfile)
-            else:
-                logging.warning("IMAP server does not support IDLE")
-                for i in range(10):
-                    time.sleep(60)
-                    if not still_same_head(repo, initial_head):
-                        return
-                    if check_for_stamper_mail(imap, stat, logfile):
-                        return
+    while True:
+        try:
+            try:
+                stat = logfile.stat()
+                logging.debug("File is from %d" % stat.st_mtime)
+            except FileNotFoundError:
+                return
+            (host, port) = split_host_port(
+                zeitgitter.config.arg.stamper_imap_server, 143)
+            with IMAP4(host=host, port=port) as imap:
+                imap.starttls()
+                imap.login(zeitgitter.config.arg.stamper_username,
+                           zeitgitter.config.arg.stamper_password)
+                imap.select('INBOX')
+                if (check_for_stamper_mail(imap, stat, logfile) == False
+                        and still_same_head(repo, initial_head)):
+                    # No existing message found, wait for more incoming messages
+                    # and process them until definitely okay or giving up for good
+                    if 'IDLE' in imap.capabilities:
+                        imap_idle(imap, stat, repo, initial_head, logfile)
+                    else:
+                        logging.warning("IMAP server does not support IDLE")
+                        for i in range(10):
+                            time.sleep(60)
+                            if not still_same_head(repo, initial_head):
+                                return
+                            if check_for_stamper_mail(imap, stat, logfile):
+                                return
+            # Do not loop on normal operation
+            return
+        except ConnectionError as e:
+            logging.error("Error connecting to IMAP server"
+                          f" {zeitgitter.config.arg.stamper_imap_server}:"
+                          f" {e.strerror}, will try again in 60 seconds")
+            logging.debug(e)
+            time.sleep(60)
+        except TimeoutError as e:
+            logging.error("Timeout connecting to IMAP server"
+                          f" {zeitgitter.config.arg.stamper_imap_server},"
+                          " will try again in 60 seconds")
+            logging.debug(e)
+            time.sleep(60)
+        except OSError as e:
+            logging.error(f"{e.strerror} talking to the IMAP server,"
+                          " will try again in 60 seconds")
+            logging.debug(e)
+            time.sleep(60)
+        except IMAP4.Error as e:
+            logging.error(f"{str(e)} while talking to the IMAP server,"
+                          " will try again in 60 seconds")
+            logging.debug(e)
+            time.sleep(60)
+        except Exception as e:
+            logging.error(
+                "Unhandled exception, aborting IMAP receiving\n" + str(e))
+            return
 
 
 def async_email_timestamp(logfile, resume=False):
     """If called with `resume=True`, tries to resume waiting for the mail"""
     repo = git.Repository(zeitgitter.config.arg.repository)
     if repo.head_is_unborn:
-        logging.error("Cannot timestamp by email in repository without commits")
+        logging.error(
+            "Cannot timestamp by email in repository without commits")
         return
     head = repo.head
     with logfile.open() as f:
@@ -331,6 +404,8 @@ def async_email_timestamp(logfile, resume=False):
             f.write(append)
         contents = contents + append
     if not resume:
-        send(contents)
+        if not send(contents):
+            logging.info("Mail not sent, not waiting for reply (obviously)")
+            return
     threading.Thread(target=wait_for_receive, args=(repo, head, logfile),
                      daemon=True).start()
