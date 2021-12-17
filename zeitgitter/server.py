@@ -84,6 +84,8 @@ class FlatFileRequestHandler(BaseHTTPRequestHandler):
             for k, v in replace.items():
                 contents = contents.replace(k, v)
             self.send_response(200)
+            self.send_header(
+                'Cache-Control', zeitgitter.config.arg.cache_control_static)
             if content_type.startswith('text/'):
                 self.send_header(
                     'Content-Type', content_type + '; charset=UTF-8')
@@ -171,6 +173,8 @@ class StamperRequestHandler(FlatFileRequestHandler):
         else:
             pk = bytes(public_key, 'ASCII')
             self.send_response(200)
+            self.send_header(
+                'Cache-Control', zeitgitter.config.arg.cache_control_static)
             self.send_header('Content-Type', 'application/pgp-keys')
             self.send_header('Content-Length', len(pk))
             self.end_headers()
@@ -207,6 +211,7 @@ class StamperRequestHandler(FlatFileRequestHandler):
         else:
             sig = bytes(sig, 'ASCII')
             self.send_response(200)
+            self.send_header('Cache-Control', 'no-cache, no-store')
             self.send_header('Content-Type', 'application/x-git-object')
             self.send_header('Content-Length', len(sig))
             self.end_headers()

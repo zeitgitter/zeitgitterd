@@ -107,6 +107,12 @@ def get_args(args=None, config_file_contents=None):
     parser.add_argument('--listen-port',
                         default=15177, type=int,
                         help="port number to listen on")
+    parser.add_argument('--cache-control-static',
+                        default="max-age=86400,"
+                        " stale-while-revalidate=86400,"
+                        " stale-if-error=86400",
+                        help="The value of the `Cache-Control` HTTP header"
+                        " returned for static pages")
 
     # GnuPG
     parser.add_argument('--max-parallel-signatures',
@@ -197,7 +203,8 @@ def get_args(args=None, config_file_contents=None):
                             `stamper-from`. Should not impact other mail
                             servers.""")
 
-    arg = parser.parse_args(args=args, config_file_contents=config_file_contents)
+    arg = parser.parse_args(
+        args=args, config_file_contents=config_file_contents)
 
     if arg.print_sample_config:
         print_sample_config()
