@@ -2,7 +2,7 @@
 #
 # zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
-# Copyright (C) 2019-2021 Marcel Waldvogel
+# Copyright (C) 2019-2022 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -18,4 +18,4 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-VERSION = '1.1.4'
+VERSION = '1.1.5'

@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
-# 1.1.4 - 2022-02-20
+# 1.1.5 - 2022-02-23
+
+## Added
+
+## Fixed
+
+- Hotfix: Bug in workaround from 1.1.4
+
+## Changed
+
+# 1.1.4 - 2022-02-22
 
 ## Added
 

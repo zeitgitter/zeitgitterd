@@ -8,7 +8,7 @@
   <!--
    Zeitgitter — Independent GIT Timestamping
    
-   Copyright 2019-2021 Marcel Waldvogel <marcel.waldvogel@trifence.ch>
+   Copyright 2019-2022 Marcel Waldvogel <marcel.waldvogel@trifence.ch>
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,37 +38,47 @@
     <h1 class="top">Privacy Policy</h1>
     <p>
       To provide this timestamping service in a trustworthy manner, the service
-      <b>irrevocably</b> creates, maintains, and publishes a log file of its timestamping activity.
+      <b>irrevocably</b> creates, maintains, and publishes a log file of its
+      timestamping activity.
     </p>
 
     <p>
       Therefore, the service
-      <b>records and publishes the following information permanently and irrevocably:</b>
+      <b
+        >records and publishes the following information permanently and
+        irrevocably:</b
+      >
     </p>
     <ul>
       <li>
-        The <b>commit ID</b> of all the commits you requested timestamping for, in the sequence it
-        was processed. This sequence, together with the timestamps on the log, will also give
-        insight into the timestamp returned.<br />
-        <b>Not</b> stored will be the IDs of the documents within your repository.
+        The <b>commit ID</b> of all the commits you requested timestamping for,
+        in the sequence it was processed. This sequence, together with the
+        timestamps on the log, will also give insight into the timestamp
+        returned.<br />
+        <b>Not</b> stored will be the IDs of the documents within your
+        repository.
       </li>
     </ul>
 
     <p>
-      In order to maintain the service, we record the following information for up to 7 days,
+      In order to maintain the service, we record the following information for
+      up to 7 days,
       <b>after which it will be deleted:</b>
     </p>
     <ul>
-      <li><b>For all requests:</b> Time, IP address, and URL of the request.</li>
       <li>
-        <b>For branch timestamps:</b> The ID of the timestamping branch's previous HEAD commit
-        ("parent") and the SHA-1 hash of the
-        <a href="https://git-scm.com/book/en/v2/Git-Internals-Git-Objects">GIT tree object</a>. (In
-        addition to time, IP address, URL, and commit ID).
+        <b>For all requests:</b> Time, IP address, and URL of the request.
       </li>
       <li>
-        <b>For tag timestamps:</b> The name of the tag. (In addition to time, IP address, URL, and
-        commit ID).
+        <b>For branch timestamps:</b> The ID of the timestamping branch's
+        previous HEAD commit ("parent") and the SHA-1 hash of the
+        <a href="https://git-scm.com/book/en/v2/Git-Internals-Git-Objects"
+          >GIT tree object</a
+        >. (In addition to time, IP address, URL, and commit ID).
+      </li>
+      <li>
+        <b>For tag timestamps:</b> The name of the tag. (In addition to time, IP
+        address, URL, and commit ID).
       </li>
     </ul>
   </body>

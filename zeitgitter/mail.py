@@ -2,7 +2,7 @@
 #
 # zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
-# Copyright (C) 2019-2021 Marcel Waldvogel
+# Copyright (C) 2019-2022 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -308,7 +308,7 @@ def check_for_stamper_mail(imap, stat, logfile):
             f"#bodies+1={len(contents)}, #msgids={len(remaining_msgids)}")
         for m in contents:
             if m != b')':
-                if len(msgid) == 0:
+                if len(remaining_msgids) == 0:
                     logging.error(
                         f"More bodies returned ({len(contents)}) than requested ({len(mseq.split(b','))})")
                     msgid = "99999999999"

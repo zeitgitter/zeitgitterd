@@ -2,7 +2,7 @@
 #
 # zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
-# Copyright (C) 2019-2021 Marcel Waldvogel
+# Copyright (C) 2019-2022 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -20,6 +20,9 @@
 
 # Test mail sending
 
+import zeitgitter.mail
+import zeitgitter.stamper
+import zeitgitter.config
 from datetime import datetime, timezone
 import os
 from pathlib import Path
@@ -31,27 +34,24 @@ import subprocess
 import sys
 sys.path.append('.')
 
-import zeitgitter.config
-import zeitgitter.stamper
-import zeitgitter.mail
 
 def mailtest():
-  tmpdir = tempfile.TemporaryDirectory()
-  zeitgitter.config.get_args(args=[
-    '-c', 'tests/mailtest.conf',
-    '--debug', '2',
-    '--gnupg-home',
-    str(Path(os.path.dirname(os.path.realpath(__file__)),
-                     'gnupg')),
-    '--keyid', '353DFEC512FA47C7',
-    '--own-url', 'https://hagrid.snakeoil',
-    '--contact', '?',
-    '--owner', '?',
-    '--country', '?',
-    '--max-parallel-timeout', '1',
-    '--repository', tmpdir.name,
-  ])
-  zeitgitter.mail.send('''Stamper is a service provided free of charge to Internet users.
+    tmpdir = tempfile.TemporaryDirectory()
+    zeitgitter.config.get_args(args=[
+        '-c', 'tests/mailtest.conf',
+        '--debug', '2',
+        '--gnupg-home',
+        str(Path(os.path.dirname(os.path.realpath(__file__)),
+                 'gnupg')),
+        '--keyid', '353DFEC512FA47C7',
+        '--own-url', 'https://hagrid.snakeoil',
+        '--contact', '?',
+        '--owner', '?',
+        '--country', '?',
+        '--max-parallel-timeout', '1',
+        '--repository', tmpdir.name,
+    ])
+    zeitgitter.mail.send('''Stamper is a service provided free of charge to Internet users.
 
 You are very welcome to use Stamper, but you may only do so if 
 you have first read our Terms of use, which exclude liability on 
@@ -102,9 +102,9 @@ svIDuY71obFkHtgqAXFK4zMXjcm7t3R2GxUqLA760bptwoF1mDOFSA==
 -----END PGP SIGNATURE-----
 ''')
 
-  p = Path(zeitgitter.config.arg.repository, 'hashes.log')
-  with open(p, 'w') as f:
-    f.write('''40324f75a41642f1abf9cf9305f46aa6bfa567e2
+    p = Path(zeitgitter.config.arg.repository, 'hashes.log')
+    with open(p, 'w') as f:
+        f.write('''40324f75a41642f1abf9cf9305f46aa6bfa567e2
 73abac26438e48d2af7476f564b97a7baba14645
 3f4f63f7dde84822b24e348fd16d50b0aec93fb9
 4cd7b8798a6e4c0a9c76ade2b6041b8e1a779458
@@ -113,18 +113,19 @@ a8254faa27394f4d893c80d899169d40b6a4d324
 303cc43ce91547a89daea16c7a695d9896585f17
 fa94ffe675454658bd11219693d60844b995a74d
 ''')
-  ftime = datetime(year=2019, month=3, day=11,
-                   hour=16, minute=55, second=0,
-                   tzinfo=timezone.utc).timestamp()
-  os.utime(p, times=(ftime, ftime))
-  subprocess.run(['git', 'init'],
-          cwd=zeitgitter.config.arg.repository).check_returncode()
-  subprocess.run(['git', 'add', 'hashes.log'],
-          cwd=zeitgitter.config.arg.repository).check_returncode()
-  subprocess.run(['git', 'commit', '-m', "First commit"],
-          cwd=zeitgitter.config.arg.repository).check_returncode()
-  repo = git.Repository(zeitgitter.config.arg.repository)
-  zeitgitter.mail.wait_for_receive(repo, repo.head, p)
+    ftime = datetime(year=2019, month=3, day=11,
+                     hour=16, minute=55, second=0,
+                     tzinfo=timezone.utc).timestamp()
+    os.utime(p, times=(ftime, ftime))
+    subprocess.run(['git', 'init'],
+                   cwd=zeitgitter.config.arg.repository).check_returncode()
+    subprocess.run(['git', 'add', 'hashes.log'],
+                   cwd=zeitgitter.config.arg.repository).check_returncode()
+    subprocess.run(['git', 'commit', '-m', "First commit"],
+                   cwd=zeitgitter.config.arg.repository).check_returncode()
+    repo = git.Repository(zeitgitter.config.arg.repository)
+    zeitgitter.mail.wait_for_receive(repo, repo.head, p)
+
 
 if os.path.isfile('tests/mailtest.conf'):
     mailtest()

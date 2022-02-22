@@ -2,7 +2,7 @@
 #
 # zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
-# Copyright (C) 2019-2021 Marcel Waldvogel
+# Copyright (C) 2019-2022 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -133,7 +133,8 @@ class Stamper:
         Create one, if less than `number-of-gpg-agents` are available."""
         with self.gpg_serialize:
             if len(self.gpgs) < self.max_threads:
-                home = Path('%s-%d' % (zeitgitter.config.arg.gnupg_home, len(self.gpgs)))
+                home = Path('%s-%d' %
+                            (zeitgitter.config.arg.gnupg_home, len(self.gpgs)))
                 # Create copy if needed; to trick an additional gpg-agent
                 # being started for the same directory
                 if home.exists():
@@ -152,7 +153,8 @@ class Stamper:
                                     home, ignore=shutil.ignore_patterns("S.*", "*~"))
                 nextgpg = gnupg.GPG(gnupghome=home.as_posix())
                 self.gpgs.append(nextgpg)
-                logging.debug("Returning new %r (gnupghome=%s)" % (nextgpg, nextgpg.gnupghome))
+                logging.debug("Returning new %r (gnupghome=%s)" %
+                              (nextgpg, nextgpg.gnupghome))
                 return nextgpg
             else:
                 # Rotate list left and return element wrapped around (if the list
@@ -160,7 +162,8 @@ class Stamper:
                 nextgpg = self.gpgs[0]
                 self.gpgs = self.gpgs[1:]
                 self.gpgs.append(nextgpg)
-                logging.debug("Returning old %r (gnupghome=%s)" % (nextgpg, nextgpg.gnupghome))
+                logging.debug("Returning old %r (gnupghome=%s)" %
+                              (nextgpg, nextgpg.gnupghome))
                 return nextgpg
 
     def sig_time(self):
@@ -227,7 +230,7 @@ tagger %s %d +0000
 
 :watch: %s tag timestamp
 """ % (commit, tagname, self.fullid, now,
-       self.url)
+                self.url)
 
             sig = self.limited_sign(now, commit, tagobj)
             if sig == None:
