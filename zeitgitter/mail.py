@@ -374,7 +374,7 @@ def wait_for_receive(repo, initial_head, logfile):
                           " will try again in 60 seconds")
             logging.debug(e)
             time.sleep(60)
-        except IMAP4.Error as e:
+        except IMAP4.error as e:
             logging.error(f"{str(e)} while talking to the IMAP server,"
                           " will try again in 60 seconds")
             logging.debug(e)
