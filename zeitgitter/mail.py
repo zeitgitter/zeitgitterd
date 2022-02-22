@@ -301,11 +301,19 @@ def check_for_stamper_mail(imap, stat, logfile):
     if len(msgs) == 1 and len(msgs[0]) > 0:
         mseq = msgs[0].replace(b' ', b',')
         (typ, contents) = imap.fetch(mseq, 'BODY[TEXT]')
+        # `contents` is a sequence of BODY[TEXT]s
         logging.debug("IMAP FETCH → %s (%d)" % (typ, len(contents)))
         remaining_msgids = mseq.split(b',')
+        logging.debug(
+            f"#bodies+1={len(contents)}, #msgids={len(remaining_msgids)}")
         for m in contents:
             if m != b')':
-                msgid = remaining_msgids[0]
+                if len(msgid) == 0:
+                    logging.error(
+                        f"More bodies returned ({len(contents)}) than requested ({len(mseq.split(b','))})")
+                    msgid = "99999999999"
+                else:
+                    msgid = remaining_msgids[0]
                 remaining_msgids = remaining_msgids[1:]
                 logging.debug("IMAP FETCH BODY (%s) → %s…" %
                               (msgid, m[1][:20]))

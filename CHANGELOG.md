@@ -9,6 +9,8 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## Added
 
+- Try to work around strange IMAP server behavior
+
 ## Fixed
 
 - Correctly catch IMAP exceptions
