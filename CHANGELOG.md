@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+# 1.2.0 - 2023-10-10
+
+## Added
+
+- New `--trusted-proxies` option; default to (site, link) local addresses.
+
+## Fixed
+
+## Changed
+
+- With the default `--trusted-proxies` setting, local hosts can now fake their
+  source address through `X-Forwarded-For`. This incompatible (and in some
+  networks, insecure) setting was chosen to simplify the default setup, which is
+  putting `zeitgitterd` behind a proxy. (Also, the default is rather
+  complicated, so having to set it manually was considered too uncomfortable.)
+  The previous behavior is reactivated by setting `--trusted-proxies=none`
+  (case-sensitive).
+
 # 1.1.6 - 2023-10-10
 
 ## Added

@@ -2,7 +2,7 @@
 #
 # zeitgitter — Independent GIT Timestamping, HTTPS server
 #
-# Copyright (C) 2019-2022 Marcel Waldvogel
+# Copyright (C) 2019-2023 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -113,6 +113,20 @@ def get_args(args=None, config_file_contents=None):
                         " stale-if-error=86400",
                         help="The value of the `Cache-Control` HTTP header"
                         " returned for static pages")
+    parser.add_argument('--trusted-proxies',
+                        default=','.join((
+                        # RFC 1918 addresses
+                        '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16',
+                        # Link local
+                        '169.254.0.0/16', 'fe80::/64',
+                        # Unique Local Unicast
+                        'fc00::/7',
+                        # Localhost
+                        '127.0.0.0/8', '::1/128')),
+                        help="A comma-separated list of IP address prefixes"
+                        " which are trusted for providing `X-Forwarded-For`"
+                        " headers (i.e., they are allowed to override the"
+                        " source IP address). Disable by setting to `none`.")
 
     # GnuPG
     parser.add_argument('--max-parallel-signatures',

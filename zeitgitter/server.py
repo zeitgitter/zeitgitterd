@@ -2,7 +2,7 @@
 #
 # zeitgitterd — Independent GIT Timestamping, HTTPS server
 #
-# Copyright (C) 2019-2022 Marcel Waldvogel
+# Copyright (C) 2019-2023 Marcel Waldvogel
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -30,6 +30,7 @@ import socket
 import socketserver
 import subprocess
 import urllib
+import ipaddress
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
@@ -158,10 +159,45 @@ class StamperRequestHandler(FlatFileRequestHandler):
     def __init__(self, *args, **kwargs):
         ensure_stamper()
         self.protocol_version = 'HTTP/1.1'
+        if zeitgitter.config.arg.trusted_proxies == "none":
+            self.trusted_nets = []
+        else:
+            self.trusted_nets = list(map(ipaddress.ip_network,
+                                zeitgitter.config.arg.trusted_proxies.split(',')))
         super().__init__(*args, **kwargs)
 
     def version_string(self):
         return "zeitgitter/" + zeitgitter.version.VERSION
+    
+    def is_trusted_proxy(self, addr):
+        # Normalize IPv4 mapped addresses to v4
+        if addr.version == 6 and addr.ipv4_mapped is not None:
+            addr = addr.ipv4_mapped
+        return any(map(lambda net: addr in net, self.trusted_nets))
+
+    def address_string(self):
+        addr = super().address_string()
+        xff = self.headers.get('X-Forwarded-For')
+        if xff:
+            addr = xff + "," + addr
+        addrs = addr.split(",")
+        # Addrs is a list of alleged addresses;
+        # ordered from client to last proxy.
+        # Any address except the last one may be faked,
+        # so be careful. So start with a reliable one
+        # and work backward as far as we can.
+        best_addr = addrs[-1]
+        for a in reversed(addrs):
+            try:
+                ipa = ipaddress.ip_address(a)
+                if not self.is_trusted_proxy(ipa):
+                    return a
+                best_addr = a
+            except ValueError:
+                logging.warn("Unable to parse %s, stopping with %s" % (addrs, best_addr))
+                return best_addr
+        return addrs[0]
+
 
     def send_public_key(self):
         global stamper, public_key
