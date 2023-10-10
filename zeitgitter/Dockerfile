@@ -2,7 +2,7 @@
 # For this, `##DEVONLY##` strings at the start of the line will be removed for
 # the dev build Dockerfile, whereas lines ending in `##PRODONLY##` will be
 # deleted.
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 # The next line is hardcoded in Makefile as PRODONLY,
 # as ARG does not support comments
@@ -22,9 +22,9 @@ RUN python3 -c "import pygit2"
 # Provide `--build-arg VERSIONMATCH===0.9.4` or similar to ask
 # for a specific version (instead of `==`, also other comparison
 # operators could be used.
-RUN pip3 install zeitgitterd${VERSIONMATCH} ##PRODONLY##
+RUN pip3 install --break-system-packages zeitgitterd${VERSIONMATCH} ##PRODONLY##
 ##DEVONLY## COPY zeitgitterd-*.whl /root/
-##DEVONLY## RUN pip3 install /root/zeitgitterd-*.whl
+##DEVONLY## RUN pip3 install --break-system-packages /root/zeitgitterd-*.whl
 
 # Ensure SSH keys also survive an update
 # `usermod --home /persistent-data root` refuses, as there are running procs

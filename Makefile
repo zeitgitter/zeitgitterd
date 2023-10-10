@@ -138,7 +138,8 @@ run-test-daemon-fake-time: prepare-tmp-git kill-daemon
 # Create multi-platform docker image. If you have native systems around, using
 # them will be much more efficient at build time. See e.g.
 # https://netfuture.ch/2020/05/multi-arch-docker-image-easy/
-BUILDXDETECT = ${HOME}/.docker/cli-plugins/docker-buildx
+BUILDXDETECT1 = ${HOME}/.docker/cli-plugins/docker-buildx
+BUILDXDETECT2 = /usr/libexec/docker/cli-plugins/docker-buildx
 # Just one of the many files created
 QEMUDETECT = /proc/sys/fs/binfmt_misc/qemu-m68k
 # For version x.y.z, output "-t …:x.y -t …:x.y.z";
@@ -171,15 +172,11 @@ ${QEMUDETECT}:
 	    echo "Cannot remove docker container on ZFS; retry after next reboot") \
 	  | grep -v 'dataset is busy'
 
-buildx: ${BUILDXDETECT}
-${BUILDXDETECT}:
-	@echo
-# Output of `uname -m` is too different 
-	@echo '*** `docker buildx` missing. Install binary for this machine architecture'
-	@echo '*** from `https://github.com/docker/buildx/releases/latest`'
-	@echo '*** to `~/.docker/cli-plugins/docker-buildx` and `chmod +x` it.'
-	@echo
-	@exit 1
+buildx:
+	@if [ ! -x ${BUILDXDETECT1} -a ! -x ${BUILDXDETECT2} ]; then \
+		echo '*** `docker buildx` missing. See `https://github.com/docker/buildx#installing`'; \
+		exit 1; \
+	fi
 
 docker-multiarch-builder: qemu buildx
 	if ! docker buildx ls | grep -w docker-multiarch > /dev/null; then \
