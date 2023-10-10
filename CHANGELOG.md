@@ -18,6 +18,9 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 - Updated Debian to `bookworm`
 - Updated `git timestamp` to 1.1.1
+- **NOTE:** Due to the `git` update as part of the `bookworm` update, you may
+  need to run `git repair` (`apt install git-repair`), if you see an error
+  message like `_pygit2.GitError: Repository not found at /persistent-data/repo`
 
 # 1.1.5 - 2022-02-23
 
