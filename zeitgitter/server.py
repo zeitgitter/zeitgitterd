@@ -163,7 +163,7 @@ class StamperRequestHandler(FlatFileRequestHandler):
             self.trusted_nets = []
         else:
             self.trusted_nets = list(map(ipaddress.ip_network,
-                                zeitgitter.config.arg.trusted_proxies.split(',')))
+                                re.split(r'\s*,\s*', zeitgitter.config.arg.trusted_proxies)))
         super().__init__(*args, **kwargs)
 
     def version_string(self):
@@ -180,7 +180,7 @@ class StamperRequestHandler(FlatFileRequestHandler):
         xff = self.headers.get('X-Forwarded-For')
         if xff:
             addr = xff + "," + addr
-        addrs = addr.split(",")
+        addrs = re.split(r'\s*,\s*', addr)
         # Addrs is a list of alleged addresses;
         # ordered from client to last proxy.
         # Any address except the last one may be faked,
